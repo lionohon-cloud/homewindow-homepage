@@ -179,7 +179,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                       className={`text-[15px] font-medium transition-all relative group ${
                         activeSection === id
                           ? "text-[#d22727]"
-                          : "text-[#666] hover:text-[#333]"
+                          : "text-[#666] hover:text-[#333] cursor-pointer"
                       }`}
                     >
                       {label}
@@ -351,7 +351,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                     className={`text-[13px] whitespace-nowrap transition-all duration-300 text-right ${
                       activeSection === id
                         ? "text-[#d22727] font-bold"
-                        : "text-[#bbb] font-normal group-hover:text-[#666]"
+                        : "text-[#bbb] font-normal group-hover:text-[#666] cursor-pointer"
                     }`}
                   >
                     {label}

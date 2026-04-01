@@ -154,7 +154,7 @@ export function SafetyNetSection() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   fill="none"
-                  transform="rotate(-40 170 85)"
+                  transform="rotate(-48 170 85)"
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
