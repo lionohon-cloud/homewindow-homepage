@@ -387,7 +387,7 @@ export function EstimateForm() {
     
     fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         timestamp: new Date().toLocaleString('ko-KR'),
         phone,
@@ -444,7 +444,7 @@ export function EstimateForm() {
     
     fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         timestamp: new Date().toLocaleString('ko-KR'),
         phone,
