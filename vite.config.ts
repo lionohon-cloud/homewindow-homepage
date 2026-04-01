@@ -34,7 +34,7 @@ export default defineConfig({
   assetsInclude: ['**/*.svg', '**/*.csv'],
   
   // Make HTML files in root accessible
-  publicDir: false,
+  publicDir: 'public',
   server: {
     fs: {
       // Allow serving files from the project root
