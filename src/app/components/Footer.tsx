@@ -50,14 +50,15 @@ export function Footer() {
               className="bg-[#2a2a2a] rounded-lg p-7 md:p-8 h-full flex flex-col justify-center cursor-pointer active:scale-[0.98] transition-transform md:pointer-events-none md:cursor-default"
             >
               <div className="flex items-start gap-4">
-                <Headphones className="text-[#d22727] flex-shrink-0 mt-1" size={24} />
+                <Headphones className="text-[#d22727] flex-shrink-0 mt-1" size={22} />
                 <div>
-                  <p className="text-[30px] font-bold mb-3 leading-none">전문상담 : 1661-4830</p>
-                  <p className="text-[14px] text-gray-400 leading-[1.9]">
+                  <p className="text-[12px] text-gray-400 mb-0.5 leading-none">전문상담</p>
+                  <p className="text-[28px] font-bold mb-3 leading-none whitespace-nowrap">1661-4830</p>
+                  <p className="text-[13px] text-gray-400 leading-[1.9]">
                     운영시간 : 월~토 09:00~18:00<br />
-                    <span className="text-[#aaa]">(점심시간 12:00~13:00 제외)</span><br />
-                    <span className="text-[#d22727] font-bold">근무시간 외에는 AI상담사가 24시간 응대합니다</span>
+                    <span className="text-[#aaa]">(점심시간 12:00~13:00 제외)</span>
                   </p>
+                  <p className="text-[11px] text-[#d22727] font-bold mt-2 whitespace-nowrap">근무시간 외에는 AI상담사가 24시간 응대합니다</p>
                 </div>
               </div>
             </a>
