@@ -121,7 +121,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                       <motion.div
                         animate={{ y: [0, -8, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute -top-[44px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:-top-[50px] md:right-0 z-10"
+                        className="hidden md:block absolute md:-top-[50px] md:right-0 z-10"
                       >
                         <div className="relative bg-[#FFD700] px-3 py-1.5 md:px-4 md:py-2 rounded-2xl shadow-lg">
                           <p className="text-[#D22727] font-black text-[11px] md:text-[14px] whitespace-nowrap">
