@@ -91,73 +91,63 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                 : "bottom-[70px] md:bottom-[80px] shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
             }`}
           >
-            <div className={`relative flex items-center ${
-              variant === "top" ? "h-[190px] md:h-[210px]" : "h-[140px] md:h-[160px]"
-            }`}>
+            <div className="relative w-full">
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute right-4 top-4 w-8 h-8 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                className="absolute right-4 top-4 w-8 h-8 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer z-10"
                 aria-label="닫기"
               >
                 <X className="w-4 h-4 text-[#666]" />
               </button>
 
               {/* Content */}
-              <div className="w-full px-6 md:px-10">
-                <div className="max-w-screen-lg mx-auto">
-                  <form onSubmit={handleSubmit} className="flex items-center justify-center gap-4 md:gap-6">
-                    {/* 왼쪽: 제목 2줄 */}
-                    <div className="flex-shrink-0">
-                      <h3 className="font-bold text-[#333] whitespace-nowrap text-[32px] text-[#d22727]">
+              <div className="w-full px-5 md:px-10 py-4 md:py-0 md:h-[160px] md:flex md:items-center">
+                <div className="max-w-screen-lg mx-auto w-full">
+                  <form onSubmit={handleSubmit} className="flex flex-col md:flex-row md:items-center md:justify-center gap-3 md:gap-6">
+                    {/* 제목 */}
+                    <div className="flex-shrink-0 text-center md:text-left">
+                      <h3 className="font-bold text-[#d22727] text-[18px] md:text-[32px] md:whitespace-nowrap">
                         창호교체 비용이 궁금하신가요?
                       </h3>
-                      <p className="text-[#666] mt-1 text-[16px] text-left">
+                      <p className="text-[#666] mt-0.5 text-[13px] md:text-[16px]">
                         무료견적상담, 지금 연락처만 남겨주세요!
                       </p>
                     </div>
 
-                    {/* 오른쪽: 입력 및 버튼 2줄 */}
+                    {/* 입력 및 버튼 */}
                     <div className="flex flex-col gap-2 relative">
-                      {/* Floating Micro CTA Badge - Above Submit Button */}
+                      {/* Floating Micro CTA Badge */}
                       <motion.div
-                        animate={{
-                          y: [0, -8, 0],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                        className="absolute -top-[50px] right-0 z-10"
+                        animate={{ y: [0, -8, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute -top-[44px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:-top-[50px] md:right-0 z-10"
                       >
-                        <div className="relative bg-[#FFD700] px-4 py-2 rounded-2xl shadow-lg">
+                        <div className="relative bg-[#FFD700] px-3 py-1.5 md:px-4 md:py-2 rounded-2xl shadow-lg">
                           <p className="text-[#D22727] font-black text-[11px] md:text-[14px] whitespace-nowrap">
                             지금 상담접수 시 10% 할인
                           </p>
-                          {/* Speech Bubble Tail */}
-                          <div className="absolute bottom-[-7px] right-[26px] w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[7px] border-t-[#FFD700]" />
+                          <div className="absolute bottom-[-7px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[26px] w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[7px] border-t-[#FFD700]" />
                         </div>
                       </motion.div>
 
-                      {/* 1줄: 연락처 + 버튼 */}
-                      <div className="flex items-center gap-5">
-                        <div className="flex items-center gap-2">
+                      {/* 연락처 + 버튼 */}
+                      <div className="flex items-center justify-center md:justify-start gap-2 md:gap-5">
+                        <div className="flex items-center gap-1.5 md:gap-2">
                           <input
                             type="text"
                             value={phone1}
                             readOnly
-                            className="w-[60px] md:w-[65px] h-[44px] md:h-[48px] border-2 border-[#e5e5e5] rounded-lg text-center text-[14px] md:text-[15px] font-medium bg-[#f8f8f8] text-[#999] px-[15px] py-[0px]"
+                            className="w-[52px] md:w-[65px] h-[42px] md:h-[48px] border-2 border-[#e5e5e5] rounded-lg text-center text-[13px] md:text-[15px] font-medium bg-[#f8f8f8] text-[#999]"
                           />
-                          <span className="text-[#999] text-[16px]">-</span>
+                          <span className="text-[#999] text-[14px] md:text-[16px]">-</span>
                           <input
-                            type="text"
+                            type="tel"
                             value={phone2}
                             onChange={(e) => {
                               const value = e.target.value.replace(/[^0-9]/g, "");
                               if (value.length <= 4) {
                                 setPhone2(value);
-                                // 4자리 입력 완료 시 자동으로 다음 필드로 이동
                                 if (value.length === 4) {
                                   phone3Ref.current?.focus();
                                 }
@@ -166,12 +156,12 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                             placeholder="0000"
                             maxLength={4}
                             disabled={isSubmitting}
-                            className="w-[70px] md:w-[80px] h-[44px] md:h-[48px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[14px] md:text-[15px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
+                            className="w-[62px] md:w-[80px] h-[42px] md:h-[48px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[13px] md:text-[15px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
                           />
-                          <span className="text-[#999] text-[16px]">-</span>
+                          <span className="text-[#999] text-[14px] md:text-[16px]">-</span>
                           <input
                             ref={phone3Ref}
-                            type="text"
+                            type="tel"
                             value={phone3}
                             onChange={(e) => {
                               const value = e.target.value.replace(/[^0-9]/g, "");
@@ -180,21 +170,21 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                             placeholder="0000"
                             maxLength={4}
                             disabled={isSubmitting}
-                            className="w-[70px] md:w-[80px] h-[44px] md:h-[48px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[14px] md:text-[15px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
+                            className="w-[62px] md:w-[80px] h-[42px] md:h-[48px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[13px] md:text-[15px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
                           />
                         </div>
 
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="h-[44px] md:h-[48px] px-6 md:px-8 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[14px] md:text-[15px] rounded-lg transition-colors cursor-pointer whitespace-nowrap disabled:bg-[#999] disabled:cursor-not-allowed"
+                          className="h-[42px] md:h-[48px] px-4 md:px-8 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[13px] md:text-[15px] rounded-lg transition-colors cursor-pointer whitespace-nowrap disabled:bg-[#999] disabled:cursor-not-allowed"
                         >
                           {isSubmitting ? "전송중..." : "상담신청"}
                         </button>
                       </div>
 
-                      {/* 2줄: 개인정보 동의 */}
-                      <label className="flex items-center gap-2 cursor-pointer justify-start">
+                      {/* 개인정보 동의 */}
+                      <label className="flex items-center gap-2 cursor-pointer justify-center md:justify-start">
                         <input
                           type="checkbox"
                           checked={agreed}
@@ -202,7 +192,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                           disabled={isSubmitting}
                           className="w-4 h-4 cursor-pointer accent-[#D22727] disabled:cursor-not-allowed"
                         />
-                        <span className="text-[12px] md:text-[13px] text-[#666]">
+                        <span className="text-[11px] md:text-[13px] text-[#666]">
                           상담을 위한 연락처 수집에 동의합니다.{" "}
                           <button
                             type="button"
