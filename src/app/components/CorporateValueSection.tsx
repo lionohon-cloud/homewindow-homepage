@@ -8,11 +8,13 @@ import imgCsr4 from "figma:asset/afe5987009199bd2bc4ce73a1eb1caae19d72af9.png";
 import imgCsr5 from "figma:asset/f0bbbe3acb6f69aae47de13237979e903fc07cd9.png";
 import imgCsr6 from "figma:asset/b1e7ad01b897c73772bcce5c2a17ba61a6fce9bc.png";
 
-const donationData = [
-  { amount: "81억 원", category: "교육 지원 부문", highlight: false },
-  { amount: "7.6억 원", category: "장학금 지급 부문", highlight: false },
-  { amount: "6.3억 원", category: "지역사회 및 복지 부문", highlight: false },
-  { amount: "98억 원", category: "총 누적 기부액", highlight: true },
+const donationCategories = [
+  "교육지원",
+  "장학금",
+  "지역사회기부",
+  "의료취약계층 지원",
+  "장학생 해외연수",
+  "장애인복지개선",
 ];
 
 const activities = [
@@ -78,7 +80,7 @@ export function CorporateValueSection() {
           viewport={{ once: true, margin: "-200px" }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep text-left"
-        >30년을 희망과 나누다,<br />누적 기부액 <span className="text-[#D22727]">98억 원</span>의 진정성</motion.h2>
+        >30년을 희망과 나누다,<br /><span className="text-[#D22727]">지속적인 나눔</span>의 진정성</motion.h2>
 
         {/* Subtitle */}
         <motion.p
@@ -93,34 +95,20 @@ export function CorporateValueSection() {
           지속적인 나눔 실천은 오랜 시간 고객님을 든든히 책임질 기업의 증명입니다.
         </motion.p>
 
-        {/* Donation Cards Grid */}
-        <div className="grid grid-cols-2 gap-3 mb-12 w-full">
-          {donationData.map((item, index) => (
+        {/* Donation Categories Grid */}
+        <div className="grid grid-cols-3 gap-3 mb-12 w-full">
+          {donationCategories.map((category, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "0px" }}
               transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-              className={`rounded-2xl p-5 md:p-6 border ${
-                item.highlight
-                  ? "bg-[#fff5f5] border-[#D22727]"
-                  : "bg-[#f8f8f8] border-[#e5e5e5]"
-              }`}
+              className="rounded-2xl p-4 md:p-5 border bg-[#f8f8f8] border-[#e5e5e5] flex flex-col gap-2"
             >
-              <p
-                className={`text-[24px] md:text-[28px] font-extrabold mb-1 ${
-                  item.highlight ? "text-[#D22727]" : "text-[#333]"
-                }`}
-              >
-                {item.amount}
-              </p>
-              <p
-                className={`text-[13px] md:text-[14px] font-medium ${
-                  item.highlight ? "text-[#D22727]" : "text-[#666]"
-                }`}
-              >
-                {item.category}
+              <div className="w-2 h-2 rounded-full bg-[#D22727]" />
+              <p className="text-[13px] md:text-[15px] font-bold text-[#333] leading-snug break-keep">
+                {category}
               </p>
             </motion.div>
           ))}
