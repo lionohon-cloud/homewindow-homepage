@@ -637,18 +637,13 @@ export function EstimateForm() {
             <button 
               ref={buttonRef}
               onClick={() => {
-                // 모바일에서는 전화, 데스크톱에서는 상담 모달 토글
-                if (window.innerWidth < 768) {
-                  window.location.href = 'tel:16614830';
-                } else {
-                  toggleConsultationModal();
-                }
+                toggleConsultationModal();
               }}
               className="w-full flex items-center gap-2 p-3 bg-[#fff8f8] border border-[#f5d0d0] rounded-xl text-[#2c2c2c] hover:bg-[#fdf0ee] transition-colors cursor-pointer"
             >
               <Phone size={18} className="shrink-0 text-[#D22727]" />
               <div className="flex flex-col">
-                <span className="text-[11px] text-[#888]">스마트폰: 바로 전화 · PC: 상담 신청</span>
+                <span className="text-[11px] text-[#888]">상담 신청 입력창 열기</span>
                 <span className="text-[13px] font-bold text-[#D22727]">1661-4830 상담전화하기</span>
               </div>
             </button>

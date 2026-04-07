@@ -35,21 +35,12 @@ export function BottomBar() {
             </motion.div>
           )}
 
-          {/* Mobile: Tel Link, Desktop: Modal Toggle */}
-          <a
-            href="tel:1661-4830"
-            onClick={(e) => {
-              // On desktop (md+), prevent tel link and open modal
-              if (window.innerWidth >= 768) {
-                e.preventDefault();
-                setIsConsultationOpen(!isConsultationOpen);
-              }
-              // On mobile, tel link works naturally
-            }}
+          <button
+            onClick={() => setIsConsultationOpen(!isConsultationOpen)}
             className="block w-full h-full bg-[#d22727] text-white font-bold text-[16px] md:text-[18px] flex items-center justify-center transition-colors active:bg-[#b02020] hover:bg-[#b02020] cursor-pointer"
           >
             상담접수하기
-          </a>
+          </button>
         </div>
 
         <button 
