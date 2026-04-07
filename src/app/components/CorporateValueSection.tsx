@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Heart, GraduationCap, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, GraduationCap, Users, ChevronLeft, ChevronRight, BookOpen, Award, Home, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import imgCsr1 from "figma:asset/c7a590bf8bb8f1dcca5990725b6edeac8d41e181.png";
 import imgCsr2 from "figma:asset/95d7cd220cdc8297427a1c8101601c5607c31d90.png";
@@ -9,12 +9,12 @@ import imgCsr5 from "figma:asset/f0bbbe3acb6f69aae47de13237979e903fc07cd9.png";
 import imgCsr6 from "figma:asset/b1e7ad01b897c73772bcce5c2a17ba61a6fce9bc.png";
 
 const donationCategories = [
-  "교육지원",
-  "장학금",
-  "지역사회기부",
-  "의료취약계층 지원",
-  "장학생 해외연수",
-  "장애인복지개선",
+  { label: "교육지원",          icon: BookOpen },
+  { label: "장학금",            icon: Award },
+  { label: "지역사회기부",       icon: Home },
+  { label: "의료취약계층 지원",  icon: Heart },
+  { label: "장학생 해외연수",    icon: Globe },
+  { label: "장애인복지개선",     icon: Users },
 ];
 
 const activities = [
@@ -97,18 +97,21 @@ export function CorporateValueSection() {
 
         {/* Donation Categories Grid */}
         <div className="grid grid-cols-3 gap-3 mb-12 w-full">
-          {donationCategories.map((category, index) => (
+          {donationCategories.map(({ label, icon: Icon }, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "0px" }}
               transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-              className="rounded-2xl p-4 md:p-5 border bg-[#f8f8f8] border-[#e5e5e5] flex flex-col gap-2"
+              className="rounded-2xl p-4 border bg-white border-[#e5e5e5] flex flex-col gap-2.5"
             >
-              <div className="w-2 h-2 rounded-full bg-[#D22727]" />
-              <p className="text-[13px] md:text-[15px] font-bold text-[#333] leading-snug break-keep">
-                {category}
+              {/* Toss-style icon badge: size-7, rounded-lg, 10% accent tint */}
+              <div className="w-7 h-7 rounded-lg bg-[#D22727]/10 flex items-center justify-center">
+                <Icon className="w-4 h-4 text-[#D22727]" strokeWidth={2} />
+              </div>
+              <p className="text-[12px] md:text-[13px] font-bold text-[#2A2A2A] leading-snug break-keep">
+                {label}
               </p>
             </motion.div>
           ))}
