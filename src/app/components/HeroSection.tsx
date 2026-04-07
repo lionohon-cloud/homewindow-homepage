@@ -11,7 +11,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-[rgba(20,20,20,0.5)] z-0" />
       
       {/* Content centered vertically and horizontally */}
-      <div className="relative z-10 flex flex-col justify-center h-full max-w-screen-md mx-auto w-full px-6 md:px-10 pt-20 bg-[#00000000]">
+      <div className="relative z-10 flex flex-col justify-center h-full max-w-screen-md mx-auto w-full px-6 md:px-10 pt-20 pb-[140px] md:pb-0 bg-[#00000000]">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
