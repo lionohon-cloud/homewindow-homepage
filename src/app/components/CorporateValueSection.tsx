@@ -7,6 +7,8 @@ import imgCsr3 from "figma:asset/cf4a7868d49b07b78760598e00a3b9828024f091.png";
 import imgCsr4 from "figma:asset/afe5987009199bd2bc4ce73a1eb1caae19d72af9.png";
 import imgCsr5 from "figma:asset/f0bbbe3acb6f69aae47de13237979e903fc07cd9.png";
 import imgCsr6 from "figma:asset/b1e7ad01b897c73772bcce5c2a17ba61a6fce9bc.png";
+import imgCsr7 from "../../assets/csr-vietnam.jpeg";
+import imgCsr8 from "../../assets/csr-bus.jpeg";
 
 const donationCategories = [
   { label: "교육지원",          icon: BookOpen },
@@ -40,7 +42,7 @@ const activities = [
 
 export function CorporateValueSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const sliderImages = [imgCsr1, imgCsr2, imgCsr3, imgCsr4, imgCsr5, imgCsr6];
+  const sliderImages = [imgCsr1, imgCsr2, imgCsr3, imgCsr4, imgCsr5, imgCsr6, imgCsr7, imgCsr8];
 
   // Auto slide every 4 seconds
   useEffect(() => {
