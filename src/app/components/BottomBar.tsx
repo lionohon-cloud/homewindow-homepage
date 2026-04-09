@@ -81,86 +81,97 @@ export function BottomBar() {
         {/* ════ PC 전용 폼 영역 (2/3) ════ */}
         <form
           onSubmit={handleSubmit}
-          className="hidden md:flex flex-[2] flex-col items-center justify-center px-10 gap-1.5 bg-white border-r border-[#e5e5e5]"
+          className="hidden md:flex flex-[2] flex-col lg:flex-row items-center justify-center px-8 lg:px-12 gap-2 lg:gap-12 bg-white border-r border-[#e5e5e5]"
         >
-          {/* 제목 */}
-          <p className="text-[16px] font-extrabold text-[#2A2A2A] tracking-tight">
-            창호 교체 비용이 궁금하신가요?
-          </p>
-
-          {/* 입력 행 */}
-          <div className="flex items-center gap-2">
-            <input
-              type="tel"
-              value={phone1}
-              onChange={(e) => {
-                const v = e.target.value.replace(/[^0-9]/g, "");
-                if (v.length <= 4) setPhone1(v);
-              }}
-              maxLength={4}
-              disabled={isSubmitting}
-              className={`w-[62px] ${pcInput}`}
-            />
-            <span className="text-[#aaa] text-[16px] font-light select-none">—</span>
-            <input
-              ref={phone2Ref}
-              type="tel"
-              value={phone2}
-              onChange={(e) => {
-                const v = e.target.value.replace(/[^0-9]/g, "");
-                if (v.length <= 4) {
-                  setPhone2(v);
-                  if (v.length === 4) phone3Ref.current?.focus();
-                }
-              }}
-              placeholder="0000"
-              maxLength={4}
-              disabled={isSubmitting}
-              className={`w-[76px] ${pcInput}`}
-            />
-            <span className="text-[#aaa] text-[16px] font-light select-none">—</span>
-            <input
-              ref={phone3Ref}
-              type="tel"
-              value={phone3}
-              onChange={(e) => {
-                const v = e.target.value.replace(/[^0-9]/g, "");
-                if (v.length <= 4) setPhone3(v);
-              }}
-              placeholder="0000"
-              maxLength={4}
-              disabled={isSubmitting}
-              className={`w-[76px] ${pcInput}`}
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-[42px] px-7 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[14px] rounded-xl transition-colors cursor-pointer whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "전송중..." : "무료 상담신청"}
-            </button>
+          {/* 왼쪽: 아이콘 + 제목 */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="hidden lg:flex w-11 h-11 rounded-full bg-[#D22727]/10 items-center justify-center shrink-0">
+              <Phone size={20} className="text-[#D22727]" />
+            </div>
+            <div className="text-center lg:text-left">
+              <p className="hidden lg:block text-[11px] text-[#999] font-semibold uppercase tracking-[0.05em] mb-0.5">무료 견적 상담</p>
+              <p className="text-[15px] lg:text-[17px] font-extrabold text-[#2A2A2A] tracking-tight whitespace-nowrap">
+                창호교체 비용이 궁금하신가요?
+              </p>
+            </div>
           </div>
 
-          {/* 동의 체크박스 */}
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              disabled={isSubmitting}
-              className="w-3.5 h-3.5 cursor-pointer accent-[#D22727]"
-            />
-            <span className="text-[11px] text-[#888]">
-              상담을 위한 연락처 수집에 동의합니다.{" "}
+          {/* 오른쪽: 입력 + 동의 */}
+          <div className="flex flex-col items-center lg:items-start gap-1.5">
+            {/* 입력 행 */}
+            <div className="flex items-center gap-2">
+              <input
+                type="tel"
+                value={phone1}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, "");
+                  if (v.length <= 4) setPhone1(v);
+                }}
+                maxLength={4}
+                disabled={isSubmitting}
+                className={`w-[62px] ${pcInput}`}
+              />
+              <span className="text-[#aaa] text-[16px] font-light select-none">—</span>
+              <input
+                ref={phone2Ref}
+                type="tel"
+                value={phone2}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, "");
+                  if (v.length <= 4) {
+                    setPhone2(v);
+                    if (v.length === 4) phone3Ref.current?.focus();
+                  }
+                }}
+                placeholder="0000"
+                maxLength={4}
+                disabled={isSubmitting}
+                className={`w-[76px] ${pcInput}`}
+              />
+              <span className="text-[#aaa] text-[16px] font-light select-none">—</span>
+              <input
+                ref={phone3Ref}
+                type="tel"
+                value={phone3}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, "");
+                  if (v.length <= 4) setPhone3(v);
+                }}
+                placeholder="0000"
+                maxLength={4}
+                disabled={isSubmitting}
+                className={`w-[76px] ${pcInput}`}
+              />
               <button
-                type="button"
-                onClick={() => setShowPrivacy(true)}
-                className="text-[#D22727] underline hover:text-[#b02020] cursor-pointer font-medium"
+                type="submit"
+                disabled={isSubmitting}
+                className="h-[42px] px-7 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[14px] rounded-xl transition-colors cursor-pointer whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                [내용보기]
+                {isSubmitting ? "전송중..." : "상담신청"}
               </button>
-            </span>
-          </label>
+            </div>
+
+            {/* 동의 체크박스 */}
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                disabled={isSubmitting}
+                className="w-3.5 h-3.5 cursor-pointer accent-[#D22727]"
+              />
+              <span className="text-[11px] text-[#888]">
+                상담을 위한 연락처 수집에 동의합니다.{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowPrivacy(true)}
+                  className="text-[#D22727] underline hover:text-[#b02020] cursor-pointer font-medium"
+                >
+                  [내용보기]
+                </button>
+              </span>
+            </label>
+          </div>
         </form>
 
         {/* ════ 모바일 전용 상담 탭 영역 (2/3) ════ */}
@@ -185,10 +196,10 @@ export function BottomBar() {
         {/* ════ 직접견적 / AI 채팅 견적 (1/3) ════ */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex-[1] bg-[#f5f5f5] hover:bg-[#ececec] active:bg-[#e5e5e5] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
+          className="flex-[1] bg-[#D22727] hover:bg-[#b02020] active:bg-[#a01818] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
         >
-          <MessageSquare size={18} className="text-[#D22727] md:size-5" strokeWidth={2} />
-          <span className="text-[#2A2A2A] font-bold text-[13px] md:text-[14px] text-center leading-tight">
+          <MessageSquare size={18} className="text-white md:size-5" strokeWidth={2} />
+          <span className="text-white font-bold text-[13px] md:text-[14px] text-center leading-tight">
             <span className="lg:hidden">AI 채팅<br />견적</span>
             <span className="hidden lg:inline">AI 채팅 견적</span>
           </span>

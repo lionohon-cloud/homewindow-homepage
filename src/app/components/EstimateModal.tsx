@@ -41,7 +41,7 @@ export function EstimateModal({ isOpen, onClose }: EstimateModalProps) {
         </div>
 
         {/* React Component replaced iframe */}
-        <div className="w-full flex-1 min-h-0 border-0">
+        <div className="w-full flex-1 min-h-0 flex flex-col border-0">
           <EstimateForm />
         </div>
       </div>

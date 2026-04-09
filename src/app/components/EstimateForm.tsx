@@ -814,7 +814,7 @@ export function EstimateForm() {
       {/* Mobile Panel Toggle */}
       <button 
         onClick={() => setIsPanelOpen(true)}
-        className="md:hidden fixed bottom-6 right-4 w-12 h-12 rounded-full bg-[#D22727] text-white flex items-center justify-center text-xl shadow-[0_4px_16px_rgba(210,39,39,0.4)] z-30"
+        className="md:hidden fixed bottom-[88px] right-4 w-12 h-12 rounded-full bg-[#D22727] text-white flex items-center justify-center text-xl shadow-[0_4px_16px_rgba(210,39,39,0.4)] z-30"
       >
         🪟
       </button>
