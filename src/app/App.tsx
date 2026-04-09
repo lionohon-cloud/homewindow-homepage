@@ -20,7 +20,7 @@ import { BottomBar } from "./components/BottomBar";
 
 export default function App() {
   return (
-    <div className="relative w-full min-h-screen pb-[80px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-hidden selection:bg-[#d22727] selection:text-white">
+    <div className="relative w-full min-h-screen pb-[100px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-hidden selection:bg-[#d22727] selection:text-white">
       <Navigation />
       <main className="w-full h-full flex flex-col">
         <div id="hero">
