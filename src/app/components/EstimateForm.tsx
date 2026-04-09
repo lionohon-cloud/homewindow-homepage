@@ -590,10 +590,7 @@ export function EstimateForm() {
                     <a
                       href="tel:16614830"
                       onClick={(e) => {
-                        if (window.innerWidth >= 768) {
-                          e.preventDefault();
-                          document.getElementById("consult-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }
+                        if (window.innerWidth >= 768) e.preventDefault();
                       }}
                       className="mt-2 flex items-center gap-3 p-3.5 bg-[#D22727] text-white rounded-xl shadow-md hover:-translate-y-0.5 transition-transform"
                     >

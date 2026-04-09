@@ -7,7 +7,6 @@ import logoImage from "figma:asset/771e2a28afe6f5e97ddf040de4e16d1715624cd8.png"
 function scrollToConsultForm(e: React.MouseEvent<HTMLAnchorElement>) {
   if (window.innerWidth >= 768) {
     e.preventDefault();
-    document.getElementById("consult-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
