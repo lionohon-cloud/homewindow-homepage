@@ -196,10 +196,10 @@ export function BottomBar() {
         {/* ════ 직접견적 / AI 채팅 견적 (1/3) ════ */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex-[1] bg-[#D22727] hover:bg-[#b02020] active:bg-[#a01818] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
+          className="flex-[1] bg-[#f5f5f5] md:bg-[#D22727] hover:bg-[#ececec] md:hover:bg-[#b02020] active:bg-[#e5e5e5] md:active:bg-[#a01818] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
         >
-          <MessageSquare size={18} className="text-white md:size-5" strokeWidth={2} />
-          <span className="text-white font-bold text-[13px] md:text-[14px] text-center leading-tight">
+          <MessageSquare size={18} className="text-[#D22727] md:text-white md:size-5" strokeWidth={2} />
+          <span className="text-[#2A2A2A] md:text-white font-bold text-[13px] md:text-[17px] text-center leading-tight">
             <span className="lg:hidden">AI 채팅<br />견적</span>
             <span className="hidden lg:inline">AI 채팅 견적</span>
           </span>
