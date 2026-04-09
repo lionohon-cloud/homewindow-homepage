@@ -86,8 +86,8 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
             exit={{ y: variant === "top" ? "-100%" : "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className={`fixed left-0 right-0 bg-white shadow-lg z-40 ${
-              variant === "top" 
-                ? "top-[70px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]" 
+              variant === "top"
+                ? "top-[120px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
                 : "bottom-[70px] md:bottom-[80px] shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
             }`}
           >

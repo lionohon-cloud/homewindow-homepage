@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigation } from "./components/Navigation";
 import { HeroSection } from "./components/HeroSection";
+import { HeroConsultSection } from "./components/HeroConsultSection";
 import { EventSection } from "./components/EventSection";
 import { Event2Section } from "./components/Event2Section";
 import { AwardsSection } from "./components/AwardsSection";
@@ -25,6 +26,7 @@ export default function App() {
         <div id="hero">
           <HeroSection />
         </div>
+        <HeroConsultSection />
         <div id="event">
           <EventSection />
         </div>
