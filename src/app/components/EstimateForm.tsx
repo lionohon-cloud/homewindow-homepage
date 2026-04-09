@@ -457,7 +457,7 @@ export function EstimateForm() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full bg-[#f7f7f5] text-[#2c2c2c] overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row h-full w-full bg-[#f7f7f5] text-[#2c2c2c] overflow-hidden font-sans">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
