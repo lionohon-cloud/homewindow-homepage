@@ -173,10 +173,10 @@ export function BottomBar() {
             <Phone size={17} className="text-white" />
           </div>
           <div className="flex flex-col text-left">
-            <span className="text-white/75 text-[10px] font-semibold tracking-wide uppercase">
+            <span className="text-white/75 text-[12px] font-semibold tracking-wide uppercase">
               무료 상담신청
             </span>
-            <span className="text-white font-bold text-[13px] leading-tight">
+            <span className="text-white font-bold text-[15px] leading-tight">
               {phoneDisplay}
             </span>
           </div>
@@ -185,11 +185,12 @@ export function BottomBar() {
         {/* ════ 직접견적 / AI 채팅 견적 (1/3) ════ */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex-[1] bg-[#f5f5f5] hover:bg-[#ececec] active:bg-[#e5e5e5] flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer px-2"
+          className="flex-[1] bg-[#f5f5f5] hover:bg-[#ececec] active:bg-[#e5e5e5] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
         >
           <MessageSquare size={18} className="text-[#D22727] md:size-5" strokeWidth={2} />
-          <span className="text-[#2A2A2A] font-bold text-[11px] md:text-[14px] text-center leading-tight">
-            AI 채팅<br />견적
+          <span className="text-[#2A2A2A] font-bold text-[13px] md:text-[14px] text-center leading-tight">
+            <span className="lg:hidden">AI 채팅<br />견적</span>
+            <span className="hidden lg:inline">AI 채팅 견적</span>
           </span>
         </button>
       </div>
@@ -259,7 +260,7 @@ export function BottomBar() {
                     placeholder="0000"
                     maxLength={4}
                     disabled={isSubmitting}
-                    className={`flex-1 ${popupInput}`}
+                    className={`w-[72px] ${popupInput}`}
                   />
                   <span className="text-[#bbb] text-[18px] font-light">—</span>
                   <input
@@ -273,7 +274,7 @@ export function BottomBar() {
                     placeholder="0000"
                     maxLength={4}
                     disabled={isSubmitting}
-                    className={`flex-1 ${popupInput}`}
+                    className={`w-[72px] ${popupInput}`}
                   />
                 </div>
               </div>
