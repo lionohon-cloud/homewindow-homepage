@@ -4,6 +4,13 @@ import { SiNaver } from "react-icons/si";
 import { Headphones } from "lucide-react";
 import logoImage from "figma:asset/771e2a28afe6f5e97ddf040de4e16d1715624cd8.png";
 
+function scrollToConsultForm(e: React.MouseEvent<HTMLAnchorElement>) {
+  if (window.innerWidth >= 768) {
+    e.preventDefault();
+    document.getElementById("consult-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 export function Footer() {
   return (
     <footer className="w-full bg-[#222222] text-white pt-16 pb-24 md:pb-8">
@@ -27,6 +34,7 @@ export function Footer() {
             {/* Phone Number - Big CTA */}
             <a
               href="tel:1661-4830"
+              onClick={scrollToConsultForm}
               className="inline-flex items-center justify-center gap-4 bg-[#d22727] text-white rounded-xl transition-all active:scale-95 hover:bg-[#b02020] px-[32px] py-[10px]"
             >
               <FaPhone size={32} className="rotate-90 flex-shrink-0" />
@@ -47,7 +55,8 @@ export function Footer() {
           >
             <a
               href="tel:16614830"
-              className="bg-[#2a2a2a] rounded-lg p-6 h-full flex flex-col justify-center cursor-pointer active:scale-[0.98] transition-transform md:pointer-events-none md:cursor-default"
+              onClick={scrollToConsultForm}
+              className="bg-[#2a2a2a] rounded-lg p-6 h-full flex flex-col justify-center cursor-pointer active:scale-[0.98] transition-transform"
             >
               <div className="flex items-start gap-3">
                 <Headphones className="text-[#d22727] flex-shrink-0 mt-1" size={20} />

@@ -57,7 +57,7 @@ export function HeroConsultSection() {
 
   return (
     <>
-      <section className="w-full bg-white border-b border-[#ececec] shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
+      <section id="consult-form" className="w-full bg-white border-b border-[#ececec] shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
         <div className="max-w-screen-lg mx-auto px-5 md:px-10 py-5 md:py-7">
           <form
             onSubmit={handleSubmit}

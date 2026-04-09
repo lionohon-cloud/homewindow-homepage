@@ -459,7 +459,7 @@ export function EstimateForm() {
   return (
     <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full bg-[#f7f7f5] text-[#2c2c2c] overflow-hidden font-sans">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Header */}
         <div className="flex items-center px-5 h-[60px] bg-white border-b border-[#e5e5e5] shrink-0 z-10">
           <div className="w-7 h-7 bg-[#D22727] rounded-md flex items-center justify-center mr-3">
@@ -587,8 +587,14 @@ export function EstimateForm() {
                     </div>
                   )}
                   {msg.type === "cta" && (
-                    <a 
+                    <a
                       href="tel:16614830"
+                      onClick={(e) => {
+                        if (window.innerWidth >= 768) {
+                          e.preventDefault();
+                          document.getElementById("consult-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                      }}
                       className="mt-2 flex items-center gap-3 p-3.5 bg-[#D22727] text-white rounded-xl shadow-md hover:-translate-y-0.5 transition-transform"
                     >
                       <Phone size={24} className="shrink-0" />
