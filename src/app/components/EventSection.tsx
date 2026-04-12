@@ -65,7 +65,7 @@ export function EventSection() {
         {/* 할인 혜택 카드 - 행간 및 배지 여백 개선 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            { title: "4월 한정 전 품목 특별 할인", desc: "전 품목 적용", percent: "+20%" },
+            { title: `${new Date().getMonth() + 1}월 한정 전 품목 특별 할인`, desc: "전 품목 적용", percent: "+20%" },
             { title: "홈페이지 상담 신청 고객", desc: "현재 페이지에서 신청시 자동 적용", percent: "+10%" },
             { title: "지인 추천 고객", desc: "추천인 성함 기재 시 추가적용", percent: "+10%" },
           ].map((item, index) => (
