@@ -85,10 +85,12 @@ export function MaterialsSection() {
             transition={{ duration: 0.6 }}
             className="px-6 md:px-10 mb-14"
           >
-            <img 
-              src={imgMaterial} 
-              alt="프로파일 및 보강재 단면" 
+            <img
+              src={imgMaterial}
+              alt="프로파일 및 보강재 단면"
               className="w-full h-auto rounded-xl"
+              loading="lazy"
+              decoding="async"
             />
           </motion.div>
 

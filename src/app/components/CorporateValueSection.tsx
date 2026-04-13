@@ -136,10 +136,12 @@ export function CorporateValueSection() {
             >
               {sliderImages.map((img, index) => (
                 <div key={index} className="min-w-full h-full flex items-center justify-center overflow-hidden">
-                  <img 
-                    src={img} 
-                    alt={`장학금 활동 ${index + 1}`} 
+                  <img
+                    src={img}
+                    alt={`장학금 활동 ${index + 1}`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               ))}

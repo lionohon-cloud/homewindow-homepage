@@ -97,10 +97,12 @@ export function AwardsSection() {
           className="md:px-10 overflow-hidden"
         >
           <div className="w-full overflow-hidden pb-8 md:pb-8 min-h-[110%] relative md:rounded-lg">
-            <img 
-              src={image_aaf07d2b78aefbacd9977f2f1a8f38cb77267ac7} 
-              alt="인증서 책장" 
+            <img
+              src={image_aaf07d2b78aefbacd9977f2f1a8f38cb77267ac7}
+              alt="인증서 책장"
               className="w-full h-auto scale-[1.2] md:scale-110 md:rounded-lg md:shadow-lg mx-[0px] mt-[0px] mb-[-20px]"
+              loading="lazy"
+              decoding="async"
             />
             {/* 하단 그라데이션 오버레이 */}
             <div className="absolute bottom-0 left-0 right-0 h-12 md:h-24 bg-gradient-to-t from-white to-transparent pointer-events-none m-[0px]"></div>
@@ -120,11 +122,13 @@ export function AwardsSection() {
               {/* 왼쪽: A4 비율 인증서 이미지 */}
               <div className="w-[70%] mx-auto md:mx-0 md:w-[240px] shrink-0">
                 <div className="w-full aspect-[1/1.414] rounded-lg shadow-lg overflow-hidden">
-                  <img 
-                    src={greenRemodelingCert} 
-                    alt="그린리모델링 사업자 등록증" 
+                  <img
+                    src={greenRemodelingCert}
+                    alt="그린리모델링 사업자 등록증"
                     className="w-full h-full object-cover"
                     style={{ transform: 'scale(1.08)' }}
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               </div>
@@ -161,10 +165,12 @@ export function AwardsSection() {
                   transition={{ delay: 0.75 }}
                   className="md:hidden mb-6 rounded-lg overflow-hidden shadow-md"
                 >
-                  <img 
+                  <img
                     src={greenRemodelingPromo}
                     alt="그린리모델링 60개월 분할 목돈 부담 ZERO"
                     className="w-full h-auto"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </motion.div>
 

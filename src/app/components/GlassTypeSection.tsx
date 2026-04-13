@@ -50,7 +50,7 @@ function BeforeAfterSlider() {
     <div className="relative w-full h-[250px] md:h-[350px] rounded-xl overflow-hidden shadow-lg border border-[#eee] touch-none mb-4">
       {/* Base Layer: Single Film (15%) - Very Dark */}
       <div className="absolute inset-0 flex">
-        <img src={windowViewImg} alt="어두운 실내" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={windowViewImg} alt="어두운 실내" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
         <div className="absolute inset-0 bg-black/75" />
         <div className="absolute right-4 bottom-4 z-10 text-white text-right drop-shadow-md">
           <p className="text-[12px] md:text-[14px] opacity-80">차량용 썬팅필름</p>
@@ -63,7 +63,7 @@ function BeforeAfterSlider() {
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `polygon(0 0, ${position}% 0, ${position}% 100%, 0 100%)` }}
       >
-        <img src={windowViewImg} alt="밝은 실내" className="absolute inset-0 w-full h-full object-cover" style={{ width: '100%', height: '100%', objectFit: 'cover', maxWidth: 'none' }} />
+        <img src={windowViewImg} alt="밝은 실내" className="absolute inset-0 w-full h-full object-cover" style={{ width: '100%', height: '100%', objectFit: 'cover', maxWidth: 'none' }} loading="lazy" decoding="async" />
         <div className="absolute inset-0 bg-black/10" />
         <div className="absolute left-4 bottom-4 z-10 text-white drop-shadow-md">
           <p className="text-[12px] md:text-[14px] opacity-80">수퍼더블로이</p>
@@ -180,12 +180,12 @@ export function GlassTypeSection() {
             
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-3">
               <div className="w-full max-w-[320px] md:max-w-[400px]">
-                <img src={imgGlassAr} alt="아르곤가스 유리마킹" className="w-full h-auto object-contain rounded-lg" />
+                <img src={imgGlassAr} alt="아르곤가스 유리마킹" className="w-full h-auto object-contain rounded-lg" loading="lazy" decoding="async" />
               </div>
               
               {/* HOME WINDOW e·MAX Club 인증 로고 */}
               <div className="w-full max-w-[320px] md:max-w-[400px]">
-                <img src={imgEmaxClub} alt="HOME WINDOW e·MAX Club 인증 로고" className="w-full h-auto object-contain" />
+                <img src={imgEmaxClub} alt="HOME WINDOW e·MAX Club 인증 로고" className="w-full h-auto object-contain" loading="lazy" decoding="async" />
               </div>
             </div>
             
@@ -209,7 +209,7 @@ export function GlassTypeSection() {
                   className="flex-1 max-w-[128px] md:max-w-[160px]"
                 >
                   <div className="w-full mb-3">
-                    <img src={imgAluminumSpacer} alt="알루미늄 간봉" className="w-full h-auto object-contain rounded-lg" />
+                    <img src={imgAluminumSpacer} alt="알루미늄 간봉" className="w-full h-auto object-contain rounded-lg" loading="lazy" decoding="async" />
                   </div>
                   <p className="text-[#999] text-center font-medium text-[16px]">알루미늄 간봉</p>
                 </motion.div>
@@ -222,7 +222,7 @@ export function GlassTypeSection() {
                   transition={{ duration: 0.5, delay: 0.3 }}
                   className="flex items-center justify-center w-[40px] md:w-[50px] flex-shrink-0 mt-[62px]"
                 >
-                  <img src={imgArrow} alt="arrow" className="w-full h-auto object-contain" />
+                  <img src={imgArrow} alt="arrow" className="w-full h-auto object-contain" loading="lazy" decoding="async" />
                 </motion.div>
 
                 {/* TPS단열 간봉 */}
@@ -234,7 +234,7 @@ export function GlassTypeSection() {
                   className="flex-1 max-w-[160px] md:max-w-[200px]"
                 >
                   <div className="w-full mb-3">
-                    <img src={imgTPSSpacer} alt="TPS단열 간봉" className="w-full h-auto object-contain rounded-lg" />
+                    <img src={imgTPSSpacer} alt="TPS단열 간봉" className="w-full h-auto object-contain rounded-lg" loading="lazy" decoding="async" />
                   </div>
                   <p className="text-[#d22727] text-center font-bold text-[16px]">TPS단열 간봉</p>
                 </motion.div>
@@ -289,7 +289,7 @@ export function GlassTypeSection() {
                     <div className="flex flex-col items-center gap-8">
                       <div className="relative w-full aspect-square md:aspect-video max-w-[500px] rounded-[10px] shadow-[5px_5px_15px_rgba(0,0,0,0.15)] overflow-hidden">
                         {/* Base Image */}
-                        <img src={imgImage5} alt="Glass preview" className="absolute inset-0 w-full h-full object-cover" />
+                        <img src={imgImage5} alt="Glass preview" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                         {/* Glass Overlay Effect */}
                         <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${glassOptions[selected].previewClass} rounded-[10px]`} />
                       </div>
@@ -374,7 +374,7 @@ export function GlassTypeSection() {
             >
               {/* 수퍼더블로이 이미지 */}
               <div className="w-full max-w-[300px] md:max-w-[400px] mx-auto mb-6">
-                <img src={imgSuperDoubleLowE} alt="수퍼더블로이유리 원리" className="w-full h-auto object-contain" />
+                <img src={imgSuperDoubleLowE} alt="수퍼더블로이유리 원리" className="w-full h-auto object-contain" loading="lazy" decoding="async" />
               </div>
               
               <h3 className="text-[#333] text-[18px] md:text-[20px] font-bold mb-4">LX 수퍼더블로이란 무엇인가요?</h3>
@@ -581,7 +581,7 @@ export function GlassTypeSection() {
 
               {/* 로이유리 원리 이미지 */}
               <div className="w-full">
-                <img src={imgImage12} alt="로이유리 원리" className="w-full h-auto object-contain" />
+                <img src={imgImage12} alt="로이유리 원리" className="w-full h-auto object-contain" loading="lazy" decoding="async" />
               </div>
 
               {/* 로이(Low-E) 유리란 */}
@@ -602,7 +602,7 @@ export function GlassTypeSection() {
                 </div>
 
                 <div className="w-full max-w-[280px] md:max-w-[350px] mx-auto mb-6">
-                  <img src={imgImage14} alt="단열 비교" className="w-full h-auto object-contain" />
+                  <img src={imgImage14} alt="단열 비교" className="w-full h-auto object-contain" loading="lazy" decoding="async" />
                 </div>
 
                 <div className="text-[#999] text-[12px] md:text-[13px] leading-[20px] break-keep bg-[#f9f9f9] p-4 rounded-lg">

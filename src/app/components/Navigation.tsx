@@ -167,7 +167,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   onClick={() => scrollToSection("hero")}
                   className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  <img src={logo} alt="청암홈윈도우" className="h-[32px] w-auto" />
+                  <img src={logo} alt="청암홈윈도우" className="h-[32px] w-auto" loading="lazy" decoding="async" />
                 </button>
 
                 {/* 메뉴 항목 */}
@@ -235,7 +235,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                 onClick={() => scrollToSection("hero")}
                 className="flex items-center"
               >
-                <img src={logo} alt="청암홈윈도우" className="h-[28px] w-auto" />
+                <img src={logo} alt="청암홈윈도우" className="h-[28px] w-auto" loading="lazy" decoding="async" />
               </button>
 
               {/* 햄버거/X 버튼 */}

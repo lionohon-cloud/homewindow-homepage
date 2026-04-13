@@ -78,10 +78,12 @@ export function StepInfoModal({ isOpen, onClose, title, imageUrl, subtitle, desc
 
                 {/* Image */}
                 <div className="w-full rounded-xl overflow-hidden mb-6">
-                  <img 
-                    src={imageUrl} 
-                    alt={title} 
+                  <img
+                    src={imageUrl}
+                    alt={title}
                     className="w-full h-auto object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
 

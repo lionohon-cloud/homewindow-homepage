@@ -118,7 +118,7 @@ export function Footer() {
           className="border-t border-gray-700 pt-8 mb-6"
         >
           <div className="flex flex-col items-start gap-1.5 mb-4">
-            <img src={logoImage} alt="청암홈윈도우 로고" className="h-5 w-auto" />
+            <img src={logoImage} alt="청암홈윈도우 로고" className="h-5 w-auto" loading="lazy" decoding="async" />
             <p className="text-[15px] text-[#dddddd] font-bold">주식회사 청암홈윈도우</p>
           </div>
           

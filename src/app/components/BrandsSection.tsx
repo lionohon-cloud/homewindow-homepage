@@ -151,7 +151,7 @@ export function BrandsSection() {
                   brand.theme.borderColor
                 }`}
               >
-                <img src={brand.logo} alt={brand.name} className="w-full object-contain" />
+                <img src={brand.logo} alt={brand.name} className="w-full object-contain" loading="lazy" decoding="async" />
               </motion.button>
             )
           })}

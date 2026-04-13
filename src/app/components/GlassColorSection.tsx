@@ -78,7 +78,7 @@ export function GlassColorSection() {
         <div className="px-6 md:px-10 mb-8 flex flex-col items-center gap-8">
           <div className="relative w-full aspect-square md:aspect-video max-w-[500px] rounded-[10px] shadow-[5px_5px_15px_rgba(0,0,0,0.15)] overflow-hidden">
             {/* Base Image */}
-            <img src={imgImage5} alt="Glass preview" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={imgImage5} alt="Glass preview" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
             {/* Glass Overlay Effect */}
             <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${glassOptions[selected].previewClass}`} />
           </div>

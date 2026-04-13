@@ -12,10 +12,12 @@ function NetComparisonSlider() {
     <div className="relative w-full h-[250px] md:h-[350px] rounded-xl overflow-hidden shadow-lg border border-[#eee] touch-none mb-4">
       {/* Base Layer: 일반 방충망 (왼쪽) */}
       <div className="absolute inset-0 flex">
-        <img 
-          src={normalNetImage} 
-          alt="일반 방충망" 
-          className="absolute w-full object-cover max-w-none h-[calc(100%+80px)] top-[-80px] translate-y-[80px] md:h-[calc(100%+280px)] md:top-[-280px] md:translate-y-[280px]" 
+        <img
+          src={normalNetImage}
+          alt="일반 방충망"
+          className="absolute w-full object-cover max-w-none h-[calc(100%+80px)] top-[-80px] translate-y-[80px] md:h-[calc(100%+280px)] md:top-[-280px] md:translate-y-[280px]"
+          loading="lazy"
+          decoding="async"
         />
         {/* Overall darken overlay - 10% */}
         <div className="absolute inset-0 bg-black/30" />
@@ -31,7 +33,7 @@ function NetComparisonSlider() {
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `polygon(${position}% 0, 100% 0, 100% 100%, ${position}% 100%)` }}
       >
-        <img src={safetyNetCompareImage} alt="안전방충망" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={safetyNetCompareImage} alt="안전방충망" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
         {/* Gradient overlay - bottom 30% only */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 30%)' }} />
         <div className="absolute right-4 bottom-4 z-10 text-white drop-shadow-md">
@@ -231,6 +233,8 @@ export function SafetyNetSection() {
             src={safetyNetImage}
             alt="안전방충망 설치 예시"
             className="w-full h-full object-cover rounded-[10px]"
+            loading="lazy"
+            decoding="async"
           />
         </motion.div>
 

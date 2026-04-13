@@ -106,11 +106,13 @@ export function WarrantySection() {
           {/* Map - Left */}
           <div className="flex-1 rounded-xl overflow-hidden">
             {/* ⚠️ 스케일 조절: overflow-hidden을 overflow-auto로 바꾸고, 아래 transform scale 값을 조절하세요 (예: 1.2, 1.5 등) */}
-            <img 
-              src={serviceMap} 
-              alt="전국 직영서비스센터 지도" 
+            <img
+              src={serviceMap}
+              alt="전국 직영서비스센터 지도"
               className="w-full h-auto object-contain"
               style={{ transform: "scale(1.2)" }}
+              loading="lazy"
+              decoding="async"
             />
           </div>
 
@@ -223,10 +225,12 @@ export function WarrantySection() {
             transition={{ duration: 0.5, delay: 0.5 }}
             className="w-full rounded-x0 overflow-hidden"
           >
-            <img 
-              src={serviceMap} 
-              alt="전국 직영서비스센터 지도" 
+            <img
+              src={serviceMap}
+              alt="전국 직영서비스센터 지도"
               className="w-full h-auto object-contain mx-[0px] mt-[0px] mb-[-27px]"
+              loading="lazy"
+              decoding="async"
             />
           </motion.div>
 
