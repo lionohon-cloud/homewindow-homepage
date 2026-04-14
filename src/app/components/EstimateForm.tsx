@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Phone, Check, ChevronRight, X, Send } from "lucide-react";
+import { Phone, Check, ChevronRight, X, Send, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwKDr2j1EzTEZkMtUUoFZGhxoC_f6HBh505pcuD3CNDR8fGlChqFz1MkUfh2NkenTP/exec";
@@ -16,6 +16,7 @@ type Message = {
   choices?: { label: string; action: () => void; svg?: React.ReactNode; sub?: string; selected?: boolean }[];
   inputMode?: "height" | "width" | "qty";
   placeholder?: string;
+  disabled?: boolean;
 };
 
 export function EstimateForm() {
@@ -133,9 +134,32 @@ export function EstimateForm() {
         if (m.type === "choices" || m.type === "img-choices") {
           return { ...m, choices: m.choices?.map((c) => ({ ...c, disabled: true })) };
         }
+        if (m.type === "custom-input") {
+          return { ...m, disabled: true };
+        }
         return m;
       })
     );
+  };
+
+  // 선택지 메시지 중 가장 최근 것을 인라인 입력창(custom-input)으로 변환
+  const convertLastChoicesToInlineInput = (mode: "height" | "width" | "qty") => {
+    setCustomInputValue("");
+    setMessages((prev) => {
+      let targetIdx = -1;
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (prev[i].type === "choices" || prev[i].type === "img-choices") {
+          targetIdx = i;
+          break;
+        }
+      }
+      if (targetIdx === -1) return prev;
+      return prev.map((m, i) =>
+        i === targetIdx
+          ? { ...m, type: "custom-input", inputMode: mode, choices: undefined, disabled: false }
+          : m
+      );
+    });
   };
 
   // --- Flow Functions ---
@@ -213,9 +237,8 @@ export function EstimateForm() {
       { label: "내 키보다 커요 — 약 2.2m", action: () => { disablePastChoices(); addUserText("약 2.2m"); updateCurrentWin({ height: 2200 }); askWidth(); } },
       { label: "내 키의 절반~어깨높이 — 약 1.5m", action: () => { disablePastChoices(); addUserText("약 1.5m"); updateCurrentWin({ height: 1500 }); askWidth(); } },
       { label: "내 허리 아래 — 약 60cm", action: () => { disablePastChoices(); addUserText("약 60cm"); updateCurrentWin({ height: 600 }); askWidth(); } },
-      { label: "✏️ 직접 입력", action: async () => { 
-          disablePastChoices(); 
-          await pushBotText("높이를 입력해주세요.\n<span class='text-[#999] text-xs'>예: 150 → 150cm / 1.5 → 1.5m</span>", 400);
+      { label: "✏️ 직접 입력", action: () => {
+          convertLastChoicesToInlineInput("height");
           setActiveInputMode("height");
       } },
     ]);
@@ -229,8 +252,8 @@ export function EstimateForm() {
       { label: "큰 방·주방 창문 — 약 3m", action: () => { disablePastChoices(); addUserText("약 3m"); updateCurrentWin({ width: 3000 }); askQty(); } },
       { label: "거실 창문 — 약 4m", action: () => { disablePastChoices(); addUserText("약 4m"); updateCurrentWin({ width: 4000 }); askQty(); } },
       { label: "거실 넓은 창 — 약 5m", action: () => { disablePastChoices(); addUserText("약 5m"); updateCurrentWin({ width: 5000 }); askQty(); } },
-      { label: "✏️ 직접 입력", action: () => { 
-          disablePastChoices(); 
+      { label: "✏️ 직접 입력", action: () => {
+          convertLastChoicesToInlineInput("width");
           setActiveInputMode("width");
       } },
     ]);
@@ -247,11 +270,14 @@ export function EstimateForm() {
     setTimeout(async () => {
       await pushBotText(`**입력하신 창**\n이런 창이 집에 몇 틀 정도 있는지만 알려주시면\n바로 예상 견적을 알려드릴게요! 😊`, 600);
       pushChoices([
+        { label: "1틀", action: () => finishQty(1) },
         { label: "2틀", action: () => finishQty(2) },
+        { label: "3틀", action: () => finishQty(3) },
         { label: "4틀", action: () => finishQty(4) },
-        { label: "6틀", action: () => finishQty(6) },
-        { label: "8틀", action: () => finishQty(8) },
-        { label: "✏️ 직접 입력", action: () => { disablePastChoices(); setActiveInputMode("qty"); } },
+        { label: "✏️ 직접 입력", action: () => {
+            convertLastChoicesToInlineInput("qty");
+            setActiveInputMode("qty");
+        } },
       ]);
     }, 100);
   };
@@ -353,9 +379,36 @@ export function EstimateForm() {
     ]);
   };
 
+  // 견적 새로하기 — 모든 입력 초기화 후 웰컴 시퀀스 재실행
+  const resetEstimate = () => {
+    if (!confirm("지금까지 입력한 내용이 모두 삭제됩니다.\n견적을 처음부터 다시 시작할까요?")) return;
+    setWindows([]);
+    setCurrentWin({});
+    setMessages([]);
+    setProgress(0);
+    setActiveInputMode(null);
+    setCustomInputValue("");
+    (async () => {
+      setProgress(5);
+      await pushBotText("다시 시작할게요! 🔄\n\n창호 교체 비용이 궁금하신가요?\n**LX · KCC · 홈윈도우** 3개 브랜드 예상 견적을\n지금 바로 비교해드릴게요!", 800);
+      if (prices) {
+        askBuildingType();
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now().toString(), sender: "bot", type: "cta" },
+        ]);
+      }
+    })();
+  };
+
   const handleCustomInputSubmit = () => {
-    const val = parseFloat(customInputValue.trim());
+    // qty 스피너는 빈 값일 때 기본 1로 취급
+    const rawVal = activeInputMode === "qty" && customInputValue.trim() === "" ? "1" : customInputValue.trim();
+    const val = parseFloat(rawVal);
     if (isNaN(val) || val <= 0) return;
+
+    disablePastChoices();
 
     if (activeInputMode === "height") {
       const mm = val <= 10 ? Math.round(val * 1000) : Math.round(val * 10);
@@ -538,6 +591,44 @@ export function EstimateForm() {
                       ))}
                     </div>
                   )}
+                  {msg.type === "custom-input" && (
+                    <div className="flex items-center gap-2 mt-1 ml-1 max-w-[340px]">
+                      {msg.inputMode === "qty" ? (
+                        <div className={`flex-1 flex items-center justify-between border-[1.5px] rounded-full px-4 py-1.5 ${msg.disabled ? "border-[#e5e5e5] bg-[#f5f5f5] opacity-60" : "border-[#D22727] bg-[#fff8f8]"}`}>
+                          <button
+                            disabled={msg.disabled}
+                            onClick={() => setCustomInputValue(v => String(Math.max(1, (Number(v) || 1) - 1)))}
+                            className="w-8 h-8 rounded-full border border-[#2c2c2c] bg-white text-lg flex items-center justify-center hover:bg-[#2c2c2c] hover:text-white disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[#2c2c2c]"
+                          >−</button>
+                          <span className="font-bold text-lg">{customInputValue || "1"}</span>
+                          <button
+                            disabled={msg.disabled}
+                            onClick={() => setCustomInputValue(v => String((Number(v) || 1) + 1))}
+                            className="w-8 h-8 rounded-full border border-[#2c2c2c] bg-white text-lg flex items-center justify-center hover:bg-[#2c2c2c] hover:text-white disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[#2c2c2c]"
+                          >+</button>
+                        </div>
+                      ) : (
+                        <input
+                          type="number"
+                          autoFocus={!msg.disabled}
+                          disabled={msg.disabled}
+                          placeholder={msg.inputMode === "height" ? "cm 또는 m (예: 150 / 1.5)" : "cm 또는 m (예: 200 / 2)"}
+                          value={msg.disabled ? "" : customInputValue}
+                          onChange={(e) => setCustomInputValue(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleCustomInputSubmit()}
+                          className={`flex-1 min-w-[180px] border-[1.5px] rounded-full px-4 py-2.5 text-sm outline-none ${msg.disabled ? "border-[#e5e5e5] bg-[#f5f5f5] opacity-60" : "border-[#D22727] bg-[#fff8f8] focus:bg-white"}`}
+                        />
+                      )}
+                      <button
+                        disabled={msg.disabled}
+                        onClick={handleCustomInputSubmit}
+                        className="w-11 h-11 rounded-full bg-[#D22727] text-white flex items-center justify-center shrink-0 hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
+                        aria-label="입력값 전송"
+                      >
+                        <Send size={18} className="mr-0.5" />
+                      </button>
+                    </div>
+                  )}
                   {msg.type === "result" && (
                     <div className="bg-white border-[1.5px] border-[#e5e5e5] rounded-2xl overflow-hidden shadow-lg mt-2 w-full max-w-[340px]">
                       <div className="bg-[#2C2C2C] text-white p-3">
@@ -608,49 +699,21 @@ export function EstimateForm() {
           <div ref={chatEndRef} className="h-4" />
         </div>
 
-        {/* Input Area */}
+        {/* Input Area — 항상 상담전화 CTA 표시 (직접 입력은 채팅 인라인 입력창으로 처리) */}
         <div className="bg-white p-3 md:p-4 border-t border-[#e5e5e5] shrink-0 relative">
-          {activeInputMode ? (
-            <div className="flex gap-2">
-              {activeInputMode === "qty" ? (
-                <div className="flex-1 flex items-center justify-between border-[1.5px] border-[#e5e5e5] rounded-full px-4 py-1.5 bg-[#f7f7f5]">
-                  <button className="w-8 h-8 rounded-full border border-[#2c2c2c] bg-white text-lg flex items-center justify-center hover:bg-[#2c2c2c] hover:text-white" onClick={() => setCustomInputValue(v => String(Math.max(1, (Number(v)||1) - 1)))}>−</button>
-                  <span className="font-bold text-lg">{customInputValue || "1"}</span>
-                  <button className="w-8 h-8 rounded-full border border-[#2c2c2c] bg-white text-lg flex items-center justify-center hover:bg-[#2c2c2c] hover:text-white" onClick={() => setCustomInputValue(v => String((Number(v)||1) + 1))}>+</button>
-                </div>
-              ) : (
-                <input
-                  type="number"
-                  placeholder={activeInputMode === "height" ? "cm 또는 m (예: 150 / 1.5)" : "cm 또는 m"}
-                  value={customInputValue}
-                  onChange={(e) => setCustomInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleCustomInputSubmit()}
-                  className="flex-1 border-[1.5px] border-[#e5e5e5] rounded-full px-4 py-2.5 text-sm bg-[#f7f7f5] outline-none focus:bg-white focus:border-[#2C2C2C]"
-                  autoFocus
-                />
-              )}
-              <button
-                onClick={handleCustomInputSubmit}
-                className="w-11 h-11 rounded-full bg-[#2C2C2C] text-white flex items-center justify-center shrink-0 hover:scale-105 transition-transform"
-              >
-                <Send size={18} className="mr-0.5" />
-              </button>
+          <button
+            ref={buttonRef}
+            onClick={() => {
+              toggleConsultationModal();
+            }}
+            className="w-full flex items-center gap-2 p-3 bg-[#fff8f8] border border-[#f5d0d0] rounded-xl text-[#2c2c2c] hover:bg-[#fdf0ee] transition-colors cursor-pointer"
+          >
+            <Phone size={18} className="shrink-0 text-[#D22727]" />
+            <div className="flex flex-col">
+              <span className="text-[11px] text-[#888]">상담 신청 입력창 열기</span>
+              <span className="text-[13px] font-bold text-[#D22727]">1661-4830 상담전화하기</span>
             </div>
-          ) : (
-            <button 
-              ref={buttonRef}
-              onClick={() => {
-                toggleConsultationModal();
-              }}
-              className="w-full flex items-center gap-2 p-3 bg-[#fff8f8] border border-[#f5d0d0] rounded-xl text-[#2c2c2c] hover:bg-[#fdf0ee] transition-colors cursor-pointer"
-            >
-              <Phone size={18} className="shrink-0 text-[#D22727]" />
-              <div className="flex flex-col">
-                <span className="text-[11px] text-[#888]">상담 신청 입력창 열기</span>
-                <span className="text-[13px] font-bold text-[#D22727]">1661-4830 상담전화하기</span>
-              </div>
-            </button>
-          )}
+          </button>
           
           {/* Consultation Modal - Positioned above button */}
           <AnimatePresence>
@@ -760,7 +823,17 @@ export function EstimateForm() {
       <div className={`${isPanelOpen ? "fixed inset-0 z-40 bg-white md:relative" : "hidden md:flex"} flex-col w-full md:w-[300px] border-l border-[#e5e5e5] bg-white shrink-0 shadow-[-4px_0_16px_rgba(0,0,0,0.05)] md:shadow-none`}>
         <div className="p-4 border-b border-[#e5e5e5] font-bold text-[13px] flex items-center gap-2 bg-white">
           <span className="w-2 h-2 rounded-full bg-[#D22727]"></span> 실시간 견적
-          <button className="ml-auto md:hidden" onClick={() => setIsPanelOpen(false)}><X size={20} className="text-[#888]" /></button>
+          {(windows.length > 0 || Object.keys(currentWin).length > 0) && (
+            <button
+              onClick={resetEstimate}
+              className="ml-auto flex items-center gap-1 px-2.5 py-1 rounded-full border border-[#e5e5e5] text-[#666] hover:bg-[#f5f5f5] hover:border-[#bbb] transition-colors text-[11px] font-medium"
+              aria-label="견적 새로하기"
+            >
+              <RotateCcw size={12} />
+              <span>새로하기</span>
+            </button>
+          )}
+          <button className={`${(windows.length > 0 || Object.keys(currentWin).length > 0) ? "ml-2" : "ml-auto"} md:hidden`} onClick={() => setIsPanelOpen(false)}><X size={20} className="text-[#888]" /></button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
@@ -783,7 +856,10 @@ export function EstimateForm() {
               ))}
               {Object.keys(currentWin).length > 0 && (
                 <div className="border-[1.5px] border-dashed border-[#D22727] bg-[#fff8f8] rounded-xl p-3 text-xs leading-relaxed">
-                  <div className="font-bold text-[#D22727] text-[11px] mb-1">창 {windows.length + 1}번 입력 중 ✏️</div>
+                  <div className="font-bold text-[#D22727] text-[11px] mb-1 flex items-center gap-1.5">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#D22727] animate-pulse" />
+                    창 {windows.length + 1}번 입력 중...
+                  </div>
                   {currentWin.building && <div className="text-[#555]">📍 {currentWin.building}</div>}
                   {currentWin.isDouble !== undefined && <div className="text-[#555]">{currentWin.isDouble ? "이중창" : "단창"}</div>}
                   {currentWin.isThreeW !== undefined && <div className="text-[#555]">{currentWin.isThreeW ? "3W" : "2W"}</div>}
