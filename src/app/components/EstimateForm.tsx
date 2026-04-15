@@ -438,15 +438,10 @@ export function EstimateForm() {
       { id: Date.now().toString(), sender: "bot", type: "cta" }
     ]);
     
-    fetch(GOOGLE_SCRIPT_URL, {
+    fetch(CONSULTATION_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        timestamp: new Date().toLocaleString('ko-KR'),
-        phone,
-        intent: '무료방문견적/전화상담',
-        building: windows[0]?.building || '',
-      })
+      body: JSON.stringify({ phone, source: 'AI채팅' }),
     }).catch(() => {});
   };
 
@@ -495,15 +490,10 @@ export function EstimateForm() {
       { id: Date.now().toString(), sender: "bot", type: "cta" }
     ]);
     
-    fetch(GOOGLE_SCRIPT_URL, {
+    fetch(CONSULTATION_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        timestamp: new Date().toLocaleString('ko-KR'),
-        phone,
-        intent: '무료방문견적/전화상담',
-        building: windows[0]?.building || '',
-      })
+      body: JSON.stringify({ phone, source: 'AI채팅' }),
     }).catch(() => {});
 
     closeConsultationModal();
