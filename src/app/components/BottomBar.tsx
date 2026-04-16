@@ -1,11 +1,11 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router";
 import { EstimateModal } from "./EstimateModal";
 import { X, Phone, MessageSquare } from "lucide-react";
-
-const CONSULTATION_URL =
-  "https://script.google.com/macros/s/AKfycbxe-lp-LqVpePEhgjIVBCifZtpS1IUSp1IdI07az8epyJVdBLVMqesVRK-s4T8-cebpTw/exec";
+import { submitLead } from "@/lib/submitLead";
 
 export function BottomBar() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMobilePopup, setShowMobilePopup] = useState(false);
 
@@ -37,19 +37,15 @@ export function BottomBar() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     const phone = `${phone1}-${phone2}-${phone3}`;
+    const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     try {
-      const res = await fetch(CONSULTATION_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ phone }),
-      });
-      if (res.ok) {
-        setAlertMessage("접수가 완료되었습니다");
-        setShowAlert(true);
+      const ok = await submitLead({ phone, entryForm: `홈페이지 ${device} 하단바` });
+      if (ok) {
         setPhone1("010");
         setPhone2("");
         setPhone3("");
         setShowMobilePopup(false);
+        navigate('/thanks');
       } else throw new Error();
     } catch {
       setAlertMessage("전송 중 오류가 발생했습니다. 다시 시도해주세요.");

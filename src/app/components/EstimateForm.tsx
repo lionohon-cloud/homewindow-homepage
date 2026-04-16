@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
 import { Phone, Check, ChevronRight, X, Send, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { submitLead } from "@/lib/submitLead";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwKDr2j1EzTEZkMtUUoFZGhxoC_f6HBh505pcuD3CNDR8fGlChqFz1MkUfh2NkenTP/exec";
-const CONSULTATION_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxe-lp-LqVpePEhgjIVBCifZtpS1IUSp1IdI07az8epyJVdBLVMqesVRK-s4T8-cebpTw/exec";
 
 const BRAND_MAP: Record<string, string> = { LX: "LX Z:IN", 홈: "홈윈도우", KCC: "KCC 홈씨씨" };
 const BRAND_ORDER = ["LX", "KCC", "홈"];
@@ -20,6 +21,7 @@ type Message = {
 };
 
 export function EstimateForm() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [windows, setWindows] = useState<any[]>([]);
   const [currentWin, setCurrentWin] = useState<any>({});
@@ -432,17 +434,9 @@ export function EstimateForm() {
 
   const handlePhoneSubmit = async (phone: string) => {
     addUserText(phone);
-    await pushBotText(`✅ 상담 신청이 완료됐어요!\n\n📞 **${phone}**으로\n오전 8시 ~ 오후 6시 사이에\n전문 상담사가 직접 연락드릴게요 😊`, 700);
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now().toString(), sender: "bot", type: "cta" }
-    ]);
-    
-    fetch(CONSULTATION_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ phone, source: 'AI채팅' }),
-    }).catch(() => {});
+    const device = window.innerWidth >= 768 ? 'PC' : '모바일';
+    await submitLead({ phone, entryForm: `AI채팅 ${device}` });
+    navigate('/thanks');
   };
 
   const openConsultationModal = () => {
@@ -483,20 +477,10 @@ export function EstimateForm() {
     }
 
     setIsSubmitting(true);
-    addUserText(phone);
-    await pushBotText(`✅ 상담 신청이 완료됐어요!\n\n📞 **${phone}**으로\n오전 8시 ~ 오후 6시 사이에\n전문 상담사가 직접 연락드릴게요 😊`, 700);
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now().toString(), sender: "bot", type: "cta" }
-    ]);
-    
-    fetch(CONSULTATION_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ phone, source: 'AI채팅' }),
-    }).catch(() => {});
-
+    const device = window.innerWidth >= 768 ? 'PC' : '모바일';
+    await submitLead({ phone, entryForm: `AI채팅 ${device}` });
     closeConsultationModal();
+    navigate('/thanks');
   };
 
   return (

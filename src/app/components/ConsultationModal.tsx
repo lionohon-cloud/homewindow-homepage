@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { submitLead } from "@/lib/submitLead";
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -9,6 +11,7 @@ interface ConsultationModalProps {
 }
 
 export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: ConsultationModalProps) {
+  const navigate = useNavigate();
   const [phone1] = useState("010");
   const [phone2, setPhone2] = useState("");
   const [phone3, setPhone3] = useState("");
@@ -39,26 +42,16 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
     setIsSubmitting(true);
 
     const phoneNumber = `${phone1}-${phone2}-${phone3}`;
+    const device = window.innerWidth >= 768 ? 'PC' : '모바일';
 
     try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxe-lp-LqVpePEhgjIVBCifZtpS1IUSp1IdI07az8epyJVdBLVMqesVRK-s4T8-cebpTw/exec",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8",
-          },
-          body: JSON.stringify({ phone: phoneNumber }),
-        }
-      );
+      const ok = await submitLead({ phone: phoneNumber, entryForm: `홈페이지 ${device} 상담모달` });
 
-      if (response.ok) {
-        setAlertMessage("접수가 완료되었습니다");
-        setShowAlert(true);
-        // 입력칸 초기화
+      if (ok) {
         setPhone2("");
         setPhone3("");
         onClose();
+        navigate('/thanks');
       } else {
         throw new Error("전송 실패");
       }
