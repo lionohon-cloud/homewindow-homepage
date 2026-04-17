@@ -84,10 +84,7 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                           무상 보증 내역
                         </th>
                         <th className="border border-gray-300 px-2 py-3 text-center text-[14px] font-bold text-gray-700 w-32">
-                          PRESTIGE
-                        </th>
-                        <th className="border border-gray-300 px-2 py-3 text-center text-[14px] font-bold text-gray-700 w-32">
-                          SIGNATURE
+                          보증기간
                         </th>
                       </tr>
                     </thead>
@@ -99,9 +96,6 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-[14px] text-gray-700">
                           프로파일 변형에 의한 불량
-                        </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] font-bold text-[#D22727]">
-                          15년
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] font-bold text-[#D22727]">
                           15년
@@ -119,9 +113,6 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           5년
                         </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          4년
-                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-2 py-3 text-[14px] text-gray-700">
@@ -130,19 +121,13 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           3년
                         </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
-                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-2 py-3 text-[14px] text-gray-700">
-                          핸들 및 접금장치(크리센트)의 고장으로 샷시 개폐불량
+                          핸들 및 잠금장치(크리센트)의 고장으로 샷시 개폐불량
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           3년
-                        </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
                         </td>
                       </tr>
                       <tr>
@@ -151,9 +136,6 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           3년
-                        </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
                         </td>
                       </tr>
 
@@ -168,9 +150,6 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           2년
                         </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
-                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-2 py-3 text-[14px] text-gray-700">
@@ -179,16 +158,10 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           2년
                         </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
-                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-2 py-3 text-[14px] text-gray-700">
-                          시공시 발생한 실리콘 및 틈틈 자업의 불량
-                        </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
+                          시공시 발생한 실리콘 및 몰딩 작업의 불량
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           2년
@@ -202,9 +175,6 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-[14px] text-gray-700">
                           복층 유리 내부의 습기발생시 1:1 교환
-                        </td>
-                        <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          1년
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
                           1년
@@ -225,15 +195,9 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                       <div className="text-[14px] text-gray-700 text-center">
                         프로파일 변형에 의한 불량
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-center">
-                        <div>
-                          <div className="text-[14px] font-bold text-[#D22727]">15년</div>
-                          <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                        </div>
-                        <div>
-                          <div className="text-[14px] font-bold text-[#D22727]">15년</div>
-                          <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                        </div>
+                      <div className="text-center">
+                        <div className="text-[14px] font-bold text-[#D22727]">15년</div>
+                        <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                       </div>
                     </div>
                   </div>
@@ -249,15 +213,9 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <div className="text-[14px] text-gray-700 text-center">
                           샷시(틀/짝)의 모서리 용접부 파손(틀새발생)
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">5년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                          </div>
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">4년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-[14px] font-bold text-gray-900">5년</div>
+                          <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
 
@@ -266,30 +224,18 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <div className="text-[14px] text-gray-700 text-center">
                           샷시 호차(틀러)의 파손으로 문열림 불량<br />(개폐불량)
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">3년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                          </div>
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-[14px] font-bold text-gray-900">3년</div>
+                          <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
 
                       {/* 항목 3 */}
                       <div className="p-4 space-y-3">
                         <div className="text-[14px] text-gray-700 text-center">핸들 및 잠금장치(크리센트)의 고장으로<br />샷시 개폐불량</div>
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">3년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                          </div>
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-[14px] font-bold text-gray-900">3년</div>
+                          <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
 
@@ -298,15 +244,9 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <div className="text-[14px] text-gray-700 text-center">
                           성능 저하 및 파손(풍지판, 모헤어, 방충망)
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">3년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                          </div>
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-[14px] font-bold text-gray-900">3년</div>
+                          <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
                     </div>
@@ -323,15 +263,9 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <div className="text-[14px] text-gray-700 text-center">
                           벽체와 창틀 사이의 틈에 의한 누수 발생
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                          </div>
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-[14px] font-bold text-gray-900">2년</div>
+                          <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
 
@@ -340,30 +274,18 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                         <div className="text-[14px] text-gray-700 text-center">
                           창짝의 기울어짐(수평불량)에 의한 누수
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                          </div>
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-[14px] font-bold text-gray-900">2년</div>
+                          <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
 
                       {/* 항목 3 */}
                       <div className="p-4 space-y-3">
                         <div className="text-[14px] text-gray-700 text-center">시공시 발생한 실리콘 및 몰딩 작업의 불량</div>
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                          </div>
-                          <div>
-                            <div className="text-[14px] font-bold text-gray-900">2년</div>
-                            <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-[14px] font-bold text-gray-900">2년</div>
+                          <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
                     </div>
@@ -378,15 +300,9 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                       <div className="text-[14px] text-gray-700 text-center">
                         복층 유리 내부의 습기발생시 1:1 교환
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-center">
-                        <div>
-                          <div className="text-[14px] font-bold text-gray-900">1년</div>
-                          <div className="text-[12px] text-gray-600 mt-1">PRESTIGE</div>
-                        </div>
-                        <div>
-                          <div className="text-[14px] font-bold text-gray-900">1년</div>
-                          <div className="text-[12px] text-gray-600 mt-1">SIGNATURE</div>
-                        </div>
+                      <div className="text-center">
+                        <div className="text-[14px] font-bold text-gray-900">1년</div>
+                        <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                       </div>
                     </div>
                   </div>
