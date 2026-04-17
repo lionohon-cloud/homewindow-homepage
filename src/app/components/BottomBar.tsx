@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { EstimateModal } from "./EstimateModal";
 import { X, Phone, MessageSquare } from "lucide-react";
 import { submitLead } from "@/lib/submitLead";
+import { HoneypotField } from "@/lib/HoneypotField";
 
 export function BottomBar() {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ export function BottomBar() {
 
   const phone2Ref = useRef<HTMLInputElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
+  const honeypotPcRef = useRef<HTMLInputElement>(null);
+  const honeypotPopupRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +42,12 @@ export function BottomBar() {
     const phone = `${phone1}-${phone2}-${phone3}`;
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     try {
-      const ok = await submitLead({ phone, entryForm: `홈페이지 ${device} 하단바` });
+      const honeypot = honeypotPopupRef.current?.value || honeypotPcRef.current?.value;
+      const ok = await submitLead({
+        phone,
+        entryForm: `홈페이지 ${device} 하단바`,
+        honeypot,
+      });
       if (ok) {
         setPhone1("010");
         setPhone2("");
@@ -79,6 +87,7 @@ export function BottomBar() {
           onSubmit={handleSubmit}
           className="hidden md:flex flex-[2] flex-col lg:flex-row items-center justify-center px-8 lg:px-12 gap-2 lg:gap-12 bg-white border-r border-[#e5e5e5]"
         >
+          <HoneypotField ref={honeypotPcRef} />
           {/* 왼쪽: 아이콘 + 제목 */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="hidden lg:flex w-11 h-11 rounded-full bg-[#D22727]/10 items-center justify-center shrink-0">
@@ -236,6 +245,7 @@ export function BottomBar() {
 
             {/* 팝업 폼 */}
             <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3">
+              <HoneypotField ref={honeypotPopupRef} />
               {/* 전화번호 입력 */}
               <div>
                 <p className="text-[11px] text-[#999] font-medium uppercase tracking-[0.05em] mb-1.5">
