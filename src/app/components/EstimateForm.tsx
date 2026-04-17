@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Phone, Check, ChevronRight, X, Send, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { submitLead } from "@/lib/submitLead";
+import { HoneypotField } from "@/lib/HoneypotField";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwKDr2j1EzTEZkMtUUoFZGhxoC_f6HBh505pcuD3CNDR8fGlChqFz1MkUfh2NkenTP/exec";
 
@@ -55,6 +56,7 @@ export function EstimateForm() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -478,7 +480,11 @@ export function EstimateForm() {
 
     setIsSubmitting(true);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
-    await submitLead({ phone, entryForm: `AI채팅 ${device}` });
+    await submitLead({
+      phone,
+      entryForm: `AI채팅 ${device}`,
+      honeypot: honeypotRef.current?.value,
+    });
     closeConsultationModal();
     navigate('/thanks');
   };
@@ -701,6 +707,7 @@ export function EstimateForm() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6 text-center">
+                  <HoneypotField ref={honeypotRef} />
                   {/* Header */}
                   <div className="flex items-center justify-center mb-4 relative">
                     <h3 className="font-black text-[#333] text-[20px] mx-[0px] mt-[-3px] mb-[-11px] text-[#d22727]">창호교체 비용이 궁금하신가요?</h3>
