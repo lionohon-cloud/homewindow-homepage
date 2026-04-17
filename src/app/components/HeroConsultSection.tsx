@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { X, Phone } from "lucide-react";
 import { submitLead } from "@/lib/submitLead";
+import { HoneypotField } from "@/lib/HoneypotField";
 
 export function HeroConsultSection() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export function HeroConsultSection() {
   const [showAlert, setShowAlert] = useState(false);
   const phone2Ref = useRef<HTMLInputElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,11 @@ export function HeroConsultSection() {
     const phone = `${phone1}-${phone2}-${phone3}`;
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     try {
-      const ok = await submitLead({ phone, entryForm: `홈페이지 ${device} 메인` });
+      const ok = await submitLead({
+        phone,
+        entryForm: `홈페이지 ${device} 메인`,
+        honeypot: honeypotRef.current?.value,
+      });
       if (ok) {
         setPhone1("010");
         setPhone2("");
@@ -59,6 +65,7 @@ export function HeroConsultSection() {
             onSubmit={handleSubmit}
             className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-10"
           >
+            <HoneypotField ref={honeypotRef} />
             {/* 왼쪽: 제목 + 아이콘 */}
             <div className="flex items-center gap-3 flex-shrink-0">
               {/* Toss-style icon badge */}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { submitLead } from "@/lib/submitLead";
+import { HoneypotField } from "@/lib/HoneypotField";
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const phone3Ref = useRef<HTMLInputElement>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
@@ -45,7 +47,11 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
 
     try {
-      const ok = await submitLead({ phone: phoneNumber, entryForm: `홈페이지 ${device} 상담모달` });
+      const ok = await submitLead({
+        phone: phoneNumber,
+        entryForm: `홈페이지 ${device} 상담모달`,
+        honeypot: honeypotRef.current?.value,
+      });
 
       if (ok) {
         setPhone2("");
@@ -98,6 +104,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
               <div className="w-full px-5 md:px-10 py-4 md:py-0 md:h-[160px] md:flex md:items-center">
                 <div className="max-w-screen-lg mx-auto w-full">
                   <form onSubmit={handleSubmit} className="flex flex-col md:flex-row md:items-center md:justify-center gap-3 md:gap-6">
+                    <HoneypotField ref={honeypotRef} />
                     {/* 제목 */}
                     <div className="flex-shrink-0 text-center md:text-left">
                       <h3 className="font-bold text-[#d22727] text-[18px] md:text-[32px] md:whitespace-nowrap">

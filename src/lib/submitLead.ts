@@ -20,8 +20,17 @@ declare global {
 export async function submitLead(params: {
   phone: string;
   entryForm: string;
+  honeypot?: string;
 }): Promise<boolean> {
-  const { phone, entryForm } = params;
+  const { phone, entryForm, honeypot } = params;
+
+  // Honeypot: 사람은 숨겨진 필드를 보지 못함. 값이 채워져 들어오면 봇으로 판단.
+  // UX는 정상 제출처럼 보이게 하되 GAS/GA4로는 전송하지 않음.
+  if (honeypot && honeypot.trim().length > 0) {
+    sessionStorage.setItem('hw_just_submitted', '1');
+    return true;
+  }
+
   const utm = getUtmData();
   const channelMedia = getChannelMedia(utm.utm_source, utm.utm_medium);
 
