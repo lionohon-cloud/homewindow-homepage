@@ -5,6 +5,7 @@ import { CheckCircle } from 'lucide-react';
 declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -21,7 +22,14 @@ export function Component() {
     sessionStorage.removeItem('hw_just_submitted');
     setAllowed(true);
 
-    // GA4 lead_confirmed 이벤트
+    // GA4 lead_confirmed 이벤트 (gtag + dataLayer 이중 전송)
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'lead_confirmed');
+      }
+    } catch {
+      /* ignore */
+    }
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'lead_confirmed' });
 

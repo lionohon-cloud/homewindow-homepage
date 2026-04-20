@@ -14,6 +14,7 @@ const GAS_URL =
 declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -62,20 +63,34 @@ export async function submitLead(params: {
     throw err;
   });
 
-  // ── (b) GA4 dataLayer.push ────────────────────────────────
+  // ── (b) GA4 이벤트 전송 — gtag.js + dataLayer 이중 전송 ──
+  // gtag.js: index.html에 직접 설치된 GA4로 전송 (현재 주 경로)
+  // dataLayer: 추후 GTM 복구 시 호환 유지
+  const ga4Params = {
+    lead_source: entryForm,
+    channel_media: channelMedia,
+    utm_source: utm.utm_source,
+    utm_medium: utm.utm_medium,
+    utm_campaign: utm.utm_campaign,
+    utm_content: utm.utm_content,
+    utm_term: utm.utm_term,
+    value: 1,
+    currency: 'KRW',
+  };
+
+  try {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'generate_lead', ga4Params);
+    }
+  } catch (err) {
+    console.error('[GA4 gtag 실패]', err);
+  }
+
   try {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       event: 'generate_lead',
-      lead_source: entryForm,
-      channel_media: channelMedia,
-      utm_source: utm.utm_source,
-      utm_medium: utm.utm_medium,
-      utm_campaign: utm.utm_campaign,
-      utm_content: utm.utm_content,
-      utm_term: utm.utm_term,
-      value: 1,
-      currency: 'KRW',
+      ...ga4Params,
     });
   } catch (err) {
     console.error('[GA4 dataLayer 실패]', err);
