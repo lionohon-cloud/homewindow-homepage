@@ -65,13 +65,18 @@ function base64ToBytes(b64: string): Uint8Array {
   return out;
 }
 
-/** PEM(PKCS8) 형식 private_key에서 바이너리 추출 */
+/** PEM(PKCS8) 형식 private_key에서 바이너리 추출 — 입력 형식에 관대 */
 function pemToPkcs8(pem: string): Uint8Array {
   const clean = pem
-    .replace(/\\n/g, '\n') // env에 \n으로 저장된 경우 대응
-    .replace(/-----BEGIN PRIVATE KEY-----/, '')
-    .replace(/-----END PRIVATE KEY-----/, '')
-    .replace(/\s+/g, '');
+    .replace(/\\n/g, '\n')                    // 리터럴 \n을 실제 줄바꿈으로
+    .replace(/\\r/g, '')                      // 리터럴 \r 제거
+    .replace(/^\s*["']|["']\s*$/g, '')        // 앞뒤 따옴표 제거
+    .replace(/-----BEGIN [A-Z0-9 ]+-----/g, '') // PEM 헤더 (PKCS8/RSA/EC 모두 대응)
+    .replace(/-----END [A-Z0-9 ]+-----/g, '')   // PEM 푸터
+    .replace(/[^A-Za-z0-9+/=]/g, '');         // base64 허용 문자 외 모두 제거
+  if (!clean) {
+    throw new Error('GA4_PRIVATE_KEY가 비어있거나 형식이 잘못됐습니다. JSON 키 파일의 private_key 값 전체를 붙여넣었는지 확인하세요.');
+  }
   return base64ToBytes(clean);
 }
 
