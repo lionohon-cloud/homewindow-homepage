@@ -15,6 +15,10 @@ const router = createBrowserRouter([
         path: 'admin/utm',
         lazy: () => import('./pages/AdminUtmPage'),
       },
+      {
+        path: 'admin/dashboard',
+        lazy: () => import('./pages/AdminDashboardPage'),
+      },
     ],
   },
 ]);
