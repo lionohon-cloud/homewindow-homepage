@@ -434,10 +434,28 @@ export function EstimateForm() {
     }
   };
 
-  const handlePhoneSubmit = async (phone: string) => {
-    addUserText(phone);
+  const phoneSubmittingRef = useRef(false);
+  const handlePhoneSubmit = async (raw: string) => {
+    // 중복 제출 방지
+    if (phoneSubmittingRef.current) return;
+
+    // 한국 휴대폰 번호 검증 (010/011/016/017/018/019 + 7~8자리)
+    const cleaned = (raw || '').replace(/[^0-9]/g, '');
+    const isValid = /^01[016789]\d{7,8}$/.test(cleaned);
+    if (!isValid) {
+      await pushBotText('연락처를 정확히 입력해주세요.\n예) 010-1234-5678', 200);
+      return;
+    }
+
+    // 표준 형식으로 정규화 (010-1234-5678)
+    const formatted = cleaned.length === 11
+      ? `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`
+      : `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+
+    phoneSubmittingRef.current = true;
+    addUserText(formatted);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
-    await submitLead({ phone, entryForm: `AI채팅 ${device}` });
+    await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}` });
     navigate('/thanks');
   };
 
