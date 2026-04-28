@@ -2,6 +2,7 @@
  * UTM → CRM 유입경로 한글 매핑 테이블
  * AdminUtmPage 드롭다운 + submitLead CRM 매핑에서 공유 사용
  */
+import type { UtmData } from './utm';
 
 export interface Channel {
   utm_source: string;
@@ -68,4 +69,61 @@ export function getChannelMedia(utmSource: string, utmMedium: string): string {
   // fallback: 원본
   if (!utmSource) return '기타';
   return utmMedium ? `${utmSource} ${utmMedium}` : utmSource;
+}
+
+// ────────────────────────────────────────────────────────────────────
+// ERP(cahwindow-Quote) 페이로드 빌더
+// 사용자 확정 스펙: { utm: {...}, inflowChannel: { type, code, label } }
+// ────────────────────────────────────────────────────────────────────
+
+export interface ErpUtm {
+  inflowMedia: string;       // 한글 라벨 (예: "네이버 파워링크")
+  inflowChannelText: string; // 한글 채널 (예: "검색광고")
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_content: string;
+  utm_term: string;
+  visit_id: string;
+  landing_path: string;
+  referrer: string;
+}
+
+export interface ErpInflowChannel {
+  type: 'auto';
+  code: 'WEB_FORM';
+  label: '홈페이지 폼';
+}
+
+/**
+ * UTM 데이터를 ERP utm 객체로 변환.
+ * inflowMedia / inflowChannelText는 channelMaster 매칭으로 채움.
+ */
+export function buildErpUtm(utm: UtmData): ErpUtm {
+  const ch =
+    CHANNEL_MASTER.find(
+      (c) => c.utm_source === utm.utm_source && c.utm_medium === utm.utm_medium
+    ) ||
+    CHANNEL_MASTER.find((c) => c.utm_source === utm.utm_source);
+
+  return {
+    inflowMedia: ch?.label || (utm.utm_source ? utm.utm_source : '직접 유입'),
+    inflowChannelText: ch?.note || (utm.utm_medium || '자동분류'),
+    utm_source: utm.utm_source || '',
+    utm_medium: utm.utm_medium || '',
+    utm_campaign: utm.utm_campaign || '',
+    utm_content: utm.utm_content || '',
+    utm_term: utm.utm_term || '',
+    visit_id: utm.visit_id || '',
+    landing_path: utm.landing_path || '',
+    referrer: utm.referrer || '',
+  };
+}
+
+/**
+ * 홈페이지 폼은 항상 WEB_FORM (auto)로 분류.
+ * 폼 위치별 세분화는 추후 확장.
+ */
+export function buildErpInflowChannel(): ErpInflowChannel {
+  return { type: 'auto', code: 'WEB_FORM', label: '홈페이지 폼' };
 }

@@ -5,7 +5,11 @@
  */
 
 import { getUtmData } from './utm';
-import { getChannelMedia } from './channelMap';
+import {
+  getChannelMedia,
+  buildErpUtm,
+  buildErpInflowChannel,
+} from './channelMap';
 
 // 상담접수 GAS (ConsultationModal/HeroConsultSection/BottomBar/EstimateForm 공용)
 const GAS_URL =
@@ -63,6 +67,48 @@ export async function submitLead(params: {
     throw err;
   });
 
+  // ── (a-2) ERP — 청암홈윈도우 ERP 자동등록 ─────────────────
+  // 사용자 확정 스펙대로 페이로드 구성. 실패해도 사용자 화면은 영향 없음.
+  const erpPayload = {
+    phone,
+    // customerName, address: 폼에서 받지 않으므로 생략 (ERP 측 optional)
+    utm: buildErpUtm(utm),
+    inflowChannel: buildErpInflowChannel(),
+    status: '신규고객',
+    category: 'INTAKE',
+    consultationNotes: [],
+    createdBy: 'homepage-form',
+    managerId: null,
+    // createdAt은 ERP 서버에서 serverTimestamp() 설정
+  };
+  const erpPromise = fetch('/api/erp-lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(erpPayload),
+  })
+    .then(async (r) => {
+      if (!r.ok) {
+        const t = await r.text().catch(() => '');
+        console.error('[ERP 등록 실패]', r.status, t);
+        // GA4 이벤트로 실패 추적
+        try {
+          if (typeof window.gtag === 'function') {
+            window.gtag('event', 'erp_lead_failed', { status: r.status });
+          }
+        } catch { /* ignore */ }
+      }
+      return r;
+    })
+    .catch((err) => {
+      console.error('[ERP 네트워크 실패]', err);
+      try {
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'erp_lead_failed', { status: 'network' });
+        }
+      } catch { /* ignore */ }
+      return null;
+    });
+
   // ── (b) GA4 이벤트 전송 — gtag.js + dataLayer 이중 전송 ──
   // gtag.js: index.html에 직접 설치된 GA4로 전송 (현재 주 경로)
   // dataLayer: 추후 GTM 복구 시 호환 유지
@@ -97,7 +143,8 @@ export async function submitLead(params: {
   }
 
   // ── 병렬 대기 ─────────────────────────────────────────────
-  const results = await Promise.allSettled([gasPromise]);
+  // GAS만 사용자 화면 결과 판정에 사용. ERP 결과는 무시(로깅만).
+  const results = await Promise.allSettled([gasPromise, erpPromise]);
   const gasOk = results[0].status === 'fulfilled';
 
   if (gasOk) {

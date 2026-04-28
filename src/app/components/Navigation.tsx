@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useNavigate } from "react-router";
 import { Phone } from "lucide-react";
 import { ConsultationModal } from "./ConsultationModal";
 import logo from "figma:asset/4ae621bc1ae2b4dd2f88bf2d3c6c087ff22567bb.png";
@@ -25,16 +26,23 @@ const sections = [
 ];
 
 // 데스크톱 GNB 메뉴 항목
-const desktopMenuItems = [
-  { id: "event", label: "이벤트" },
-  { id: "production", label: "제작공장" },
-  { id: "brands", label: "브랜드" },
-  { id: "glass", label: "단열유리" },
-  { id: "installation", label: "원데이시공" },
-  { id: "warranty", label: "15년보증" },
+// type 'section' = 같은 페이지 앵커 스크롤, type 'route' = 별도 페이지 이동
+type DesktopMenuItem =
+  | { type: "section"; id: string; label: string }
+  | { type: "route"; href: string; label: string };
+
+const desktopMenuItems: DesktopMenuItem[] = [
+  { type: "section", id: "event", label: "이벤트" },
+  { type: "section", id: "production", label: "제작공장" },
+  { type: "section", id: "brands", label: "브랜드" },
+  { type: "section", id: "glass", label: "단열유리" },
+  { type: "section", id: "installation", label: "원데이시공" },
+  { type: "section", id: "warranty", label: "15년보증" },
+  { type: "route", href: "/as", label: "AS접수" },
 ];
 
 export function Navigation({ onMenuClick }: NavigationProps) {
+  const navigate = useNavigate();
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [activeSection, setActiveSection] = useState("hero");
@@ -133,6 +141,13 @@ export function Navigation({ onMenuClick }: NavigationProps) {
   }, [lastScrollY, isNavigating]);
 
   const scrollToSection = (id: string) => {
+    // 메인 페이지가 아닌 곳에 있으면 메인으로 이동 후 스크롤
+    if (window.location.pathname !== '/') {
+      sessionStorage.setItem('hw_scroll_to', id);
+      navigate('/');
+      setIsMobileMenuOpen(false);
+      return;
+    }
     const element = document.getElementById(id);
     if (element) {
       const offsetTop = element.offsetTop;
@@ -146,6 +161,11 @@ export function Navigation({ onMenuClick }: NavigationProps) {
       setIsNavigating(true);
       setTimeout(() => setIsNavigating(false), 3000);
     }
+  };
+
+  const goToRoute = (href: string) => {
+    setIsMobileMenuOpen(false);
+    navigate(href);
   };
 
   return (
@@ -172,28 +192,41 @@ export function Navigation({ onMenuClick }: NavigationProps) {
 
                 {/* 메뉴 항목 */}
                 <div className="flex items-center gap-8">
-                  {desktopMenuItems.map(({ id, label }) => (
-                    <button
-                      key={id}
-                      onClick={() => scrollToSection(id)}
-                      className={`text-[15px] font-medium transition-all relative group ${
-                        activeSection === id
-                          ? "text-[#d22727]"
-                          : "text-[#666] hover:text-[#333] cursor-pointer"
-                      }`}
-                    >
-                      {label}
-                      {/* 활성 상태 밑줄 */}
-                      {activeSection === id && (
-                        <motion.div
-                          layoutId="desktopActiveMenu"
-                          className="absolute -bottom-[23px] left-0 right-0 h-[3px] bg-[#d22727]"
-                          initial={false}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                    </button>
-                  ))}
+                  {desktopMenuItems.map((item) => {
+                    if (item.type === "route") {
+                      return (
+                        <button
+                          key={item.href}
+                          onClick={() => goToRoute(item.href)}
+                          className="text-[15px] font-medium transition-all text-[#666] hover:text-[#333] cursor-pointer"
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => scrollToSection(item.id)}
+                        className={`text-[15px] font-medium transition-all relative group ${
+                          activeSection === item.id
+                            ? "text-[#d22727]"
+                            : "text-[#666] hover:text-[#333] cursor-pointer"
+                        }`}
+                      >
+                        {item.label}
+                        {/* 활성 상태 밑줄 */}
+                        {activeSection === item.id && (
+                          <motion.div
+                            layoutId="desktopActiveMenu"
+                            className="absolute -bottom-[23px] left-0 right-0 h-[3px] bg-[#d22727]"
+                            initial={false}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* 무료상담 전화번호 */}
@@ -320,6 +353,17 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                     <span className="text-[15px]">{label}</span>
                   </motion.button>
                 ))}
+
+                {/* 별도 페이지 — AS접수 */}
+                <motion.button
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: sections.length * 0.03, duration: 0.3 }}
+                  onClick={() => goToRoute('/as')}
+                  className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#666] active:bg-[#f8f8f8] mt-2 border-t border-[#eee] pt-5"
+                >
+                  <span className="text-[15px] font-semibold">AS 접수</span>
+                </motion.button>
               </div>
             </motion.div>
           </>
