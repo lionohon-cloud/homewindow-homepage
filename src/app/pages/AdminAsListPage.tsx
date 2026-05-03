@@ -6,7 +6,7 @@
  */
 import { ExternalLink } from 'lucide-react';
 
-const ERP_AS_URL = 'https://cahwindow-quote.vercel.app/admin/support';
+const ERP_AS_URL = 'https://cahwindow-quote.pages.dev/admin/support';
 
 export default function AdminAsListPage() {
   return (

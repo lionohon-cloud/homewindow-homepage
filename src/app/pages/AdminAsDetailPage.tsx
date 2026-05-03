@@ -4,7 +4,7 @@
 import { ExternalLink } from 'lucide-react';
 import { useParams } from 'react-router';
 
-const ERP_AS_BASE = 'https://cahwindow-quote.vercel.app/admin/support';
+const ERP_AS_BASE = 'https://cahwindow-quote.pages.dev/admin/support';
 
 export default function AdminAsDetailPage() {
   const { id } = useParams<{ id: string }>();
