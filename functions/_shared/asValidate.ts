@@ -19,7 +19,7 @@ export interface AsPhotoMeta {
 
 const PHONE_RE = /^010-\d{4}-\d{4}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const RECEPTION_RE = /^AS-\d{6}\d{5}$/;
+const RECEPTION_RE = /^AS-\d{6}-\d{5}$/;
 
 export function normalizePhone(input: string): string {
   const digits = (input || '').replace(/[^0-9]/g, '');
