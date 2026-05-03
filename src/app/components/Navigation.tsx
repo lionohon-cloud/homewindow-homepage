@@ -38,8 +38,8 @@ const desktopMenuItems: DesktopMenuItem[] = [
   { type: "section", id: "glass", label: "단열유리" },
   { type: "section", id: "installation", label: "원데이시공" },
   { type: "section", id: "warranty", label: "15년보증" },
-  // 260503: AS 메뉴 일시 숨김 — Vercel→Cloudflare 이전 후 재개 예정 (부사장님 결정)
-  // { type: "route", href: "/as", label: "AS접수" },
+  // 260503: Cloudflare 이관 완료 후 재개
+  { type: "route", href: "/as", label: "AS접수" },
 ];
 
 export function Navigation({ onMenuClick }: NavigationProps) {
@@ -355,8 +355,8 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   </motion.button>
                 ))}
 
-                {/* 260503: 모바일 AS접수 일시 숨김 — Vercel→Cloudflare 이전 후 재개 */}
-                {/* <motion.button
+                {/* 260503: Cloudflare 이관 완료 후 재개 */}
+                <motion.button
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: sections.length * 0.03, duration: 0.3 }}
@@ -364,7 +364,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#666] active:bg-[#f8f8f8] mt-2 border-t border-[#eee] pt-5"
                 >
                   <span className="text-[15px] font-semibold">AS 접수</span>
-                </motion.button> */}
+                </motion.button>
               </div>
             </motion.div>
           </>
