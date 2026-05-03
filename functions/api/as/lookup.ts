@@ -1,32 +1,29 @@
 /**
  * POST /api/as/lookup
- * 고객 AS 접수 조회.
+ * 고객 AS 접수 조회 — ERP (cahwindow-quote) 로 forward.
+ *
+ * 부사장님 결정 (2026-05-03 B안):
+ *   상태만 노출. 사진·처리노트·이메일·주소·내용 X.
+ *
  * body: { contractor_name, reception_no }
- * 응답: { id, reception_no, contractor_name, phone, address, email, description, photos, status, created_at, updated_at, photo_urls }
+ * 응답: { reception_no, contractor_name, status, status_label, created_at }
+ *   (기존 응답에서 photos·photo_urls·description·email·address 제거)
  */
-import type { AsEnv } from '../../_shared/env';
-import {
-  createSupabaseRest,
-  pgSelect,
-  storageSignedUrl,
-} from '../../_shared/supabase';
 import { jsonResponse, errorResponse, corsHeaders } from '../../_shared/cors';
 import { isValidReceptionNo } from '../../_shared/asValidate';
 
-interface AsRequestRow {
-  id: string;
-  reception_no: string;
-  contractor_name: string;
-  phone: string;
-  address: string;
-  email: string;
-  description: string;
-  photos: { path: string; name: string; size: number; mime: string }[];
-  status: string;
-  admin_memo: string | null;
-  created_at: string;
-  updated_at: string;
+interface AsEnv {
+  ERP_AS_API_KEY?: string;
+  ERP_BASE_URL?: string;
 }
+
+// ERP 한글 상태 → 홈페이지 표시 라벨 매핑 (기존 영문 상태값 호환)
+const STATUS_TO_LEGACY: Record<string, string> = {
+  접수: 'received',
+  처리중: 'in_progress',
+  완료: 'done',
+  취소: 'canceled',
+};
 
 export const onRequestOptions: PagesFunction<AsEnv> = async () => {
   return new Response(null, { status: 204, headers: corsHeaders });
@@ -50,41 +47,52 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
     return errorResponse('접수번호 형식이 올바르지 않습니다.', 400);
   }
 
-  let supabase;
-  try {
-    supabase = createSupabaseRest(env);
-  } catch (e) {
-    console.error('[as/lookup] env 오류:', e);
+  if (!env.ERP_AS_API_KEY || !env.ERP_BASE_URL) {
+    console.error('[as/lookup] ERP env 미설정');
     return errorResponse('서버 설정 오류', 500);
   }
 
-  let row: AsRequestRow;
   try {
-    row = await pgSelect<AsRequestRow>(
-      supabase,
-      'as_requests',
-      `reception_no=eq.${encodeURIComponent(receptionNo)}&contractor_name=eq.${encodeURIComponent(contractorName)}&select=*`,
-      { single: true }
-    );
-  } catch (e) {
-    // PostgREST는 0건일 때 406 반환
-    return errorResponse('일치하는 접수내역이 없습니다.', 404);
-  }
-
-  // 사진 signed URL 발급 (1시간)
-  const photoUrls: string[] = [];
-  for (const p of row.photos || []) {
-    try {
-      const url = await storageSignedUrl(supabase, 'as-photos', p.path, 60 * 60);
-      photoUrls.push(url);
-    } catch (e) {
-      console.error('[as/lookup] signed URL 발급 실패:', e);
-      photoUrls.push('');
+    const url = `${env.ERP_BASE_URL.replace(/\/+$/, '')}/api/external/as-lookup`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': env.ERP_AS_API_KEY,
+      },
+      body: JSON.stringify({
+        receptionNo,
+        customerName: contractorName,
+      }),
+    });
+    if (res.status === 404) {
+      return errorResponse('일치하는 접수내역이 없습니다.', 404);
     }
-  }
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('[as/lookup] ERP 응답 오류', res.status, text);
+      return errorResponse('조회 중 오류가 발생했습니다.', 502);
+    }
+    const data = (await res.json()) as {
+      receptionNo: string;
+      status: string;
+      createdAt: string | null;
+    };
 
-  return jsonResponse({
-    ...row,
-    photo_urls: photoUrls,
-  });
+    // 기존 클라이언트 호환: status 영문 코드 + 한글 라벨 둘 다 제공
+    const legacyStatus = STATUS_TO_LEGACY[data.status] ?? 'received';
+    return jsonResponse({
+      reception_no: data.receptionNo,
+      contractor_name: contractorName,
+      status: legacyStatus,
+      status_label: data.status,
+      created_at: data.createdAt,
+      // 사진·처리노트 등은 의도적으로 미반환 — 부사장님 정책
+      photos: [],
+      photo_urls: [],
+    });
+  } catch (e) {
+    console.error('[as/lookup] ERP 호출 실패:', e);
+    return errorResponse('조회 실패', 500);
+  }
 };

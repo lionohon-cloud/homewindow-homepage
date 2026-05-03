@@ -1,30 +1,24 @@
 /**
  * POST /api/as/create
- * 고객 AS 신규 접수.
- * Content-Type: multipart/form-data
- *   - contractor_name, phone, address, email, description
- *   - hw_website (honeypot — 비어있어야 정상)
- *   - photos[] (선택, 최대 5장)
+ * 고객 AS 신규 접수 — ERP (cahwindow-quote) 로 forward.
  *
- * 응답: { reception_no, id }
+ * 부사장님 결정 (2026-05-03 B안):
+ *   기존 Supabase 저장 폐기. ERP Firestore 단일화.
+ *
+ * Content-Type: multipart/form-data
+ *   - contractor_name, phone, address, email, description, photos[], hw_website (honeypot)
+ *
+ * 응답: { reception_no, id }  (id == reception_no)
  */
-import type { AsEnv } from '../../_shared/env';
-import {
-  createSupabaseRest,
-  pgInsert,
-  pgRpc,
-  storageUpload,
-} from '../../_shared/supabase';
 import { jsonResponse, errorResponse, corsHeaders } from '../../_shared/cors';
 import {
   validateAsInput,
   validatePhotos,
-  AsPhotoMeta,
 } from '../../_shared/asValidate';
 
-interface AsRequestRow {
-  id: string;
-  reception_no: string;
+interface AsEnv {
+  ERP_AS_API_KEY?: string;
+  ERP_BASE_URL?: string;
 }
 
 export const onRequestOptions: PagesFunction<AsEnv> = async () => {
@@ -42,8 +36,7 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
   // Honeypot
   const honeypot = String(form.get('hw_website') || '').trim();
   if (honeypot.length > 0) {
-    // 봇으로 판단. 가짜 성공 응답.
-    return jsonResponse({ reception_no: 'AS-000000000000', id: 'bot' });
+    return jsonResponse({ reception_no: 'AS-000000-00000', id: 'bot' });
   }
 
   // 입력 검증
@@ -59,61 +52,51 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
   }
 
   // 사진 추출
-  const photoEntries = form.getAll('photos').filter((v): v is File => v instanceof File);
+  const photoEntries = form
+    .getAll('photos')
+    .filter((v): v is File => v instanceof File);
   const photoCheck = validatePhotos(photoEntries);
   if (!photoCheck.ok) {
     return errorResponse(photoCheck.error || '사진 검증 실패', 400);
   }
 
-  let supabase;
-  try {
-    supabase = createSupabaseRest(env);
-  } catch (e) {
-    console.error('[as/create] env 오류:', e);
+  // 환경변수 검증
+  if (!env.ERP_AS_API_KEY || !env.ERP_BASE_URL) {
+    console.error('[as/create] ERP env 미설정 (ERP_AS_API_KEY / ERP_BASE_URL)');
     return errorResponse('서버 설정 오류', 500);
   }
 
-  // 1) 접수번호 발급 (RPC)
-  let receptionNo: string;
-  try {
-    receptionNo = await pgRpc<string>(supabase, 'next_reception_no');
-  } catch (e) {
-    console.error('[as/create] reception_no 발급 실패:', e);
-    return errorResponse('접수번호 발급 실패', 500);
+  // ERP 호출용 multipart 재구성 (필드명 매핑: 홈페이지 → ERP)
+  const erpForm = new FormData();
+  erpForm.append('customerName', validation.data.contractor_name);
+  erpForm.append('customerPhone', validation.data.phone);
+  erpForm.append('customerAddress', validation.data.address);
+  erpForm.append('email', validation.data.email);
+  erpForm.append('content', validation.data.description);
+  for (const f of photoEntries) {
+    erpForm.append('photos', f, f.name);
   }
 
-  // 2) 사진 업로드 (있는 경우)
-  const photoMeta: AsPhotoMeta[] = [];
-  for (let i = 0; i < photoEntries.length; i++) {
-    const file = photoEntries[i];
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const path = `${receptionNo}/${i + 1}-${crypto.randomUUID()}.${ext}`;
-    try {
-      const buf = await file.arrayBuffer();
-      await storageUpload(supabase, 'as-photos', path, buf, file.type);
-      photoMeta.push({
-        path,
-        name: file.name,
-        size: file.size,
-        mime: file.type,
-      });
-    } catch (e) {
-      console.error('[as/create] 사진 업로드 실패:', e);
-      return errorResponse('사진 업로드 중 오류가 발생했습니다.', 500);
-    }
-  }
-
-  // 3) 행 삽입
   try {
-    const row = await pgInsert<AsRequestRow>(supabase, 'as_requests', {
-      reception_no: receptionNo,
-      ...validation.data,
-      photos: photoMeta,
-      status: 'received',
+    const url = `${env.ERP_BASE_URL.replace(/\/+$/, '')}/api/external/as-create`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'x-api-key': env.ERP_AS_API_KEY },
+      body: erpForm,
     });
-    return jsonResponse({ reception_no: row.reception_no, id: row.id });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('[as/create] ERP 응답 오류', res.status, text);
+      return errorResponse('접수 처리 중 오류가 발생했습니다.', 502);
+    }
+    const data = (await res.json()) as { receptionNo: string; docId: string };
+    // 기존 응답 형태 호환 — reception_no, id
+    return jsonResponse({
+      reception_no: data.receptionNo,
+      id: data.docId,
+    });
   } catch (e) {
-    console.error('[as/create] insert 실패:', e);
-    return errorResponse('접수 저장 실패', 500);
+    console.error('[as/create] ERP 호출 실패:', e);
+    return errorResponse('접수 처리 실패', 500);
   }
 };
