@@ -270,9 +270,20 @@ export function Component() {
                 disabled={submitting}
                 className="flex-1 h-[52px] bg-[#D22727] hover:bg-[#b02020] disabled:bg-[#ccc] text-white font-bold rounded-xl transition-colors"
               >
-                {submitting ? '접수 중...' : 'AS 접수하기'}
+                {submitting
+                  ? photos.length > 0
+                    ? `📷 사진 업로드 중... (${photos.length}장)`
+                    : '접수 중...'
+                  : 'AS 접수하기'}
               </button>
             </div>
+            {/* 사진 업로드 진행 안내 — 시간 오래 걸릴 수 있음을 미리 알림 */}
+            {submitting && photos.length > 0 && (
+              <div className="text-center pt-1 text-[12px] text-[#888]">
+                첨부 사진을 업로드하는 중입니다. 사진 수와 용량에 따라 1분 이상 소요될 수 있습니다.
+                창을 닫지 마시고 잠시만 기다려 주세요.
+              </div>
+            )}
 
             {/* 조회 링크 */}
             <div className="text-center pt-2 text-[13px] text-[#666]">
