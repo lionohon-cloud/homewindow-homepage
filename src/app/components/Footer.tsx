@@ -1,5 +1,4 @@
 import { motion } from "motion/react";
-import { Link, useNavigate } from "react-router";
 import { FaPhone, FaYoutube, FaInstagram } from "react-icons/fa";
 import { SiNaver } from "react-icons/si";
 import { Headphones } from "lucide-react";
@@ -12,15 +11,6 @@ function scrollToConsultForm(e: React.MouseEvent<HTMLAnchorElement>) {
 }
 
 export function Footer() {
-  const navigate = useNavigate();
-
-  const handleAsPhoneClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (window.innerWidth >= 768) {
-      e.preventDefault();
-      navigate('/as');
-    }
-  };
-
   return (
     <footer className="w-full bg-[#222222] text-white pt-16 pb-24 md:pb-8">
       <div className="max-w-screen-md mx-auto px-6 md:px-10">
@@ -52,14 +42,9 @@ export function Footer() {
                 <span className="text-white/80 font-normal text-[#ffffff] text-[14px] leading-tight mt-0.5">24시간 문자접수 가능</span>
               </div>
             </a>
-
-            <p className="text-[13px] text-gray-400 leading-[1.7] mt-4">
-              운영시간 : 월~토 09:00~18:00<br />
-              <span className="text-[#aaa]">(점심시간 12:00~13:00 제외)</span>
-            </p>
           </motion.div>
 
-          {/* Right: AS Consultation Info */}
+          {/* Right: Consultation Info */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -67,28 +52,23 @@ export function Footer() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col justify-center h-full"
           >
-            <div className="bg-[#2a2a2a] rounded-lg p-6 h-full flex flex-col justify-center gap-5">
-              <Link
-                to="/as"
-                className="inline-flex flex-col items-center justify-center bg-[#3730a3] text-white rounded-xl px-6 py-3 transition-all active:scale-95 hover:bg-[#312e81]"
-              >
-                <span className="text-[12px] font-normal text-white/70 leading-tight">지금 여기를 눌러서</span>
-                <span className="text-[18px] font-bold leading-tight mt-1">AS접수하기</span>
-              </Link>
-              <div className="flex flex-col items-center text-center gap-1.5">
-                <div className="flex items-center gap-2">
-                  <Headphones className="text-[#d22727]" size={18} />
-                  <p className="text-[14px] text-gray-300 leading-tight">365일 AS 상담전화</p>
+            <a
+              href="tel:16614830"
+              onClick={scrollToConsultForm}
+              className="bg-[#2a2a2a] rounded-lg p-6 h-full flex flex-col justify-center cursor-pointer active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-start gap-3">
+                <Headphones className="text-[#d22727] flex-shrink-0 mt-1" size={20} />
+                <div className="min-w-0">
+                  <p className="text-[20px] font-bold mb-2 whitespace-nowrap">전문상담 : 1661-4830</p>
+                  <p className="text-[13px] text-gray-400 leading-[1.9]">
+                    운영시간 : 월~토 09:00~18:00<br />
+                    <span className="text-[#aaa]">(점심시간 12:00~13:00 제외)</span><br />
+                    <span className="text-[#d22727] font-bold whitespace-nowrap">근무시간 외에는 AI상담사가 24시간 응대합니다</span>
+                  </p>
                 </div>
-                <a
-                  href="tel:070-7919-0033"
-                  onClick={handleAsPhoneClick}
-                  className="text-[20px] font-bold whitespace-nowrap"
-                >
-                  070-7919-0033
-                </a>
               </div>
-            </div>
+            </a>
           </motion.div>
         </div>
 
