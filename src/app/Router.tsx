@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router';
 import AppLayout from './AppLayout';
 import HomePage from './pages/HomePage';
 
@@ -43,6 +43,7 @@ const router = createBrowserRouter([
         path: 'admin/dashboard',
         lazy: () => import('./pages/AdminDashboardPage'),
       },
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ]);
