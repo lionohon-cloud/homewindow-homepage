@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
-import { X, Phone } from "lucide-react";
+import { X, Phone, Loader2 } from "lucide-react";
 import { submitLead } from "@/lib/submitLead";
 import { HoneypotField } from "@/lib/HoneypotField";
 
@@ -134,7 +134,12 @@ export function HeroConsultSection() {
                   disabled={isSubmitting}
                   className="h-[46px] md:h-[50px] px-5 md:px-8 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[13px] md:text-[15px] rounded-xl transition-colors cursor-pointer whitespace-nowrap disabled:bg-[#999] disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? "전송중..." : "상담신청"}
+                  {isSubmitting ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>전송 중...</span>
+                    </span>
+                  ) : "상담신청"}
                 </button>
               </div>
 

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { submitLead } from "@/lib/submitLead";
 import { HoneypotField } from "@/lib/HoneypotField";
@@ -179,7 +179,12 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                           disabled={isSubmitting}
                           className="h-[42px] md:h-[48px] px-4 md:px-8 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[13px] md:text-[15px] rounded-lg transition-colors cursor-pointer whitespace-nowrap disabled:bg-[#999] disabled:cursor-not-allowed"
                         >
-                          {isSubmitting ? "전송중..." : "상담신청"}
+                          {isSubmitting ? (
+                            <span className="inline-flex items-center justify-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>전송 중...</span>
+                            </span>
+                          ) : "상담신청"}
                         </button>
                       </div>
 

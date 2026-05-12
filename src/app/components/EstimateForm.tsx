@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { Phone, Check, ChevronRight, X, Send, RotateCcw } from "lucide-react";
+import { Phone, Check, ChevronRight, X, Send, RotateCcw, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { submitLead } from "@/lib/submitLead";
 import { HoneypotField } from "@/lib/HoneypotField";
@@ -50,6 +50,7 @@ export function EstimateForm() {
   const [agreed, setAgreed] = useState(true);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPhoneSubmitting, setIsPhoneSubmitting] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
@@ -453,6 +454,7 @@ export function EstimateForm() {
       : `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
 
     phoneSubmittingRef.current = true;
+    setIsPhoneSubmitting(true);
     addUserText(formatted);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}` });
@@ -659,19 +661,26 @@ export function EstimateForm() {
                   {msg.type === "contact-phone" && (
                     <div className="bg-white border-[1.5px] border-[#e5e5e5] rounded-xl p-4 shadow-sm mt-2 max-w-[320px]">
                       <div className="text-sm font-bold mb-3 text-[#2c2c2c]">연락처를 남겨주시면 상담사가 전화드려요!</div>
-                      <input 
-                        type="tel" 
-                        placeholder="010-0000-0000" 
-                        className="w-full p-2.5 border border-[#e5e5e5] rounded-lg text-sm mb-2 outline-none focus:border-[#2C2C2C]"
+                      <input
+                        type="tel"
+                        placeholder="010-0000-0000"
+                        disabled={isPhoneSubmitting}
+                        className="w-full p-2.5 border border-[#e5e5e5] rounded-lg text-sm mb-2 outline-none focus:border-[#2C2C2C] disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') handlePhoneSubmit(e.currentTarget.value);
                         }}
                       />
-                      <button 
+                      <button
                         onClick={(e) => handlePhoneSubmit((e.currentTarget.previousElementSibling as HTMLInputElement).value)}
-                        className="w-full p-2.5 bg-[#2C2C2C] text-white rounded-lg text-sm font-bold hover:bg-[#1a1a1a] transition-colors"
+                        disabled={isPhoneSubmitting}
+                        className="w-full p-2.5 bg-[#2C2C2C] text-white rounded-lg text-sm font-bold hover:bg-[#1a1a1a] transition-colors disabled:bg-[#666] disabled:cursor-not-allowed"
                       >
-                        상담 신청하기
+                        {isPhoneSubmitting ? (
+                          <span className="inline-flex items-center justify-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>전송 중...</span>
+                          </span>
+                        ) : "상담 신청하기"}
                       </button>
                     </div>
                   )}
@@ -788,7 +797,12 @@ export function EstimateForm() {
                     disabled={isSubmitting}
                     className="w-[55%] h-[44px] mb-3 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[14px] rounded-lg transition-colors cursor-pointer disabled:bg-[#999] disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? "전송중..." : "상담신청"}
+                    {isSubmitting ? (
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>전송 중...</span>
+                      </span>
+                    ) : "상담신청"}
                   </button>
                   
                   {/* Privacy Agreement */}

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { EstimateModal } from "./EstimateModal";
-import { X, Phone, MessageSquare } from "lucide-react";
+import { X, Phone, MessageSquare, Loader2 } from "lucide-react";
 import { submitLead } from "@/lib/submitLead";
 import { HoneypotField } from "@/lib/HoneypotField";
 
@@ -152,7 +152,12 @@ export function BottomBar() {
                 disabled={isSubmitting}
                 className="h-[42px] px-7 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[14px] rounded-xl transition-colors cursor-pointer whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "전송중..." : "상담신청"}
+                {isSubmitting ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>전송 중...</span>
+                  </span>
+                ) : "상담신청"}
               </button>
             </div>
 
@@ -323,7 +328,12 @@ export function BottomBar() {
                 disabled={isSubmitting}
                 className="w-full h-[52px] bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[15px] rounded-xl transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "전송중..." : "무료 상담 신청하기"}
+                {isSubmitting ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>전송 중...</span>
+                  </span>
+                ) : "무료 상담 신청하기"}
               </button>
             </form>
           </div>
