@@ -143,14 +143,25 @@ export async function submitLead(params: {
   }
 
   // ── 병렬 대기 ─────────────────────────────────────────────
-  // GAS만 사용자 화면 결과 판정에 사용. ERP 결과는 무시(로깅만).
+  // GAS 또는 ERP 중 하나라도 성공이면 화면에 "접수됨" 표시.
+  // (2026-05-19) 광고차단 익스텐션이 script.googleusercontent.com 차단하는 환경에서
+  // GAS 만 실패하고 ERP 는 정상 들어가는 케이스 → 잘못된 "전송 실패" 표시 방지.
+  // ERP 만 성공해도 진짜 데이터는 들어갔으므로 접수 처리.
   const results = await Promise.allSettled([gasPromise, erpPromise]);
   const gasOk = results[0].status === 'fulfilled';
+  // erpPromise 는 .catch 에서 null 반환하므로 fulfilled 라도 r 가 null 이면 실패.
+  // r.ok 가 true 일 때만 진짜 성공.
+  const erpResult = results[1];
+  const erpOk =
+    erpResult.status === 'fulfilled' &&
+    erpResult.value !== null &&
+    (erpResult.value as Response).ok === true;
+  const submitted = gasOk || erpOk;
 
-  if (gasOk) {
+  if (submitted) {
     // /thanks 가드용 플래그
     sessionStorage.setItem('hw_just_submitted', '1');
   }
 
-  return gasOk;
+  return submitted;
 }
