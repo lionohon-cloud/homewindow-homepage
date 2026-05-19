@@ -6,7 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "dev:cf": "wrangler pages dev --compatibility-date=2026-04-01 --port 8788 --proxy 5173 --env-file .env.local -- npm run dev"
+    "dev:cf": "wrangler pages dev --compatibility-date=2026-04-01 --port 8788 --proxy 5173 --env-file .env.local --kv REVIEW_RL -- npm run dev"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

@@ -1,7 +1,11 @@
 node_modules/
 dist/
+# 환경변수 — 실제 시크릿 값은 절대 push 금지.
+# .env.local.example 은 빈 양식 (허용).
+# Cloudflare Pages 대시보드 > Settings > Environment variables 에 진짜 값 등록.
 .env
-.env.local
+.env.*
+!.env.*.example
 .DS_Store
 .vercel
 .wrangler/

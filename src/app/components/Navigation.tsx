@@ -31,6 +31,11 @@ type DesktopMenuItem =
   | { type: "section"; id: string; label: string }
   | { type: "route"; href: string; label: string };
 
+// 시공후기 운영 토글 — docs/REVIEW_GO_LIVE.md 참조
+// OFF: GNB 메뉴 + /review 리스트/상세 페이지 숨김 (작성 진입은 EventSection 의 CTA로 살아있음)
+// ON : VITE_REVIEW_SECTION_LIVE=1
+const REVIEW_LIVE = import.meta.env.VITE_REVIEW_SECTION_LIVE === "1";
+
 const desktopMenuItems: DesktopMenuItem[] = [
   { type: "section", id: "event", label: "이벤트" },
   { type: "section", id: "production", label: "제작공장" },
@@ -38,6 +43,9 @@ const desktopMenuItems: DesktopMenuItem[] = [
   { type: "section", id: "glass", label: "단열유리" },
   { type: "section", id: "installation", label: "원데이시공" },
   { type: "section", id: "warranty", label: "15년보증" },
+  ...(REVIEW_LIVE
+    ? [{ type: "route" as const, href: "/review", label: "시공후기" }]
+    : []),
   // 260503: Cloudflare 이관 완료 후 재개
   { type: "route", href: "/as", label: "AS접수" },
 ];
@@ -355,13 +363,26 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   </motion.button>
                 ))}
 
+                {/* 시공후기 페이지 — REVIEW_LIVE flag 켤 때만 노출 */}
+                {REVIEW_LIVE && (
+                  <motion.button
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: sections.length * 0.03, duration: 0.3 }}
+                    onClick={() => goToRoute('/review')}
+                    className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#666] active:bg-[#f8f8f8] mt-2 border-t border-[#eee] pt-5"
+                  >
+                    <span className="text-[15px] font-semibold">시공 후기</span>
+                  </motion.button>
+                )}
+
                 {/* 260503: Cloudflare 이관 완료 후 재개 */}
                 <motion.button
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: sections.length * 0.03, duration: 0.3 }}
+                  transition={{ delay: (sections.length + 1) * 0.03, duration: 0.3 }}
                   onClick={() => goToRoute('/as')}
-                  className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#666] active:bg-[#f8f8f8] mt-2 border-t border-[#eee] pt-5"
+                  className={`w-full text-left px-6 py-4 border-l-4 border-transparent text-[#666] active:bg-[#f8f8f8] ${REVIEW_LIVE ? '' : 'mt-2 border-t border-[#eee] pt-5'}`}
                 >
                   <span className="text-[15px] font-semibold">AS 접수</span>
                 </motion.button>

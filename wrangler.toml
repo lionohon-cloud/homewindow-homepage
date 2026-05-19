@@ -1,0 +1,13 @@
+# Cloudflare Pages 설정.
+# 대부분의 환경변수/시크릿은 Cloudflare 대시보드(Pages > Settings)에서 등록.
+# 본 파일은 KV binding 등 코드가 참조하는 리소스만 선언.
+
+name = "homewindow-homepage"
+compatibility_date = "2026-04-01"
+
+# Rate limit 용 KV namespace.
+# 로컬 dev (npm run dev:cf): wrangler 가 .wrangler/state/v3/kv 에 자동 생성.
+# Production: Cloudflare 대시보드에서 KV namespace 만든 뒤 id 박아넣기.
+[[kv_namespaces]]
+binding = "REVIEW_RL"
+id = "placeholder-replace-with-real-kv-id-in-production"
