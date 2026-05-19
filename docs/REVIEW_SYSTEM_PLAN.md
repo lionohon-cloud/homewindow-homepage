@@ -16,7 +16,7 @@
 
 **아키텍처 결정**
 - **백엔드**: Firebase Firestore. 호출 경로 = 홈페이지 → Cloudflare Functions(`/api/review/*`) → cahwindow-quote ERP(`/api/external/review-*`) → Firestore. AS create.ts 패턴 동일 (`functions/api/as/create.ts:80-101`).
-- **SMS 인증**: 팝빌. ERP가 이미 팝빌 발송 중. 홈페이지는 자체 SMS API 키 갖지 않음. ERP에 신규 외부 API 2개 추가 필요 (별도 작업): `POST /api/external/sms-send-code`, `POST /api/external/sms-verify-code`.
+- **본인 확인 (2026-05-18 변경)**: 팝빌 SMS 인증 폐기 → ERP에 이미 들어 있는 고객 데이터를 **"고객명 + 휴대전화 뒷 4자리"** 로 조회하는 방식. ERP가 매칭하면 JWT(30분) 발급. SMS 발송 비용/지연 없음. ERP에 신규 API `POST /api/external/customer-lookup` 1개만 필요.
 - **사진 업로드**: 프리미엄만 필수 3장(최대 10장). Supabase Storage `reviews-photos` 버킷 (AS와 동일 패턴 — `functions/api/as/admin/photo-url.ts` 참조). Firestore에 photo path만 저장.
 
 ## ⚠️ 관리자 승인 워크플로 (핵심)
