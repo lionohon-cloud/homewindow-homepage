@@ -5,3 +5,16 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://*.clarity.ms https://ssl.logger.co.kr https://*.bizspring.net https://cdnjs.cloudflare.com https://wcs.naver.net https://ssl.pstatic.net https://static.cloudflareinsights.com; script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://*.clarity.ms https://ssl.logger.co.kr https://*.bizspring.net https://cdnjs.cloudflare.com https://wcs.naver.net https://ssl.pstatic.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://*.google-analytics.com https://*.analytics.google.com https://*.clarity.ms https://ssl.logger.co.kr https://*.bizspring.net https://script.google.com https://script.googleusercontent.com https://api.qrserver.com https://wcs.naver.net https://wcs.naver.com https://nam.veta.naver.com https://ssl.pstatic.net https://static.cloudflareinsights.com https://cloudflareinsights.com https://*.supabase.co; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'
+
+# === 캐시 정책 — 청크 미스매치(Failed to fetch dynamically imported module) 방지 ===
+# HTML(라우트 진입점): 캐시 안 함. 매번 서버 확인 → 새 배포 시 즉시 새 청크 해시 받음.
+# 해시 박힌 정적 자산: 1년 캐싱(immutable). 어차피 새 빌드는 새 파일명이라 충돌 없음.
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
