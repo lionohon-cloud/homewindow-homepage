@@ -36,13 +36,9 @@ const ROWS: DiscountRow[] = [
   },
 ];
 
-function DiscountCard({ row, index }: { row: DiscountRow; index: number }) {
+function DiscountCard({ row }: { row: DiscountRow; index: number }) {
   const inner = (
-    <motion.div
-      initial={{ opacity: 0, x: -24 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, margin: "-120px" }}
-      transition={{ delay: 0.25 + index * 0.08, type: "spring", stiffness: 110 }}
+    <div
       className={[
         "relative grid items-center gap-4 md:gap-5 rounded-2xl p-4 md:p-5 shadow-lg",
         "grid-cols-[44px_1fr_auto] md:grid-cols-[56px_1fr_auto]",
@@ -75,7 +71,7 @@ function DiscountCard({ row, index }: { row: DiscountRow; index: number }) {
         <span className="text-[28px] md:text-[34px] leading-none">{row.pct}</span>
         <span className="text-[16px] md:text-[18px] leading-none">%</span>
       </div>
-    </motion.div>
+    </div>
   );
   return row.to ? <Link to={row.to}>{inner}</Link> : inner;
 }
@@ -83,16 +79,6 @@ function DiscountCard({ row, index }: { row: DiscountRow; index: number }) {
 export function EventSection() {
   return (
     <section className="w-full bg-[radial-gradient(120%_80%_at_50%_0%,_#d23030_0%,_#b01818_60%,_#8a1010_100%)] py-16 md:py-24 relative overflow-hidden isolate">
-      {/* 배경 라이트 그라데이션 (디자인 시안 .ev::before) */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(800px 400px at 0% 100%, rgba(255,255,255,0.06), transparent 60%), radial-gradient(600px 300px at 100% 0%, rgba(255,255,255,0.05), transparent 60%)",
-          zIndex: -1,
-        }}
-      />
       {/* 배경 데코 원 3개 (opacity-5) */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <div className="absolute top-10 left-10 w-32 h-32 border-4 border-white rounded-full" />
@@ -102,28 +88,14 @@ export function EventSection() {
 
       <div className="max-w-screen-md mx-auto px-6 md:px-10 relative z-10">
         {/* 키워드 배지 */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-center mb-6"
-        >
-          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm px-4 md:px-5 py-2 rounded-full border border-white/25">
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-[#ffd84d]"
-              style={{
-                boxShadow: "0 0 10px #ffd84d",
-                animation: "ev-pulse 1.6s ease-in-out infinite",
-              }}
-            />
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-white/15 px-4 md:px-5 py-2 rounded-full border border-white/25">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ffd84d]" />
             <span className="text-white text-[12px] md:text-[13px] font-semibold tracking-[0.04em]">
               릴레이 고객 감사 EVENT
             </span>
           </div>
-          {/* keyframes 인라인 등록 */}
-          <style>{`@keyframes ev-pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }`}</style>
-        </motion.div>
+        </div>
 
         {/* 메인 타이틀 */}
         <motion.h2
@@ -132,25 +104,10 @@ export function EventSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
           className="text-white text-center text-[28px] md:text-[44px] font-extrabold leading-[1.2] tracking-tight break-keep"
-          style={{ textShadow: "0 2px 24px rgba(0,0,0,0.18)" }}
         >
           최대{" "}
-          <span className="relative inline-block">
-            <span
-              className="text-[#ffd84d] font-black text-[42px] md:text-[64px] tracking-tight"
-              style={{ textShadow: "0 4px 28px rgba(255,216,77,0.55)" }}
-            >
-              40%
-            </span>
-            <motion.span
-              initial={{ scale: 0, rotate: -20 }}
-              whileInView={{ scale: 1, rotate: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-              className="absolute -top-2 -right-5 md:-top-3 md:-right-7 text-[22px] md:text-[36px]"
-            >
-              🔥
-            </motion.span>
+          <span className="text-[#ffd84d] font-black text-[42px] md:text-[64px] tracking-tight">
+            40%
           </span>{" "}
           릴레이 할인,
           <br className="md:hidden" />
@@ -185,7 +142,7 @@ export function EventSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ delay: 0.5 }}
-          className="mt-5 flex items-center justify-between rounded-2xl px-5 md:px-7 py-5 md:py-6 bg-white/10 border border-white/20 backdrop-blur-sm"
+          className="mt-5 flex items-center justify-between rounded-2xl px-5 md:px-7 py-5 md:py-6 bg-white/10 border border-white/20"
         >
           <div className="min-w-0 pr-3">
             <div className="text-[11px] md:text-[12px] tracking-[0.18em] text-[#ffd84d] font-bold">
@@ -209,16 +166,6 @@ export function EventSection() {
           transition={{ delay: 0.6 }}
           className="mt-8 md:mt-10 rounded-3xl bg-gradient-to-br from-[#1a1210] to-[#2a1f1c] border border-[#b8945a]/35 p-6 md:p-9 relative overflow-hidden"
         >
-          {/* 골드 글로우 */}
-          <div
-            aria-hidden
-            className="absolute -top-20 -right-20 w-72 h-72 rounded-full pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(212,178,119,0.18) 0%, transparent 60%)",
-            }}
-          />
-
           <div className="relative">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#b8945a]/15 border border-[#b8945a]/40 text-[#d4b277] text-[10.5px] md:text-[11px] font-bold tracking-[0.18em]">
               <Crown className="w-3 h-3" />
