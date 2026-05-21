@@ -110,8 +110,7 @@ export function EventSection() {
             40%
           </span>{" "}
           릴레이 할인,
-          <br className="md:hidden" />
-          <span className="md:inline"> </span>
+          <br />
           지금 신청하면 더 드립니다
         </motion.h2>
 
