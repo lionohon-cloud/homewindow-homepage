@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router";
-import { Phone, Handshake } from "lucide-react";
+import { Phone } from "lucide-react";
 import { ConsultationModal } from "./ConsultationModal";
 import logo from "figma:asset/4ae621bc1ae2b4dd2f88bf2d3c6c087ff22567bb.png";
 
@@ -258,7 +258,6 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                     onClick={() => navigate("/partners")}
                     className="flex items-center gap-1.5 text-[#1f6fff] hover:underline transition cursor-pointer"
                   >
-                    <Handshake className="w-4 h-4" />
                     <span className="font-semibold whitespace-nowrap text-[14.5px]">
                       홈윈도우 파트너스
                     </span>
