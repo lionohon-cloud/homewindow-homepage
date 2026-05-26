@@ -68,6 +68,22 @@ export function Navigation({ onMenuClick }: NavigationProps) {
     }
   }, [showNav]);
 
+  // 모바일 사이드 메뉴 열려있는 동안 body 스크롤 잠금
+  // (iOS Safari scroll chaining + 메뉴 바깥 터치 둘 다 차단)
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isMobileMenuOpen]);
+
   useEffect(() => {
     // EstimateModal 상태 감지
     const checkModalState = () => {
@@ -351,7 +367,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="md:hidden fixed right-0 top-0 bottom-0 w-[70%] bg-white z-[70] shadow-2xl overflow-y-auto"
+              className="md:hidden fixed right-0 top-0 bottom-0 w-[70%] bg-white z-[70] shadow-2xl overflow-y-auto overscroll-contain"
             >
               {/* 메뉴 헤더 */}
               <div className="sticky top-0 bg-white border-b border-[#eaeaea] px-6 py-4 z-10">
