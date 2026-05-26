@@ -156,7 +156,7 @@ export function OneDayInstallationSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="px-6 md:px-10 text-[#999] text-[16px] md:text-[18px] leading-[26px] break-keep mb-10 md:mb-14"
         >
-          <p>공사 기간이 길어질까 걱정하지 마세요.<br />본사 전국 직영 시공팀이 방문해 하루 만에 마감합니다.</p>
+          <p>공사 기간이 길어질까 걱정하지 마세요.<br />청암홈윈도우 시공팀이 방문해 하루 만에 마감합니다.</p>
         </motion.div>
 
         {/* Process Infographic - Mobile: Vertical Scroll, Desktop: Horizontal */}

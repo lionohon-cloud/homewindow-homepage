@@ -86,6 +86,10 @@ const router = createBrowserRouter([
         lazy: lazyWithRetry(() => import('./pages/ThanksPage')),
       },
       {
+        path: 'partners',
+        lazy: lazyWithRetry(() => import('./pages/PartnersPage')),
+      },
+      {
         path: 'as',
         lazy: lazyWithRetry(() => import('./pages/AsReceptionPage')),
       },

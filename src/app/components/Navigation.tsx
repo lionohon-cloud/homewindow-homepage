@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router";
-import { Phone } from "lucide-react";
+import { Phone, Handshake } from "lucide-react";
 import { ConsultationModal } from "./ConsultationModal";
 import logo from "figma:asset/4ae621bc1ae2b4dd2f88bf2d3c6c087ff22567bb.png";
 
@@ -238,16 +238,30 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   })}
                 </div>
 
-                {/* 무료상담 전화번호 */}
-                <button
-                  onClick={() => setIsConsultationOpen(true)}
-                  className="flex items-center gap-2 bg-[#d22727] text-white px-5 py-2.5 rounded-full hover:bg-[#b81f1f] transition-colors cursor-pointer"
-                >
-                  <Phone className="w-5 h-5" />
-                  <span className="font-medium whitespace-nowrap text-[16px]">
-                    무료상담접수 : 1661-4830
-                  </span>
-                </button>
+                {/* CTA 버튼 그룹: 파트너스 + 무료상담 */}
+                <div className="flex items-center gap-3">
+                  {/* 홈윈도우 파트너스 (별도 페이지) */}
+                  <button
+                    onClick={() => navigate("/partners")}
+                    className="flex items-center gap-2 bg-[#1f6fff] text-white px-5 py-2.5 rounded-full hover:bg-[#1857d6] transition-colors cursor-pointer"
+                  >
+                    <Handshake className="w-5 h-5" />
+                    <span className="font-medium whitespace-nowrap text-[16px]">
+                      홈윈도우 파트너스
+                    </span>
+                  </button>
+
+                  {/* 무료상담 전화번호 */}
+                  <button
+                    onClick={() => setIsConsultationOpen(true)}
+                    className="flex items-center gap-2 bg-[#d22727] text-white px-5 py-2.5 rounded-full hover:bg-[#b81f1f] transition-colors cursor-pointer"
+                  >
+                    <Phone className="w-5 h-5" />
+                    <span className="font-medium whitespace-nowrap text-[16px]">
+                      무료상담접수 : 1661-4830
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </motion.nav>
@@ -385,6 +399,17 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   className={`w-full text-left px-6 py-4 border-l-4 border-transparent text-[#666] active:bg-[#f8f8f8] ${REVIEW_LIVE ? '' : 'mt-2 border-t border-[#eee] pt-5'}`}
                 >
                   <span className="text-[15px] font-semibold">AS 접수</span>
+                </motion.button>
+
+                {/* 홈윈도우 파트너스 (별도 페이지) */}
+                <motion.button
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: (sections.length + 2) * 0.03, duration: 0.3 }}
+                  onClick={() => goToRoute('/partners')}
+                  className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#1f6fff] active:bg-[#1f6fff]/5 mt-2 border-t border-[#eee] pt-5"
+                >
+                  <span className="text-[15px] font-bold">홈윈도우 파트너스</span>
                 </motion.button>
               </div>
             </motion.div>
