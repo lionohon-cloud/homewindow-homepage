@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { ArrowLeft } from "lucide-react";
 import PartnersHero from "../components/partners/PartnersHero";
 import PartnersProcess from "../components/partners/PartnersProcess";
 import PartnersTrust from "../components/partners/PartnersTrust";
@@ -17,7 +19,19 @@ export function Component() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
+      {/* 좌상단 floating 칩 — 메인으로 가는 출구 */}
+      <Link
+        to="/"
+        className="fixed top-4 left-4 md:top-5 md:left-5 z-40 flex items-center gap-1 md:gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1.5 md:px-4 md:py-2 shadow-md hover:bg-gray-50 transition-colors"
+      >
+        <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#666]" />
+        <span className="text-[11px] md:text-xs font-semibold text-[#333]">
+          <span className="md:hidden">메인</span>
+          <span className="hidden md:inline">메인으로</span>
+        </span>
+      </Link>
+
       <PartnersHero onApplyClick={() => setIsModalOpen(true)} />
       <PartnersProcess />
       <PartnersTrust />
