@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Link } from "react-router";
-import { ArrowRight, Crown } from "lucide-react";
+import { Crown } from "lucide-react";
 
 type DiscountRow = {
   num: string;
@@ -237,7 +237,6 @@ export function EventSection() {
               >
                 <Crown className="w-4 h-4" />
                 지금 후기 작성하러 가기
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
           </div>
