@@ -233,7 +233,7 @@ export function EventSection() {
               </p>
               <Link
                 to="/review/new"
-                className="group inline-flex items-center justify-center gap-2 h-[54px] px-8 rounded-2xl bg-gradient-to-br from-[#d4b277] to-[#b8945a] text-[#1a1210] font-extrabold text-[15px] md:text-[16px] tracking-tight shadow-[0_8px_24px_rgba(212,178,119,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                className="group inline-flex items-center justify-center gap-2 h-[54px] px-8 rounded-2xl bg-[#d4b277] text-[#1a1210] font-extrabold text-[15px] md:text-[16px] tracking-tight hover:bg-[#c9a468] active:scale-[0.98] transition-colors"
               >
                 <Crown className="w-4 h-4" />
                 지금 후기 작성하러 가기
