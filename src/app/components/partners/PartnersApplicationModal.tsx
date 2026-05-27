@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
@@ -8,6 +9,7 @@ interface ApplicationModalProps {
 }
 
 export default function PartnersApplicationModal({ open, onOpenChange }: ApplicationModalProps) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -72,18 +74,14 @@ export default function PartnersApplicationModal({ open, onOpenChange }: Applica
       );
 
       // no-cors 모드에서는 응답을 읽을 수 없으므로 요청이 나가면 성공으로 처리
-      setAlertType('success');
-      setAlertMessage('상담 접수가 완료되었습니다');
-      setShowAlert(true);
-
-      // Reset form and close after delay
-      setTimeout(() => {
-        setFormData({ name: '', phone: '', location: '' });
-        setAgreedToTerms(true);
-        setShowTermsDetail(false);
-        onOpenChange(false);
-        setShowAlert(false);
-      }, 2000);
+      // PartnersThanksPage 가드용 플래그 + /partners/thanks 라우트로 이동
+      sessionStorage.setItem('hw_partners_just_submitted', '1');
+      setFormData({ name: '', phone: '', location: '' });
+      setAgreedToTerms(true);
+      setShowTermsDetail(false);
+      onOpenChange(false);
+      navigate('/partners/thanks');
+      return;
     } catch (error) {
       setAlertType('error');
       setAlertMessage('전송 중 오류가 발생했습니다.\n다시 시도해주세요.');
