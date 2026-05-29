@@ -26,7 +26,6 @@ export type LookupResponse =
       snapshot?: ReviewSnapshot;
     }
   | { matched: "none" }
-  | { matched: "multiple" }
   | { matched: "already_reviewed" };
 
 export async function lookupCustomer(input: {
@@ -35,7 +34,6 @@ export async function lookupCustomer(input: {
 }): Promise<LookupResponse> {
   if (MOCK) {
     if (input.phoneLast4 === "0000") return { matched: "none" };
-    if (input.phoneLast4 === "9999") return { matched: "multiple" };
     if (input.phoneLast4 === "1111") return { matched: "already_reviewed" };
     return {
       matched: "one",

@@ -15,8 +15,7 @@ export function Component() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const canSubmit =
-    name.trim().length >= 2 &&
-    name.trim().length <= 5 &&
+    name.trim().length >= 1 &&
     /^[0-9]{4}$/.test(last4) &&
     agree &&
     !loading;
@@ -44,10 +43,6 @@ export function Component() {
       if (res.matched === "none") {
         setErrorMsg(
           "고객 정보가 확인되지 않습니다. 시공받으신 분이 맞다면 1661-4830로 문의해 주세요.",
-        );
-      } else if (res.matched === "multiple") {
-        setErrorMsg(
-          "동명의 고객이 여러 분 계셔서 확인이 어렵습니다. 1661-4830로 문의해 주세요.",
         );
       } else if (res.matched === "already_reviewed") {
         setErrorMsg("이미 후기를 작성해 주신 번호입니다. 감사합니다.");
@@ -107,7 +102,7 @@ export function Component() {
                   placeholder="예) 홍길동"
                   value={name}
                   onChange={(e) => setName(e.target.value.replace(/\s/g, ""))}
-                  maxLength={5}
+                  maxLength={20}
                   className="w-full h-12 pl-9 pr-3 rounded-xl border border-[#ebe5e0] bg-white text-[15px] focus:border-[#952c2c] focus:outline-none focus:ring-2 focus:ring-[#952c2c]/15"
                 />
               </div>

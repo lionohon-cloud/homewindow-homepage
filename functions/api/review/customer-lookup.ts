@@ -76,8 +76,10 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
 
   const name = (body.name || '').trim();
   const last4 = (body.phoneLast4 || '').trim();
-  if (!/^[가-힣]{2,5}$/.test(name)) {
-    return errorResponse('이름을 정확히 입력해 주세요. (한글 2~5자)', 400);
+  // 이름은 비어있지만 않으면 통과 — 매칭은 last4 + 후보 존재로 판단.
+  // (영문/한자/긴 이름/ERP 깨진 이름까지 모두 허용)
+  if (name.length < 1) {
+    return errorResponse('이름을 입력해 주세요.', 400);
   }
   if (!/^[0-9]{4}$/.test(last4)) {
     return errorResponse('휴대전화 뒷 4자리를 정확히 입력해 주세요.', 400);
@@ -175,26 +177,27 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
   if (matched.length === 0) {
     return finish({ matched: 'none' });
   }
-  if (matched.length > 1) {
-    return finish({ matched: 'multiple' });
-  }
 
+  // 동명이인(서로 다른 phone, 2명+)이어도 막지 않음 — 첫 후보를 통과시킨다.
+  // candidates 에 inboundCustomers 를 먼저 push 하므로 filtered/matched 순서상
+  // inbound 후보가 앞선다 (snapshot 풍부). 단, 같은 last4 충돌 시 본인이 아닌
+  // 후보의 PII 가 prefill 될 수 있음 — 의도된 정책 (사용자 확인 2026-05-29).
   const hit = matched[0];
 
-  // ---------- 이미 작성한 후기 확인 ----------
+  // ---------- 이미 작성한 후기 확인 (3건까지 허용) ----------
   try {
     const existing = await restQueryByField(
       session,
       'reviews',
       'customerPhone',
       hit.phone,
-      5,
+      10,
     );
-    const live = existing.find((d) => {
+    const live = existing.filter((d) => {
       const f = decodeFields(d.fields);
       return f.status !== 'rejected';
     });
-    if (live) {
+    if (live.length >= 3) {
       return finish({ matched: 'already_reviewed' });
     }
   } catch (e) {
