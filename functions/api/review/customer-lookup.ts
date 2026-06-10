@@ -109,12 +109,15 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
   const candidates: Candidate[] = [];
 
   // inboundCustomers — customerName 또는 name 매칭
+  // ERP 수기 등록 건은 이름이 "{이름}-{뒷4자리}" 형태로 저장되기도 함 → suffix 변형도 조회
   try {
-    const [byCustomerName, byName] = await Promise.all([
+    const [byCustomerName, byName, byCustomerNameSuffix, byNameSuffix] = await Promise.all([
       restQueryByField(session, 'inboundCustomers', 'customerName', name, 20),
       restQueryByField(session, 'inboundCustomers', 'name', name, 20),
+      restQueryByField(session, 'inboundCustomers', 'customerName', `${name}-${last4}`, 20),
+      restQueryByField(session, 'inboundCustomers', 'name', `${name}-${last4}`, 20),
     ]);
-    for (const d of dedupeDocs([...byCustomerName, ...byName])) {
+    for (const d of dedupeDocs([...byCustomerName, ...byName, ...byCustomerNameSuffix, ...byNameSuffix])) {
       const data = decodeFields(d.fields);
       const phone = String(data.phone || '');
       const fullName = String(

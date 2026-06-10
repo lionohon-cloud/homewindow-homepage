@@ -42,7 +42,7 @@ export function Component() {
       trackReview("lookup_customer_fail", { reason: res.matched });
       if (res.matched === "none") {
         setErrorMsg(
-          "고객 정보가 확인되지 않습니다. 시공받으신 분이 맞다면 1661-4830로 문의해 주세요.",
+          "고객 정보가 확인되지 않습니다. 성함과 휴대전화 뒷 4자리를 다시 확인해 주세요.",
         );
       } else if (res.matched === "already_reviewed") {
         setErrorMsg("이미 후기를 작성해 주신 번호입니다. 감사합니다.");
@@ -160,12 +160,6 @@ export function Component() {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "확인하기"}
             </button>
 
-            <p className="text-center text-[12px] text-[#9a948f] mt-2">
-              확인이 어려우신가요?{" "}
-              <a href="tel:1661-4830" className="font-bold text-[#952c2c] underline">
-                1661-4830
-              </a>
-            </p>
           </form>
         </div>
       </section>
