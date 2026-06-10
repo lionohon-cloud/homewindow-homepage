@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
+import { getUtmData } from '@/lib/utm';
 
 interface ApplicationModalProps {
   open: boolean;
@@ -57,6 +58,8 @@ export default function PartnersApplicationModal({ open, onOpenChange }: Applica
     // Submit to Google Apps Script
     setIsSubmitting(true);
     try {
+      // 랜딩 시 initUtm()이 sessionStorage에 저장해둔 UTM 데이터
+      const utm = getUtmData();
       await fetch(
         'https://script.google.com/macros/s/AKfycbxI-XPoJSUEZiRmiQk9njsItmy6UBeQhvyU1qHXTH4NFqRYVW9OV23YwJVfGuY6Zh-v/exec',
         {
@@ -69,6 +72,13 @@ export default function PartnersApplicationModal({ open, onOpenChange }: Applica
             name: formData.name,
             phone: formData.phone,
             residence: formData.location,
+            utm_source: utm.utm_source,
+            utm_medium: utm.utm_medium,
+            utm_campaign: utm.utm_campaign,
+            utm_content: utm.utm_content,
+            utm_term: utm.utm_term,
+            landing_path: utm.landing_path,
+            referrer: utm.referrer,
           }),
         }
       );
