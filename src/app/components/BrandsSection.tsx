@@ -20,7 +20,7 @@ const brands = [
       borderColor: 'border-[#d22427]'
     },
     table: [
-      { label: "프로파일 보증", p: "15년", s: "15년", e: "-" },
+      { label: "프로파일 보증", p: "15년", s: "15년", e: "15년" },
       { label: "발코니 방충망", p: "안전방충망", s: "블랙스텐망", e: "스텐망" },
       { label: "Ar", p: "O", s: "X", e: "X" },
       { label: "간봉", p: "TPS", s: "TPS", e: "AL" },
@@ -51,7 +51,7 @@ const brands = [
       borderColor: 'border-[#333333]'
     },
     table: [
-      { label: "프로파일 보증", p: "15년", s: "15년", e: "-" },
+      { label: "프로파일 보증", p: "15년", s: "15년", e: "15년" },
       { label: "발코니 방충망", p: "안전방충망", s: "블랙스텐망", e: "스텐망" },
       { label: "Ar", p: "O", s: "X", e: "X" },
       { label: "간봉", p: "TPS", s: "TPS", e: "AL" },
@@ -82,7 +82,7 @@ const brands = [
       borderColor: 'border-[#1b509f]'
     },
     table: [
-      { label: "프로파일 보증", p: "15년", s: "15년", e: "-" },
+      { label: "프로파일 보증", p: "15년", s: "15년", e: "15년" },
       { label: "발코니 방충망", p: "안전방충망", s: "블랙스텐망", e: "스텐망" },
       { label: "Ar", p: "O", s: "X", e: "X" },
       { label: "간봉", p: "TPS", s: "TPS", e: "AL" },
