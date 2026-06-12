@@ -34,6 +34,17 @@ interface FormState {
   installDate: string;
 }
 
+// ERP snapshot이 채운 필드의 잠금 여부
+interface FieldLocks {
+  brand: boolean;
+  model: boolean;
+  productName: boolean;
+  glassType: boolean;
+  installCount: boolean;
+  size: boolean;
+  installDate: boolean;
+}
+
 export function Component() {
   const navigate = useNavigate();
   const token = sessionStorage.getItem(REVIEW_SESSION_KEYS.TOKEN);
@@ -48,13 +59,26 @@ export function Component() {
     }
   }, []);
 
+  // ERP 시공 데이터(snapshot)에서 온 값은 자동 선택 + 잠금 (사용자 변경 불가)
+  const lockedBrand = mapSnapshotBrand(snapshot?.brand);
+  const lockedModel = mapSnapshotModel(snapshot?.modelGrade);
+  const locks: FieldLocks = {
+    brand: !!lockedBrand,
+    model: !!lockedModel,
+    productName: !!snapshot?.productLabel,
+    glassType: !!snapshot?.glassLabel,
+    installCount: !!snapshot?.sizeLabel?.match(/외 (\d+)개소/),
+    size: !!snapshot?.sizeLabel,
+    installDate: !!snapshot?.installDate,
+  };
+
   const [form, setForm] = useState<FormState>(() => ({
     rating: 0,
     parts: snapshot?.siteWorkSummary
       ? snapshot.siteWorkSummary.split(/[·\s,]+/).filter(Boolean).slice(0, 8)
       : [],
-    brand: "",
-    model: "",
+    brand: lockedBrand,
+    model: lockedModel,
     reviewText: "",
     tags: [],
     photos: [],
@@ -147,6 +171,7 @@ export function Component() {
         <MobileForm
           isPremium={isPremium}
           form={form}
+          locks={locks}
           update={update}
           ratingLabel={ratingLabel}
           minLen={minLen}
@@ -163,6 +188,7 @@ export function Component() {
         <DesktopForm
           isPremium={isPremium}
           form={form}
+          locks={locks}
           update={update}
           ratingLabel={ratingLabel}
           minLen={minLen}
@@ -186,6 +212,7 @@ export function Component() {
 function MobileForm({
   isPremium,
   form,
+  locks,
   update,
   ratingLabel,
   minLen,
@@ -197,6 +224,7 @@ function MobileForm({
 }: {
   isPremium: boolean;
   form: FormState;
+  locks: FieldLocks;
   update: (p: Partial<FormState>) => void;
   ratingLabel: string;
   minLen: number;
@@ -257,6 +285,8 @@ function MobileForm({
               model={form.model}
               onBrandChange={(b) => update({ brand: b })}
               onModelChange={(m) => update({ model: m })}
+              brandLocked={locks.brand}
+              modelLocked={locks.model}
             />
           </div>
         </section>
@@ -347,6 +377,7 @@ function MobileForm({
 function DesktopForm({
   isPremium,
   form,
+  locks,
   update,
   ratingLabel,
   minLen,
@@ -359,6 +390,7 @@ function DesktopForm({
 }: {
   isPremium: boolean;
   form: FormState;
+  locks: FieldLocks;
   update: (p: Partial<FormState>) => void;
   ratingLabel: string;
   minLen: number;
@@ -461,6 +493,8 @@ function DesktopForm({
                 model={form.model}
                 onBrandChange={(b) => update({ brand: b })}
                 onModelChange={(m) => update({ model: m })}
+                brandLocked={locks.brand}
+                modelLocked={locks.model}
               />
             </FormBlock>
 
@@ -472,17 +506,20 @@ function DesktopForm({
                     placeholder="제품명 (예: LX Z:IN 슈퍼세이브2 PHC235)"
                     value={form.productName}
                     onChange={(v) => update({ productName: v })}
+                    locked={locks.productName}
                   />
                   <div className="grid grid-cols-2 gap-2.5">
                     <DesktopInput
                       placeholder="유리 종류"
                       value={form.glassType}
                       onChange={(v) => update({ glassType: v })}
+                      locked={locks.glassType}
                     />
                     <DesktopInput
                       placeholder="시공 개소"
                       value={form.installCount}
                       onChange={(v) => update({ installCount: v })}
+                      locked={locks.installCount}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2.5">
@@ -490,11 +527,13 @@ function DesktopForm({
                       placeholder="대표 사이즈 (mm)"
                       value={form.size}
                       onChange={(v) => update({ size: v })}
+                      locked={locks.size}
                     />
                     <DesktopInput
                       placeholder="시공 일자"
                       value={form.installDate}
                       onChange={(v) => update({ installDate: v })}
+                      locked={locks.installDate}
                     />
                   </div>
                 </div>
@@ -690,10 +729,13 @@ function DesktopInput({
   placeholder,
   value,
   onChange,
+  locked = false,
 }: {
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
+  /** ERP 시공 데이터로 채워진 값 — 수정 불가 */
+  locked?: boolean;
 }) {
   return (
     <input
@@ -701,9 +743,32 @@ function DesktopInput({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full h-[46px] px-3.5 rounded-lg bg-[#faf7f4] border border-[#ebe5e0] text-[14px] tracking-tight text-[#1c1614] focus:outline-none focus:border-[#952c2c] focus:bg-white"
+      disabled={locked}
+      className={
+        "w-full h-[46px] px-3.5 rounded-lg bg-[#faf7f4] border border-[#ebe5e0] text-[14px] tracking-tight text-[#1c1614] focus:outline-none focus:border-[#952c2c] focus:bg-white" +
+        (locked ? " text-[#6b6460] cursor-default" : "")
+      }
     />
   );
+}
+
+// ERP snapshot 값 → 화면 선택지 매핑. 매핑 실패 시 "" (잠그지 않고 직접 선택)
+function mapSnapshotBrand(raw?: string): ReviewBrand | "" {
+  if (!raw) return "";
+  const v = raw.toUpperCase();
+  if (v.includes("LX") || v.includes("Z:IN") || raw.includes("지인")) return "LX";
+  if (v.includes("KCC") || raw.includes("홈씨씨")) return "홈씨씨";
+  if (raw.includes("홈윈도우") || v.includes("HOME")) return "홈윈도우";
+  return "";
+}
+
+function mapSnapshotModel(raw?: string): ReviewModel | "" {
+  if (!raw) return "";
+  const v = raw.toUpperCase();
+  if (raw.includes("프레스티지") || v.includes("PRESTIGE")) return "프레스티지";
+  if (raw.includes("시그니처") || v.includes("SIGNATURE")) return "시그니처";
+  if (raw.includes("에코") || v.includes("ECO") || v.includes("LITE") || raw.includes("라이트")) return "에코";
+  return "";
 }
 
 function DesktopStarInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
