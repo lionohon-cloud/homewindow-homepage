@@ -2,9 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import imgLogo1 from "figma:asset/677d3c9852a0720b22ed2ae5d4ac1812cc00bc3c.png";
 import imgLogo2 from "figma:asset/978f56bc931f29607d72fa188f89650568cf6ba1.png";
-import imgLogo3 from "figma:asset/36b216e9790a73d70f16ed1c2604afcebccfd997.png";
 
-type BrandId = 'lx' | 'home' | 'kcc';
+type BrandId = 'lx' | 'home';
 
 const brands = [
   {
@@ -56,37 +55,6 @@ const brands = [
       { label: "Ar", p: "O", s: "X", e: "X" },
       { label: "간봉", p: "TPS", s: "TPS", e: "AL" },
       { label: "유리종류", p: "수퍼더블로이", s: "로이+투명", e: "투명+그린" },
-      { label: "발코니창 유리", p: "26mm", s: "26mm", e: "-" },
-      { label: "일반창 유리", p: "24mm", s: "24mm", e: "22mm" },
-      { label: "FIX/PJ/터닝도어", p: "24mm", s: "24mm", e: "24mm" },
-      { label: "발코니 핸들", p: "자동", s: "자동", e: "-" },
-      { label: "일반창 핸들", p: "자동", s: "고정+크리센트", e: "크리센트" },
-      { label: "공틀분합문", p: "반자동", s: "반자동", e: "고정+크리센트" },
-      { label: "윈드클로저", p: "발코니창 적용", s: "X", e: "X" },
-      { label: "레일캡", p: "기밀형 정품", s: "기밀형 정품", e: "기밀형 정품" },
-      { label: "물구멍방충캡", p: "O", s: "O", e: "X" },
-      { label: "안전스토퍼", p: "BF스토퍼", s: "BF스토퍼", e: "BF스토퍼" },
-      { label: "빨래건조대", p: "O", s: "X", e: "X" },
-    ]
-  },
-  {
-    id: 'kcc' as BrandId,
-    name: 'KCC Homecc',
-    logo: imgLogo3,
-    theme: {
-      headerBg: 'bg-[#1b509f]',
-      headerBorder: 'border-[#3068bc]',
-      rowBgEven: 'bg-white',
-      rowBgOdd: 'bg-[#f0f5fa]',
-      textColor: 'text-[#0a2958]',
-      borderColor: 'border-[#1b509f]'
-    },
-    table: [
-      { label: "프로파일 보증", p: "15년", s: "15년", e: "15년" },
-      { label: "발코니 방충망", p: "안전방충망", s: "블랙스텐망", e: "스텐망" },
-      { label: "Ar", p: "O", s: "X", e: "X" },
-      { label: "간봉", p: "TPS", s: "TPS", e: "AL" },
-      { label: "유리종류", p: "더블로이", s: "로이+투명", e: "투명+그린" },
       { label: "발코니창 유리", p: "26mm", s: "26mm", e: "-" },
       { label: "일반창 유리", p: "24mm", s: "24mm", e: "22mm" },
       { label: "FIX/PJ/터닝도어", p: "24mm", s: "24mm", e: "24mm" },

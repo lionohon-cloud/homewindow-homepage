@@ -7,8 +7,8 @@ import { HoneypotField } from "@/lib/HoneypotField";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwKDr2j1EzTEZkMtUUoFZGhxoC_f6HBh505pcuD3CNDR8fGlChqFz1MkUfh2NkenTP/exec";
 
-const BRAND_MAP: Record<string, string> = { LX: "LX Z:IN", 홈: "홈윈도우", KCC: "KCC 홈씨씨" };
-const BRAND_ORDER = ["LX", "KCC", "홈"];
+const BRAND_MAP: Record<string, string> = { LX: "LX Z:IN", 홈: "홈윈도우" };
+const BRAND_ORDER = ["LX", "홈"];
 
 type Message = {
   id: string;
@@ -35,7 +35,7 @@ export function EstimateForm() {
     margin: 0,
     vatEnabled: false,
     vatRate: 10,
-    selectedGrades: { LX: "에코", 홈: "에코", KCC: "에코" },
+    selectedGrades: { LX: "에코", 홈: "에코" },
   });
   const [progress, setProgress] = useState(0);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -73,7 +73,7 @@ export function EstimateForm() {
   useEffect(() => {
     const init = async () => {
       setProgress(5);
-      await pushBotText("안녕하세요! 👋\n\n창호 교체 비용이 궁금하신가요?\n**LX · KCC · 홈윈도우** 3개 브랜드 예상 견적을\n지금 바로 비교해드릴게요!", 800);
+      await pushBotText("안녕하세요! 👋\n\n창호 교체 비용이 궁금하신가요?\n**LX · 홈윈도우** 2개 브랜드 예상 견적을\n지금 바로 비교해드릴게요!", 800);
       
       let fetchedPrices = null;
       try {
@@ -395,7 +395,7 @@ export function EstimateForm() {
     setCustomInputValue("");
     (async () => {
       setProgress(5);
-      await pushBotText("다시 시작할게요! 🔄\n\n창호 교체 비용이 궁금하신가요?\n**LX · KCC · 홈윈도우** 3개 브랜드 예상 견적을\n지금 바로 비교해드릴게요!", 800);
+      await pushBotText("다시 시작할게요! 🔄\n\n창호 교체 비용이 궁금하신가요?\n**LX · 홈윈도우** 2개 브랜드 예상 견적을\n지금 바로 비교해드릴게요!", 800);
       if (prices) {
         askBuildingType();
       } else {
@@ -632,7 +632,7 @@ export function EstimateForm() {
                   {msg.type === "result" && (
                     <div className="bg-white border-[1.5px] border-[#e5e5e5] rounded-2xl overflow-hidden shadow-lg mt-2 w-full max-w-[340px]">
                       <div className="bg-[#2C2C2C] text-white p-3">
-                        <div className="text-xs opacity-90 mb-0.5">3사 브랜드 예상 견적</div>
+                        <div className="text-xs opacity-90 mb-0.5">2사 브랜드 예상 견적</div>
                         <div className="text-[11px] opacity-75">현장 미반영 최저 기준</div>
                       </div>
                       <div className="bg-white">
