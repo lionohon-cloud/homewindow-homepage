@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router';
+import { Outlet, ScrollRestoration, useLocation } from 'react-router';
 import { initUtm } from '@/lib/utm';
 
 /**
@@ -30,5 +30,11 @@ export default function AppLayout() {
     }
   }, [location.pathname]);
 
-  return <Outlet />;
+  return (
+    <>
+      {/* 새 이동(PUSH)은 최상단, 뒤로가기(POP)는 이전 위치 복원 */}
+      <ScrollRestoration />
+      <Outlet />
+    </>
+  );
 }
