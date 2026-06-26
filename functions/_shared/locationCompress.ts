@@ -17,15 +17,8 @@ export function compressLocation(addressRoad?: string, address?: string): string
   const src = (addressRoad || address || '').trim();
   if (!src) return '';
 
-  // 1) 괄호 안 동명 추출 시도
-  const paren = src.match(/\(([^,)]+)/);
-  let dongFromParen: string | undefined;
-  if (paren && paren[1]) {
-    const inside = paren[1].trim();
-    if (/[동읍면]$/.test(inside)) {
-      dongFromParen = inside;
-    }
-  }
+  // 1) 괄호 안 동명 추출 시도 (도로명 주소의 `(학익동, ...)` 형태)
+  const dongFromParen = extractDongFromParen(src) || extractDongFromParen(address);
 
   // 2) 공백 분리
   const tokens = src.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean);
@@ -39,7 +32,25 @@ export function compressLocation(addressRoad?: string, address?: string): string
   if (dong && !/[동읍면리가]$/.test(dong)) {
     dong = undefined;
   }
-  if (!dong && dongFromParen) dong = dongFromParen;
+  // 3) 도로명에서 동을 못 뽑았으면: 괄호 안 동명 → 지번 주소에서 동 보강
+  if (!dong) dong = dongFromParen;
+  if (!dong) dong = extractDongToken(address);
 
   return [sido, sigu, dong].filter(Boolean).join(' ');
+}
+
+/** 괄호 안에서 동/읍/면으로 끝나는 토큰 추출 (`(학익동, 신동아3차)` → `학익동`) */
+function extractDongFromParen(s?: string): string | undefined {
+  if (!s) return undefined;
+  const paren = s.match(/\(([^,)]+)/);
+  const inside = paren?.[1]?.trim();
+  return inside && /[동읍면리]$/.test(inside) ? inside : undefined;
+}
+
+/** 지번 주소에서 동/읍/면/리 토큰 추출 (숫자 동 "삼동" 등 흔치 않으니 단순 매칭) */
+function extractDongToken(s?: string): string | undefined {
+  if (!s) return undefined;
+  const tokens = s.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean);
+  // 시/구(앞 2토큰) 이후에서 동/읍/면/리로 끝나는 첫 토큰
+  return tokens.slice(2).find((t) => /[동읍면리]$/.test(t));
 }

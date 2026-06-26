@@ -36,7 +36,7 @@ export function Component() {
 
         <section className="max-w-screen-sm mx-auto px-5 pt-8 pb-16">
           <h2 className="text-[22px] font-extrabold tracking-tight leading-tight break-keep">
-            어떤 후기를 남기실래요?
+            청암홈윈도우, 어떠셨나요?
           </h2>
           <p className="mt-2 text-[13.5px] text-[#6b6460] leading-[1.6] break-keep">
             간편 후기는 30초, 프리미엄 후기는 5분이면 충분합니다.
@@ -61,7 +61,7 @@ export function Component() {
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <h2 className="text-[24px] font-extrabold tracking-tight">어떤 후기를 남기실래요?</h2>
+            <h2 className="text-[24px] font-extrabold tracking-tight">청암홈윈도우, 어떠셨나요?</h2>
             <p className="mt-2 text-[14px] text-[#8a807c] tracking-tight">
               간단히 별점만, 아니면 자세한 시공기까지. 편하신 방식으로 남겨주세요.
             </p>
@@ -142,10 +142,25 @@ function MobileCard({
             프리미엄 후기
           </h3>
           <p className="mt-1.5 text-[13px] text-white/65 leading-[1.55] break-keep">
-            사진 3장 이상 + 200자 본문. 두 가지 혜택 중 선택해서 드립니다.
+            사진 3장 이상 + 200자 본문.
+            <br />
+            기본 할인 + 두 가지 혜택 중 하나를 더 선택하실 수 있어요.
           </p>
         </div>
         <ArrowRight className="w-5 h-5 text-[#d4b277] mt-1 group-hover:translate-x-0.5 transition" />
+      </div>
+      <div className="relative mt-4 flex flex-wrap items-center gap-2 text-[12px]">
+        <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
+          기본 할인 +10%
+        </span>
+        <span className="text-white/40">+</span>
+        <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
+          추가 할인 +5%
+        </span>
+        <span className="text-white/40">또는</span>
+        <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
+          10만원 상품권
+        </span>
       </div>
     </button>
   );
@@ -217,6 +232,19 @@ function DesktopTypeCard({
           <FeatRow dark>Before / After 비교 사진</FeatRow>
           <FeatRow dark>제품·옵션 정보 기록</FeatRow>
         </ul>
+        <div className="mt-5 flex flex-wrap items-center gap-1.5 text-[11.5px]">
+          <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
+            기본 할인 +10%
+          </span>
+          <span className="text-white/40">+</span>
+          <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
+            추가 할인 +5%
+          </span>
+          <span className="text-white/40">또는</span>
+          <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
+            10만원 상품권
+          </span>
+        </div>
         <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-[13.5px] font-bold text-[#d4b277] tracking-tight">
           자세히 작성하기
           <Chevron className="w-4 h-4 group-hover:translate-x-0.5 transition" />
