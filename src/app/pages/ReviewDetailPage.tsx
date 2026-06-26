@@ -68,6 +68,20 @@ export function Component() {
   const photos = displayablePhotos(data.photos);
   const activePhoto = photos[activeIdx];
 
+  // 이미지 대체 텍스트: 지역 · 브랜드/모델 · 시공 전후 라벨 조합
+  const photoAlt = (label?: string) => {
+    const where = data.snapshot?.locationLabel;
+    const product =
+      data.brand && data.model
+        ? `${data.brand} ${data.model}`
+        : data.model || data.brand;
+    const phase =
+      label === "before" ? "시공 전" : label === "after" ? "시공 후" : "";
+    return [where, product, phase, "창호 시공 후기 사진"]
+      .filter(Boolean)
+      .join(" ");
+  };
+
   return (
     <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
       {/* breadcrumb header */}
@@ -107,6 +121,7 @@ export function Component() {
                     key={activePhoto?.url}
                     url={activePhoto?.url}
                     resize={{ width: 800, quality: 80 }}
+                    alt={photoAlt(activePhoto?.label)}
                     className="w-full h-full object-cover"
                   />
                   {activePhoto?.label && (
@@ -131,6 +146,7 @@ export function Component() {
                         <ReviewImage
                           url={p.url}
                           resize={{ width: 200 }}
+                          alt={`${photoAlt(p.label)} ${i + 1}번째 사진`}
                           className="w-full h-full object-cover"
                           showSpinner={false}
                         />

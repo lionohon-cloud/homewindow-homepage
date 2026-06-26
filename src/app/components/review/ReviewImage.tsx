@@ -12,11 +12,13 @@ import { cfImage, type CfImageOptions } from "@/lib/cfImage";
 export function ReviewImage({
   url,
   resize,
+  alt = "",
   className = "",
   showSpinner = true,
 }: {
   url?: string;
   resize: CfImageOptions;
+  alt?: string;
   className?: string;
   showSpinner?: boolean;
 }) {
@@ -26,7 +28,11 @@ export function ReviewImage({
 
   if (!url || stage === 2) {
     return (
-      <div className="w-full h-full bg-[#f4ede4] flex items-center justify-center">
+      <div
+        className="w-full h-full bg-[#f4ede4] flex items-center justify-center"
+        role="img"
+        aria-label={alt || "후기 사진을 표시할 수 없음"}
+      >
         <ImageOff className="w-1/4 max-w-[28px] min-w-[16px] text-[#cbbfb2]" />
       </div>
     );
@@ -39,7 +45,7 @@ export function ReviewImage({
       <img
         key={src}
         src={src}
-        alt=""
+        alt={alt}
         className={`${className} transition-opacity duration-300 ${
           loading ? "opacity-0" : "opacity-100"
         }`}

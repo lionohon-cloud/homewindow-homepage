@@ -52,7 +52,17 @@ export function PhotoUploader({
             key={i}
             className="relative aspect-square rounded-xl overflow-hidden bg-[#f4ede4] border border-[#ebe5e0]"
           >
-            <img src={p.preview} alt="" className="w-full h-full object-cover" />
+            <img
+              src={p.preview}
+              alt={`업로드한 사진 ${i + 1}${
+                p.label === "before"
+                  ? " (시공 전)"
+                  : p.label === "after"
+                  ? " (시공 후)"
+                  : ""
+              }`}
+              className="w-full h-full object-cover"
+            />
             <button
               type="button"
               onClick={() => removeAt(i)}

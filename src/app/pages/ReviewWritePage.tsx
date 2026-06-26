@@ -908,7 +908,17 @@ function DesktopPhotoGrid({
             key={i}
             className="aspect-square rounded-[10px] relative overflow-hidden bg-[#f4ede4]"
           >
-            <img src={p.preview} alt="" className="w-full h-full object-cover" />
+            <img
+              src={p.preview}
+              alt={`업로드한 사진 ${i + 1}${
+                p.label === "before"
+                  ? " (시공 전)"
+                  : p.label === "after"
+                  ? " (시공 후)"
+                  : ""
+              }`}
+              className="w-full h-full object-cover"
+            />
             <button
               type="button"
               onClick={() => removeAt(i)}

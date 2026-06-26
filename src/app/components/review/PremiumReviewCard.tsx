@@ -36,6 +36,13 @@ export function PremiumReviewCard({ data }: { data: PremiumCardData }) {
           <ReviewImage
             url={data.thumbnailUrl}
             resize={{ width: 480 }}
+            alt={[
+              data.location,
+              data.modelLabel,
+              "창호 시공 후기 사진",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
             showSpinner={false}
           />
