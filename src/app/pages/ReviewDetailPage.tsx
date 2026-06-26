@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, Navigate } from "react-router";
-import { ArrowLeft, ChevronRight, ThumbsUp, Share2, Crown } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { StarsDisplay } from "../components/review/StarsDisplay";
 import { SpecTable, type ReviewSpec } from "../components/review/SpecTable";
+import { ReviewImage } from "../components/review/ReviewImage";
+import { keywordTags } from "@/lib/reviewTags";
+import { displayablePhotos } from "@/lib/displayablePhotos";
 
 interface DetailItem {
   id: string;
@@ -62,9 +65,8 @@ export function Component() {
     );
   }
 
-  const photos = data.photos || [];
+  const photos = displayablePhotos(data.photos);
   const activePhoto = photos[activeIdx];
-  const initial = data.customerName[0] || "리";
 
   return (
     <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
@@ -75,7 +77,9 @@ export function Component() {
           <ChevronRight className="w-3 h-3 text-[#c8b8a8]" />
           <Link to="/review" className="hover:text-[#3a3531]">시공후기</Link>
           <ChevronRight className="w-3 h-3 text-[#c8b8a8]" />
-          <span className="text-[#3a3531] font-semibold">{data.id}</span>
+          <span className="text-[#3a3531] font-semibold">
+            {data.customerName ? `${data.customerName} 님 후기` : "후기 상세"}
+          </span>
         </div>
       </header>
 
@@ -87,23 +91,24 @@ export function Component() {
           <ArrowLeft className="w-3.5 h-3.5" /> 목록으로
         </Link>
 
-        <div className="grid md:grid-cols-[1.2fr_1fr] gap-8">
-          {/* 좌: 갤러리 */}
-          <div>
-            {photos.length === 0 ? (
-              <div className="aspect-[4/3] rounded-2xl bg-[#f4ede4] border border-[#ebe5e0] flex items-center justify-center text-[#9a948f] text-[13px]">
-                사진 없음
-              </div>
-            ) : (
+        <div
+          className={
+            photos.length === 0
+              ? "max-w-2xl mx-auto"
+              : "grid md:grid-cols-[1.2fr_1fr] gap-8"
+          }
+        >
+          {/* 좌: 갤러리 (사진 있을 때만) */}
+          {photos.length > 0 && (
+            <div>
               <>
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#f4ede4] border border-[#ebe5e0] relative">
-                  {activePhoto?.url && (
-                    <img
-                      src={activePhoto.url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  )}
+                  <ReviewImage
+                    key={activePhoto?.url}
+                    url={activePhoto?.url}
+                    resize={{ width: 800, quality: 80 }}
+                    className="w-full h-full object-cover"
+                  />
                   {activePhoto?.label && (
                     <span className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/60 text-white text-[11px] font-bold tracking-wider">
                       {activePhoto.label.toUpperCase()}
@@ -123,18 +128,19 @@ export function Component() {
                             : "border-transparent hover:border-[#c8b8a8]",
                         ].join(" ")}
                       >
-                        {p.url ? (
-                          <img src={p.url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-[#f4ede4]" />
-                        )}
+                        <ReviewImage
+                          url={p.url}
+                          resize={{ width: 200 }}
+                          className="w-full h-full object-cover"
+                          showSpinner={false}
+                        />
                       </button>
                     ))}
                   </div>
                 )}
               </>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* 우: 본문 + 스펙 */}
           <div className="space-y-6">
@@ -142,17 +148,11 @@ export function Component() {
               {/* meta */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-[#fbf0ef] text-[#952c2c] font-bold flex items-center justify-center text-[15px]">
-                    {initial}
-                  </div>
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[15px] font-extrabold text-[#1c1614]">
                         {data.customerName}
                       </span>
-                      {data.tier === "premium" && (
-                        <Crown className="w-3.5 h-3.5 text-[#b8945a]" />
-                      )}
                     </div>
                     <div className="text-[12px] text-[#9a948f]">
                       {data.snapshot?.locationLabel || ""}{" "}
@@ -167,9 +167,9 @@ export function Component() {
                 {data.reviewText}
               </p>
 
-              {data.tags && data.tags.length > 0 && (
+              {keywordTags(data.tags).length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-1.5">
-                  {data.tags.map((t) => (
+                  {keywordTags(data.tags).map((t) => (
                     <span
                       key={t}
                       className="inline-flex items-center px-2.5 h-[26px] rounded-full bg-[#fbf0ef] text-[#952c2c] text-[12px] font-semibold"
@@ -198,24 +198,6 @@ export function Component() {
                 }}
               />
             )}
-
-            {/* 반응 */}
-            <div className="flex items-center gap-3">
-              <button
-                disabled
-                className="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-white border border-[#ebe5e0] text-[13px] text-[#6b6460] font-semibold"
-              >
-                <ThumbsUp className="w-3.5 h-3.5" />
-                도움돼요 {data.helpfulCount ?? 0}
-              </button>
-              <button
-                disabled
-                className="inline-flex items-center gap-2 px-4 h-11 rounded-xl bg-white border border-[#ebe5e0] text-[13px] text-[#6b6460] font-semibold"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                공유
-              </button>
-            </div>
           </div>
         </div>
       </section>

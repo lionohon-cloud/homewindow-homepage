@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router";
-import { Pencil, ChevronRight } from "lucide-react";
+import { Pencil, ChevronRight, ArrowLeft } from "lucide-react";
 import {
   RatingDistribution,
   type RatingSummary,
@@ -18,6 +18,8 @@ import {
   SimpleReviewCard,
   type SimpleRowData,
 } from "../components/review/SimpleReviewCard";
+import { keywordTags } from "@/lib/reviewTags";
+import { displayablePhotos, firstDisplayableUrl } from "@/lib/displayablePhotos";
 
 interface ListItem {
   id: string;
@@ -57,18 +59,12 @@ export function Component() {
   const [tab, setTab] = useState<ReviewTab>("all");
   const [sort, setSort] = useState<ReviewSort>("latest");
   const [part, setPart] = useState<string>("");
-  const [extras, setExtras] = useState({
-    hasPhoto: false,
-    hasVideo: false,
-    beforeAfter: false,
-  });
   const [data, setData] = useState<ListResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     const url = new URL("/api/review/list", window.location.origin);
-    if (tab !== "all") url.searchParams.set("tier", tab);
     if (part) url.searchParams.set("part", part);
     url.searchParams.set("sort", sort);
     fetch(url.toString())
@@ -76,22 +72,32 @@ export function Component() {
       .then((d) => setData(d))
       .catch(() => setData({ summary: emptySummary, items: [] }))
       .finally(() => setLoading(false));
-  }, [tab, part, sort]);
+  }, [part, sort]);
 
+  // "사진 리뷰" 탭이면 사진 있는 후기만
   const filteredItems = useMemo(() => {
     if (!data) return [];
-    let arr = data.items;
-    if (extras.hasPhoto) arr = arr.filter((i) => (i.photos?.length || 0) > 0);
-    if (extras.hasVideo) arr = arr.filter((i) => (i.videoCount || 0) > 0);
-    // beforeAfter 필터는 향후 photos[].label 검사 추가
-    return arr;
-  }, [data, extras]);
+    if (tab === "photo") return data.items.filter((i) => displayablePhotos(i.photos).length > 0);
+    return data.items;
+  }, [data, tab]);
 
   const premium = filteredItems.filter((i) => i.tier === "premium");
   const simple = filteredItems.filter((i) => i.tier === "simple");
 
   return (
     <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
+      {/* 좌상단 floating 칩 — 메인으로 가는 출구 */}
+      <Link
+        to="/"
+        className="fixed top-4 left-4 md:top-5 md:left-5 z-40 flex items-center gap-1 md:gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1.5 md:px-4 md:py-2 shadow-md hover:bg-gray-50 transition-colors"
+      >
+        <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#666]" />
+        <span className="text-[11px] md:text-xs font-semibold text-[#333]">
+          <span className="md:hidden">메인</span>
+          <span className="hidden md:inline">메인으로</span>
+        </span>
+      </Link>
+
       {/* page head */}
       <header className="border-b border-[#ebe5e0] bg-white">
         <div className="max-w-screen-lg mx-auto px-6 md:px-10 py-8 md:py-10">
@@ -129,27 +135,17 @@ export function Component() {
         <ReviewFilterBar
           tab={tab}
           onTabChange={setTab}
-          counts={
-            data?.summary?.counts || { all: 0, simple: 0, premium: 0 }
-          }
           sort={sort}
           onSortChange={setSort}
           part={part}
           onPartChange={setPart}
-          extraFilters={extras}
-          onExtraToggle={(k) =>
-            setExtras((p) => ({ ...p, [k]: !p[k] }))
-          }
         />
 
-        {/* premium grid */}
-        {(tab === "all" || tab === "premium") && premium.length > 0 && (
+        {/* premium grid (사진 후기는 프리미엄 카드로 노출) */}
+        {premium.length > 0 && (
           <div>
-            <div className="text-[13px] text-[#6b6460] mb-3">
-              <strong className="text-[#1c1614]">프리미엄 후기</strong> — 사진과 함께 자세한 시공기를 남긴 후기입니다
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {premium.slice(0, tab === "premium" ? 50 : 4).map((it) => (
+              {premium.slice(0, 50).map((it) => (
                 <PremiumReviewCard
                   key={it.id}
                   data={toPremiumCard(it)}
@@ -159,14 +155,14 @@ export function Component() {
           </div>
         )}
 
-        {/* simple list */}
-        {(tab === "all" || tab === "simple") && simple.length > 0 && (
+        {/* simple list (전체 탭에서만 노출) */}
+        {tab === "all" && simple.length > 0 && (
           <div>
             <div className="text-[13px] text-[#6b6460] mb-1">
-              <strong className="text-[#1c1614]">간편 후기</strong>
+              <strong className="text-[#1c1614]">최근 후기</strong>
             </div>
             <div>
-              {simple.slice(0, tab === "simple" ? 50 : 10).map((it) => (
+              {simple.slice(0, 50).map((it) => (
                 <SimpleReviewCard key={it.id} data={toSimpleRow(it)} />
               ))}
             </div>
@@ -204,15 +200,16 @@ function toPremiumCard(it: ListItem): PremiumCardData {
     customerName: it.customerName,
     location: it.snapshot?.locationLabel || "",
     productLabel: it.snapshot?.productLabel,
-    modelLabel: it.model
-      ? `${it.model}${it.parts?.length ? ` · ${it.parts.length}개소` : ""}`
-      : undefined,
+    modelLabel:
+      it.brand && it.model
+        ? `${it.brand} · ${it.model}`
+        : it.model || it.brand || undefined,
     rating: it.rating,
-    photoCount: it.photos?.length || 0,
+    photoCount: displayablePhotos(it.photos).length,
     videoCount: it.videoCount,
     publishedAt: formatRelative(it.publishedAt) || it.publishedAt,
     excerpt: it.reviewText,
-    thumbnailUrl: it.photos?.[0]?.url,
+    thumbnailUrl: firstDisplayableUrl(it.photos),
   };
 }
 
@@ -220,24 +217,20 @@ function toSimpleRow(it: ListItem): SimpleRowData {
   return {
     id: it.id,
     customerName: it.customerName,
+    location: it.snapshot?.locationLabel || "",
     publishedAt: formatRelative(it.publishedAt) || it.publishedAt,
     rating: it.rating,
     reviewText: it.reviewText,
-    tags: it.tags,
+    tags: keywordTags(it.tags),
     helpfulCount: it.helpfulCount,
   };
 }
 
+// 작성일을 YYYY.MM.DD 로 표기 (상대시간 "오늘/N일 전" 사용 안 함)
 function formatRelative(iso?: string): string {
   if (!iso) return "";
   try {
     const d = new Date(iso);
-    const diffMs = Date.now() - d.getTime();
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (days < 1) return "오늘";
-    if (days < 7) return `${days}일 전`;
-    if (days < 30) return `${Math.floor(days / 7)}주 전`;
-    if (days < 365) return `${Math.floor(days / 30)}개월 전`;
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
   } catch {
     return "";

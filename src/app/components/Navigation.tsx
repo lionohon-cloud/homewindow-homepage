@@ -44,7 +44,7 @@ const desktopMenuItems: DesktopMenuItem[] = [
   { type: "section", id: "installation", label: "원데이시공" },
   { type: "section", id: "warranty", label: "15년보증" },
   ...(REVIEW_LIVE
-    ? [{ type: "route" as const, href: "/review", label: "시공후기" }]
+    ? [{ type: "section" as const, id: "review", label: "시공후기" }]
     : []),
   // 260503: Cloudflare 이관 완료 후 재개
   { type: "route", href: "/as", label: "AS접수" },

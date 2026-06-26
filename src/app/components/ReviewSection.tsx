@@ -12,6 +12,10 @@ import { Link } from "react-router";
 import { User, ArrowRight, Star, PenLine } from "lucide-react";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { PremiumReviewCard, type PremiumCardData } from "./review/PremiumReviewCard";
+import { type SimpleRowData } from "./review/SimpleReviewCard";
+import { RecentReviewsCarousel } from "./review/RecentReviewsCarousel";
+import { keywordTags } from "@/lib/reviewTags";
+import { displayablePhotos, firstDisplayableUrl } from "@/lib/displayablePhotos";
 import {
   fetchFeaturedReviews,
   type FeaturedReviewItem,
@@ -169,20 +173,34 @@ function LiveReviewSection() {
   const [data, setData] = useState<FeaturedListResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [simpleItems, setSimpleItems] = useState<FeaturedReviewItem[]>([]);
+
   useEffect(() => {
-    fetchFeaturedReviews(4)
+    fetchFeaturedReviews(12)
       .then(setData)
       .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
+  // 간편 후기는 featured 와 별개로 최신 간편 후기를 자동 노출
+  useEffect(() => {
+    const url = new URL("/api/review/list", window.location.origin);
+    url.searchParams.set("tier", "simple");
+    url.searchParams.set("sort", "latest");
+    fetch(url.toString())
+      .then((r) => r.json())
+      .then((d) => setSimpleItems((d.items || []).filter((i: FeaturedReviewItem) => i.tier === "simple")))
+      .catch(() => setSimpleItems([]));
+  }, []);
+
   const items = data?.items || [];
   const summary = data?.summary;
   const hasItems = items.length > 0;
+  const premiumItems = items.filter((it) => it.tier === "premium");
 
   return (
     <section className="w-full bg-[#faf7f4] text-[#1c1614] py-16 md:py-24" id="review">
-      <div className="max-w-screen-lg mx-auto px-6 md:px-10">
+      <div className="max-w-screen-md mx-auto px-6 md:px-10">
         {/* 헤더 */}
         <div className="md:flex md:items-end md:justify-between md:gap-8">
           <div>
@@ -191,9 +209,9 @@ function LiveReviewSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-200px" }}
               transition={{ duration: 0.5 }}
-              className="text-[12px] tracking-[0.2em] text-[#b8945a] font-bold uppercase mb-3"
+              className="text-[#999] text-[16px] font-medium mb-3"
             >
-              CUSTOMER REVIEWS · 고객 후기
+              고객 후기
             </motion.p>
 
             <motion.h2
@@ -201,7 +219,7 @@ function LiveReviewSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-200px" }}
               transition={{ duration: 0.5, delay: 0.05 }}
-              className="text-[28px] md:text-[40px] font-black tracking-tight leading-[1.25] break-keep"
+              className="text-[28px] md:text-[36px] font-extrabold leading-[1.3] mb-5 break-keep"
             >
               수천 건의 시공이 입증한,
               <br />
@@ -232,10 +250,6 @@ function LiveReviewSection() {
                   ))}
                 </span>
                 <span className="font-bold text-[#1c1614]">{summary.avg.toFixed(1)}</span>
-                <span className="text-[#9a948f]">·</span>
-                <span className="text-[#6b6460]">
-                  총 <strong className="text-[#3a3531]">{summary.count.toLocaleString()}</strong>건
-                </span>
               </motion.div>
             )}
 
@@ -244,7 +258,7 @@ function LiveReviewSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-200px" }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-3 text-[14px] md:text-[15px] text-[#6b6460] leading-[1.7] break-keep"
+              className="mt-3 text-[14px] md:text-[15px] font-medium text-[#6b6460] leading-[1.7] break-keep"
             >
               깐깐하게 고르고 만족하신 고객님들의 진짜 후기입니다.
             </motion.p>
@@ -259,27 +273,10 @@ function LiveReviewSection() {
           </Link>
         </div>
 
-        {/* Before / After */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="mt-10 md:mt-14"
-        >
-          <BeforeAfterSlider />
-        </motion.div>
 
-        {/* 프리미엄 카드 그리드 */}
+        {/* 후기 카드 그리드 */}
         {(loading || hasItems) && (
           <div className="mt-10 md:mt-14">
-            <div className="flex items-baseline gap-2 mb-5">
-              <h3 className="text-[15px] md:text-[17px] font-extrabold tracking-tight text-[#1c1614]">
-                ★ 프리미엄 후기
-              </h3>
-              <span className="text-[12.5px] text-[#9a948f]">사진과 함께 자세한 시공기</span>
-            </div>
-
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                 {[0, 1, 2, 3].map((i) => (
@@ -298,7 +295,7 @@ function LiveReviewSection() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
-                {items.slice(0, 4).map((it, i) => (
+                {premiumItems.slice(0, 4).map((it, i) => (
                   <motion.div
                     key={it.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -311,6 +308,20 @@ function LiveReviewSection() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* 최근 후기 — 2개씩 자동 롤링 캐러셀 */}
+        {simpleItems.length > 0 && (
+          <div className="mt-10 md:mt-12">
+            <div className="mb-3">
+              <strong className="text-[16px] font-extrabold text-[#1c1614]">
+                최근 후기
+              </strong>
+            </div>
+            <RecentReviewsCarousel
+              items={simpleItems.slice(0, 8).map(toSimpleRow)}
+            />
           </div>
         )}
 
@@ -359,28 +370,37 @@ function toPremiumCard(it: FeaturedReviewItem): PremiumCardData {
     customerName: it.customerName,
     location: it.snapshot?.locationLabel || "",
     productLabel: it.snapshot?.productLabel,
-    modelLabel: it.model
-      ? `${it.model}${it.parts?.length ? ` · ${it.parts.length}개소` : ""}`
-      : undefined,
+    modelLabel:
+      it.brand && it.model
+        ? `${it.brand} · ${it.model}`
+        : it.model || it.brand || undefined,
     rating: it.rating,
-    photoCount: it.photos?.length || 0,
+    photoCount: displayablePhotos(it.photos).length,
     videoCount: it.videoCount,
     publishedAt: formatRelative(it.publishedAt) || it.publishedAt,
     excerpt: it.reviewText,
-    thumbnailUrl: it.photos?.[0]?.url,
+    thumbnailUrl: firstDisplayableUrl(it.photos),
   };
 }
 
+function toSimpleRow(it: FeaturedReviewItem): SimpleRowData {
+  return {
+    id: it.id,
+    customerName: it.customerName,
+    location: it.snapshot?.locationLabel || "",
+    publishedAt: formatRelative(it.publishedAt) || it.publishedAt,
+    rating: it.rating,
+    reviewText: it.reviewText,
+    tags: keywordTags(it.tags),
+    helpfulCount: it.helpfulCount,
+  };
+}
+
+// 작성일을 YYYY.MM.DD 로 표기 (상대시간 "오늘/N일 전" 사용 안 함)
 function formatRelative(iso?: string): string {
   if (!iso) return "";
   try {
     const d = new Date(iso);
-    const diffMs = Date.now() - d.getTime();
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (days < 1) return "오늘";
-    if (days < 7) return `${days}일 전`;
-    if (days < 30) return `${Math.floor(days / 7)}주 전`;
-    if (days < 365) return `${Math.floor(days / 30)}개월 전`;
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
   } catch {
     return "";

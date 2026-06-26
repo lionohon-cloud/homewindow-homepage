@@ -235,26 +235,14 @@ function MobileForm({
   onSubmit: (e: React.FormEvent) => void;
 }) {
   return (
-    <main
-      className={
-        isPremium
-          ? "min-h-screen bg-gradient-to-br from-[#1a1210] to-[#2a1f1c] text-[#faf7f4]"
-          : "min-h-screen bg-[#faf7f4] text-[#1c1614]"
-      }
-    >
-      <header
-        className={
-          isPremium
-            ? "sticky top-0 z-10 bg-[#1a1210]/85 backdrop-blur border-b border-white/10"
-            : "sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-[#ebe5e0]"
-        }
-      >
+    <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
+      <header className="sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-[#ebe5e0]">
         <div className="max-w-screen-sm mx-auto px-5 h-14 flex items-center">
           <Link to="/review/type" aria-label="뒤로" className="-ml-2 p-2">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="ml-1 text-[15px] font-bold tracking-tight flex items-center gap-1.5">
-            {isPremium && <Crown className="w-4 h-4 text-[#d4b277]" />}
+            {isPremium && <Crown className="w-4 h-4 text-[#c89545]" />}
             {isPremium ? "프리미엄 후기 작성" : "간편 후기 작성"}
           </h1>
         </div>
@@ -291,6 +279,48 @@ function MobileForm({
           </div>
         </section>
 
+        {isPremium && (
+          <section>
+            <SectionLabel premium>제품 정보</SectionLabel>
+            <div className="mt-3 grid gap-2.5">
+              <DesktopInput
+                placeholder="제품명 (예: LX Z:IN 슈퍼세이브2 PHC235)"
+                value={form.productName}
+                onChange={(v) => update({ productName: v })}
+                locked={locks.productName}
+              />
+              <div className="grid grid-cols-2 gap-2.5">
+                <DesktopInput
+                  placeholder="유리 종류"
+                  value={form.glassType}
+                  onChange={(v) => update({ glassType: v })}
+                  locked={locks.glassType}
+                />
+                <DesktopInput
+                  placeholder="시공 개소"
+                  value={form.installCount}
+                  onChange={(v) => update({ installCount: v })}
+                  locked={locks.installCount}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <DesktopInput
+                  placeholder="대표 사이즈 (mm)"
+                  value={form.size}
+                  onChange={(v) => update({ size: v })}
+                  locked={locks.size}
+                />
+                <DesktopInput
+                  placeholder="시공 일자"
+                  value={form.installDate}
+                  onChange={(v) => update({ installDate: v })}
+                  locked={locks.installDate}
+                />
+              </div>
+            </div>
+          </section>
+        )}
+
         <section>
           <SectionLabel premium={isPremium}>
             {isPremium ? "상세 후기 (200자 이상)" : "한 줄 후기 (50자 이내)"}
@@ -304,11 +334,7 @@ function MobileForm({
                 : "시공받으신 솔직한 한 줄 후기를 남겨주세요."
             }
             rows={isPremium ? 8 : 3}
-            className={
-              isPremium
-                ? "mt-3 w-full rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-[14.5px] leading-[1.65] text-white placeholder-white/35 focus:outline-none focus:border-[#d4b277]/60 focus:ring-2 focus:ring-[#d4b277]/15"
-                : "mt-3 w-full rounded-xl bg-white border border-[#ebe5e0] px-4 py-3 text-[14.5px] leading-[1.55] focus:outline-none focus:border-[#952c2c] focus:ring-2 focus:ring-[#952c2c]/15"
-            }
+            className="mt-3 w-full rounded-xl bg-white border border-[#ebe5e0] px-4 py-3 text-[14.5px] leading-[1.65] focus:outline-none focus:border-[#952c2c] focus:ring-2 focus:ring-[#952c2c]/15"
           />
           <CharMeta length={form.reviewText.length} minLen={minLen} maxLen={maxLen} isPremium={isPremium} />
         </section>
@@ -325,7 +351,7 @@ function MobileForm({
         {isPremium && (
           <section>
             <SectionLabel premium>사진 (최소 3장)</SectionLabel>
-            <div className="mt-3 rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div className="mt-3 rounded-2xl bg-white border border-[#ebe5e0] p-4">
               <PhotoUploader photos={form.photos} onChange={(v) => update({ photos: v })} minRequired={3} />
             </div>
           </section>
@@ -337,22 +363,12 @@ function MobileForm({
           </div>
         )}
 
-        <div
-          className={
-            "fixed bottom-0 inset-x-0 z-20 backdrop-blur border-t " +
-            (isPremium ? "bg-[#1a1210]/95 border-white/10" : "bg-white/95 border-[#ebe5e0]")
-          }
-        >
+        <div className="fixed bottom-0 inset-x-0 z-20 backdrop-blur border-t bg-white/95 border-[#ebe5e0]">
           <div className="max-w-screen-sm mx-auto px-5 py-3">
             <button
               type="submit"
               disabled={!valid || submitting}
-              className={
-                "w-full h-[54px] rounded-2xl font-extrabold text-[15px] tracking-tight flex items-center justify-center gap-2 disabled:cursor-not-allowed transition " +
-                (isPremium
-                  ? "bg-gradient-to-br from-[#d4b277] to-[#b8945a] text-[#1a1210] disabled:opacity-40"
-                  : "bg-[#952c2c] hover:bg-[#7e2424] text-white disabled:bg-[#cdb8b8]")
-              }
+              className="w-full h-[54px] rounded-2xl font-extrabold text-[15px] tracking-tight flex items-center justify-center gap-2 disabled:cursor-not-allowed transition bg-[#952c2c] hover:bg-[#7e2424] text-white disabled:bg-[#cdb8b8]"
             >
               {submitting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -624,12 +640,7 @@ function DesktopForm({
               <button
                 type="submit"
                 disabled={!valid || submitting}
-                className={
-                  "flex-1 inline-flex items-center justify-center gap-1.5 h-12 px-9 rounded-[10px] font-bold text-[14px] tracking-tight disabled:cursor-not-allowed transition " +
-                  (isPremium
-                    ? "bg-gradient-to-br from-[#1a1210] to-[#2a1f1c] text-[#d4b277] disabled:opacity-50"
-                    : "bg-[#952c2c] hover:bg-[#7e2424] text-white disabled:bg-[#cdb8b8]")
-                }
+                className="flex-1 inline-flex items-center justify-center gap-1.5 h-12 px-9 rounded-[10px] font-bold text-[14px] tracking-tight disabled:cursor-not-allowed transition bg-[#952c2c] hover:bg-[#7e2424] text-white disabled:bg-[#cdb8b8]"
               >
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -839,30 +850,20 @@ function CharMeta({
   isPremium: boolean;
 }) {
   return (
-    <div
-      className={
-        "mt-1.5 flex items-center justify-between text-[12px] " +
-        (isPremium ? "text-white/55" : "text-[#6b6460]")
-      }
-    >
+    <div className="mt-1.5 flex items-center justify-between text-[12px] text-[#6b6460]">
       <span>
         {length} {isPremium ? `/ 최소 ${minLen}` : `/ ${maxLen}`}
         {isPremium && length < minLen && (
-          <span className="text-[#d4b277] font-semibold ml-2">({minLen - length}자 더 필요)</span>
+          <span className="text-[#952c2c] font-semibold ml-2">({minLen - length}자 더 필요)</span>
         )}
       </span>
     </div>
   );
 }
 
-function SectionLabel({ children, premium }: { children: React.ReactNode; premium: boolean }) {
+function SectionLabel({ children }: { children: React.ReactNode; premium: boolean }) {
   return (
-    <h3
-      className={
-        "text-[14px] font-bold tracking-tight " +
-        (premium ? "text-[#d4b277]" : "text-[#1c1614]")
-      }
-    >
+    <h3 className="text-[14px] font-bold tracking-tight text-[#1c1614]">
       {children}
     </h3>
   );

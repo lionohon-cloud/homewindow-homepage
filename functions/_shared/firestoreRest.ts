@@ -248,6 +248,65 @@ export async function restCreateDocument(
 }
 
 /**
+ * 컬렉션 전체 도큐먼트 조회 (페이지네이션). 백필 등 일괄 작업용.
+ */
+export async function restListDocuments(
+  session: RestSession,
+  collection: string,
+  pageSize = 100,
+): Promise<RestDocument[]> {
+  const out: RestDocument[] = [];
+  let pageToken = '';
+  do {
+    const params = new URLSearchParams({ pageSize: String(pageSize) });
+    if (pageToken) params.set('pageToken', pageToken);
+    const url = `${FIRESTORE_BASE}/projects/${session.projectId}/databases/(default)/documents/${collection}?${params}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${session.idToken}` },
+    });
+    if (!res.ok) {
+      const t = await res.text().catch(() => '');
+      throw new Error(`listDocuments 실패 [${res.status}] ${collection}: ${t.slice(0, 200)}`);
+    }
+    const data = (await res.json()) as {
+      documents?: RestDocument[];
+      nextPageToken?: string;
+    };
+    if (data.documents) out.push(...data.documents);
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+  return out;
+}
+
+/**
+ * 도큐먼트 부분 업데이트 — updateMask 로 지정한 필드만 갱신.
+ */
+export async function restPatchDocument(
+  session: RestSession,
+  collection: string,
+  docId: string,
+  fields: Record<string, unknown>,
+): Promise<RestDocument> {
+  const mask = Object.keys(fields)
+    .map((k) => `updateMask.fieldPaths=${encodeURIComponent(k)}`)
+    .join('&');
+  const url = `${FIRESTORE_BASE}/projects/${session.projectId}/databases/(default)/documents/${collection}/${encodeURIComponent(docId)}?${mask}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${session.idToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ fields: encodeFields(fields) }),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error(`patchDocument 실패 [${res.status}] ${collection}/${docId}: ${t.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
+/**
  * Firebase Storage REST API 사진 업로드.
  * 응답에서 path 추출 → 다운로드 URL은 호출 측에서 조합.
  */

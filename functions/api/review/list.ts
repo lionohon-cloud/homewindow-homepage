@@ -131,7 +131,8 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({
       videoCount: (f.videos as unknown[])?.length || 0,
       snapshot: f.snapshot, // 자동 매핑된 메타 (productLabel/locationLabel/installDate 등)
       customerName: maskName(stripLast4Suffix(String(f.customerName || ''))),
-      publishedAt: f.publishedAt || f.createdAt,
+      // 화면 표기는 "리뷰 작성일"(createdAt) 기준 — 승인/게시일(publishedAt)이 아니라
+      publishedAt: f.createdAt || f.publishedAt,
       helpfulCount: f.helpfulCount || 0,
       featured: f.featured === true,
     };
