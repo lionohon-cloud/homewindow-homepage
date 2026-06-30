@@ -63,7 +63,7 @@ export function HeroConsultSection() {
         <div className="max-w-screen-lg mx-auto px-5 md:px-10 py-5 md:py-7">
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-10"
+            className="flex flex-col w-fit mx-auto md:w-full md:mx-0 md:flex-row md:items-center md:justify-between gap-4 md:gap-10"
           >
             <HoneypotField ref={honeypotRef} />
             {/* 왼쪽: 제목 + 아이콘 */}
