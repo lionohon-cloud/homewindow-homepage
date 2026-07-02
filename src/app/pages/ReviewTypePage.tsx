@@ -207,7 +207,7 @@ function DesktopTypeCard({
         </div>
         <ul className="mt-5 space-y-2 text-[13px] text-white/75">
           <FeatRow dark>200자 이상 본문</FeatRow>
-          <FeatRow dark>사진 3장 이상 + 동영상 첨부</FeatRow>
+          <FeatRow dark>사진 3장 이상</FeatRow>
           <FeatRow dark>Before / After 비교 사진</FeatRow>
           <FeatRow dark>제품·옵션 정보 기록</FeatRow>
         </ul>
