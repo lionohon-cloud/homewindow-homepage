@@ -136,7 +136,7 @@ function MobileCard({
           <p className="mt-1.5 text-[13px] text-white/65 leading-[1.55] break-keep">
             사진 3장 이상 + 200자 본문.
             <br />
-            기본 할인 + 두 가지 혜택 중 하나를 더 선택하실 수 있어요.
+            고객님의 소중한 프리미엄 후기를 남겨주세요.
           </p>
         </div>
         <ArrowRight className="w-5 h-5 text-[#d4b277] mt-1 group-hover:translate-x-0.5 transition" />
