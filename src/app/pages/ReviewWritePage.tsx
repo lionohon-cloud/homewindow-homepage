@@ -26,23 +26,12 @@ interface FormState {
   reviewText: string;
   tags: string[];
   photos: ReviewPhoto[];
-  // PC premium 폼의 제품정보 5개 (snapshot prefill 가능, 수정 가능)
-  productName: string;
-  glassType: string;
-  installCount: string;
-  size: string;
-  installDate: string;
 }
 
 // ERP snapshot이 채운 필드의 잠금 여부
 interface FieldLocks {
   brand: boolean;
   model: boolean;
-  productName: boolean;
-  glassType: boolean;
-  installCount: boolean;
-  size: boolean;
-  installDate: boolean;
 }
 
 export function Component() {
@@ -65,11 +54,6 @@ export function Component() {
   const locks: FieldLocks = {
     brand: !!lockedBrand,
     model: !!lockedModel,
-    productName: !!snapshot?.productLabel,
-    glassType: !!snapshot?.glassLabel,
-    installCount: !!snapshot?.sizeLabel?.match(/외 (\d+)개소/),
-    size: !!snapshot?.sizeLabel,
-    installDate: !!snapshot?.installDate,
   };
 
   const [form, setForm] = useState<FormState>(() => ({
@@ -82,13 +66,6 @@ export function Component() {
     reviewText: "",
     tags: [],
     photos: [],
-    productName: snapshot?.productLabel || "",
-    glassType: snapshot?.glassLabel || "",
-    installCount: snapshot?.sizeLabel?.match(/외 (\d+)개소/)?.[1]
-      ? `${parseInt(snapshot.sizeLabel.match(/외 (\d+)개소/)![1], 10) + 1}개소`
-      : "",
-    size: snapshot?.sizeLabel?.replace(/ 외 \d+개소/, "") || "",
-    installDate: snapshot?.installDate || "",
   }));
 
   const [submitting, setSubmitting] = useState(false);
@@ -119,8 +96,9 @@ export function Component() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!token) return <Navigate to="/review/new" replace />;
+  // 흐름: 유형 선택 → 본인확인 → 작성(현재). 앞 단계 누락 시 해당 단계로 되돌림
   if (!tier) return <Navigate to="/review/type" replace />;
+  if (!token) return <Navigate to="/review/new" replace />;
 
   const update = (patch: Partial<FormState>) => setForm((p) => ({ ...p, ...patch }));
 
@@ -238,7 +216,7 @@ function MobileForm({
     <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
       <header className="sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-[#ebe5e0]">
         <div className="max-w-screen-sm mx-auto px-5 h-14 flex items-center">
-          <Link to="/review/type" aria-label="뒤로" className="-ml-2 p-2">
+          <Link to="/review/new" aria-label="뒤로" className="-ml-2 p-2">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="ml-1 text-[15px] font-bold tracking-tight flex items-center gap-1.5">
@@ -278,48 +256,6 @@ function MobileForm({
             />
           </div>
         </section>
-
-        {isPremium && (
-          <section>
-            <SectionLabel premium>제품 정보</SectionLabel>
-            <div className="mt-3 grid gap-2.5">
-              <DesktopInput
-                placeholder="제품명 (예: LX Z:IN 슈퍼세이브2 PHC235)"
-                value={form.productName}
-                onChange={(v) => update({ productName: v })}
-                locked={locks.productName}
-              />
-              <div className="grid grid-cols-2 gap-2.5">
-                <DesktopInput
-                  placeholder="유리 종류"
-                  value={form.glassType}
-                  onChange={(v) => update({ glassType: v })}
-                  locked={locks.glassType}
-                />
-                <DesktopInput
-                  placeholder="시공 개소"
-                  value={form.installCount}
-                  onChange={(v) => update({ installCount: v })}
-                  locked={locks.installCount}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                <DesktopInput
-                  placeholder="대표 사이즈 (mm)"
-                  value={form.size}
-                  onChange={(v) => update({ size: v })}
-                  locked={locks.size}
-                />
-                <DesktopInput
-                  placeholder="시공 일자"
-                  value={form.installDate}
-                  onChange={(v) => update({ installDate: v })}
-                  locked={locks.installDate}
-                />
-              </div>
-            </div>
-          </section>
-        )}
 
         <section>
           <SectionLabel premium={isPremium}>
@@ -514,48 +450,6 @@ function DesktopForm({
               />
             </FormBlock>
 
-            {/* 제품 정보 — 프리미엄만, snapshot prefill */}
-            {isPremium && (
-              <FormBlock label="제품 정보" required>
-                <div className="grid gap-2.5">
-                  <DesktopInput
-                    placeholder="제품명 (예: LX Z:IN 슈퍼세이브2 PHC235)"
-                    value={form.productName}
-                    onChange={(v) => update({ productName: v })}
-                    locked={locks.productName}
-                  />
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <DesktopInput
-                      placeholder="유리 종류"
-                      value={form.glassType}
-                      onChange={(v) => update({ glassType: v })}
-                      locked={locks.glassType}
-                    />
-                    <DesktopInput
-                      placeholder="시공 개소"
-                      value={form.installCount}
-                      onChange={(v) => update({ installCount: v })}
-                      locked={locks.installCount}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <DesktopInput
-                      placeholder="대표 사이즈 (mm)"
-                      value={form.size}
-                      onChange={(v) => update({ size: v })}
-                      locked={locks.size}
-                    />
-                    <DesktopInput
-                      placeholder="시공 일자"
-                      value={form.installDate}
-                      onChange={(v) => update({ installDate: v })}
-                      locked={locks.installDate}
-                    />
-                  </div>
-                </div>
-              </FormBlock>
-            )}
-
             {/* 사진 첨부 — 프리미엄만 */}
             {isPremium && (
               <FormBlock
@@ -632,7 +526,7 @@ function DesktopForm({
             {/* CTA */}
             <div className="flex gap-3 justify-between mt-2">
               <Link
-                to="/review/type"
+                to="/review/new"
                 className="inline-flex items-center justify-center h-12 px-7 rounded-[10px] bg-transparent border border-[#ebe5e0] text-[#4a423f] font-semibold text-[14px] tracking-tight hover:bg-[#faf7f4]"
               >
                 {isPremium ? "이전 단계" : "취소"}
@@ -669,8 +563,6 @@ function DesktopForm({
                 · 대표 사진 (Before/After)
                 <br />
                 · 본문 첫 3줄 요약
-                <br />
-                · 제품명 · 시공일
               </div>
 
               <div className="mt-4 p-4 bg-[#fbf0ef] rounded-[10px] text-[12.5px] text-[#6e1f1f] leading-[1.65] tracking-tight">
@@ -733,33 +625,6 @@ function FormBlock({
       </label>
       {children}
     </div>
-  );
-}
-
-function DesktopInput({
-  placeholder,
-  value,
-  onChange,
-  locked = false,
-}: {
-  placeholder: string;
-  value: string;
-  onChange: (v: string) => void;
-  /** ERP 시공 데이터로 채워진 값 — 수정 불가 */
-  locked?: boolean;
-}) {
-  return (
-    <input
-      type="text"
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={locked}
-      className={
-        "w-full h-[46px] px-3.5 rounded-lg bg-[#faf7f4] border border-[#ebe5e0] text-[14px] tracking-tight text-[#1c1614] focus:outline-none focus:border-[#952c2c] focus:bg-white" +
-        (locked ? " text-[#6b6460] cursor-default" : "")
-      }
-    />
   );
 }
 

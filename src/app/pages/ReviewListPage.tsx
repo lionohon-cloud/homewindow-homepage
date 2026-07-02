@@ -122,7 +122,7 @@ export function Component() {
           <div className="rounded-2xl bg-white border border-[#ebe5e0] p-6 text-center">
             <div className="text-[13px] text-[#6b6460] mb-3">시공받으셨나요?</div>
             <Link
-              to="/review/new"
+              to="/review/type"
               className="inline-flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-[#952c2c] text-white font-bold text-[14.5px] tracking-tight hover:bg-[#7e2424] active:bg-[#6e1f1f] transition"
             >
               <Pencil className="w-4 h-4" />
@@ -173,7 +173,7 @@ export function Component() {
           <div className="text-center py-16 text-[#9a948f]">
             <p className="text-[14px]">조건에 맞는 후기가 아직 없습니다.</p>
             <Link
-              to="/review/new"
+              to="/review/type"
               className="inline-block mt-4 text-[#952c2c] font-bold text-[13px] hover:underline"
             >
               첫 후기를 남겨주세요 →

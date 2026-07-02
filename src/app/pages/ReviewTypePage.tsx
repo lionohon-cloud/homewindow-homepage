@@ -1,24 +1,21 @@
 import { useEffect } from "react";
-import { useNavigate, Link, Navigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { ArrowLeft, ArrowRight, Crown, Star, Check, ChevronRight, ChevronRight as Chevron } from "lucide-react";
 import { REVIEW_SESSION_KEYS, type ReviewTier } from "../styles/reviewTokens";
 import { trackReview } from "@/lib/submitReview";
 
 export function Component() {
   const navigate = useNavigate();
-  const hasToken =
-    typeof window !== "undefined" && !!sessionStorage.getItem(REVIEW_SESSION_KEYS.TOKEN);
 
   useEffect(() => {
     sessionStorage.removeItem(REVIEW_SESSION_KEYS.DONE);
   }, []);
 
-  if (!hasToken) return <Navigate to="/review/new" replace />;
-
+  // 흐름: 유형 선택(현재) → 본인확인(/review/new) → 작성(/review/write)
   const pick = (tier: ReviewTier) => {
     sessionStorage.setItem(REVIEW_SESSION_KEYS.TIER, tier);
     trackReview("pick_review_type", { tier });
-    navigate("/review/write");
+    navigate("/review/new");
   };
 
   return (
@@ -27,7 +24,7 @@ export function Component() {
       <main className="md:hidden min-h-screen bg-[#faf7f4] text-[#1c1614]">
         <header className="sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-[#ebe5e0]">
           <div className="max-w-screen-sm mx-auto px-5 h-14 flex items-center">
-            <Link to="/review/new" aria-label="뒤로" className="-ml-2 p-2">
+            <Link to="/" aria-label="홈으로" className="-ml-2 p-2">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <h1 className="ml-1 text-[15px] font-bold tracking-tight">후기 유형 선택</h1>
@@ -55,8 +52,8 @@ export function Component() {
           {/* head */}
           <div className="px-10 py-8 border-b border-[#ebe5e0] text-center relative">
             <Link
-              to="/review/new"
-              aria-label="뒤로"
+              to="/"
+              aria-label="홈으로"
               className="absolute left-7 top-7 p-1.5 text-[#8a807c] hover:text-[#1c1614] rounded-md hover:bg-[#faf7f4]"
             >
               <ArrowLeft className="w-4 h-4" />
