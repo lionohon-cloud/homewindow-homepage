@@ -109,11 +109,6 @@ function MobileCard({
           </div>
           <ArrowRight className="w-5 h-5 text-[#9a948f] mt-1 group-hover:translate-x-0.5 transition" />
         </div>
-        <div className="mt-4 flex items-center gap-2 text-[12px] text-[#3a3531]">
-          <span className="px-2 py-0.5 rounded-full bg-[#fbf0ef] text-[#952c2c] font-semibold">
-            기본 할인 +10%
-          </span>
-        </div>
       </button>
     );
   }
@@ -145,19 +140,6 @@ function MobileCard({
           </p>
         </div>
         <ArrowRight className="w-5 h-5 text-[#d4b277] mt-1 group-hover:translate-x-0.5 transition" />
-      </div>
-      <div className="relative mt-4 flex flex-wrap items-center gap-2 text-[12px]">
-        <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
-          기본 할인 +10%
-        </span>
-        <span className="text-white/40">+</span>
-        <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
-          추가 할인 +5%
-        </span>
-        <span className="text-white/40">또는</span>
-        <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
-          10만원 상품권
-        </span>
       </div>
     </button>
   );
@@ -229,19 +211,6 @@ function DesktopTypeCard({
           <FeatRow dark>Before / After 비교 사진</FeatRow>
           <FeatRow dark>제품·옵션 정보 기록</FeatRow>
         </ul>
-        <div className="mt-5 flex flex-wrap items-center gap-1.5 text-[11.5px]">
-          <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
-            기본 할인 +10%
-          </span>
-          <span className="text-white/40">+</span>
-          <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
-            추가 할인 +5%
-          </span>
-          <span className="text-white/40">또는</span>
-          <span className="px-2 py-0.5 rounded-full bg-[#d4b277]/15 text-[#e3c690] font-semibold">
-            10만원 상품권
-          </span>
-        </div>
         <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-[13.5px] font-bold text-[#d4b277] tracking-tight">
           자세히 작성하기
           <Chevron className="w-4 h-4 group-hover:translate-x-0.5 transition" />
