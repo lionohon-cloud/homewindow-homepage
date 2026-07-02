@@ -10,12 +10,13 @@ type Coupon = {
   desc: string;
   pct: string;
   prefix?: string; // "최대"
+  to?: string; // 있으면 클릭 시 이동 (리뷰 작성 쿠폰)
 };
 
 const COUPONS: Coupon[] = [
   { title: "선금보증보험 할인", desc: "견적 상담 시 적용", pct: "10" },
   { title: "기간 내 선착순 할인", desc: "7월 전용 프로모션", pct: "10" },
-  { title: "리뷰 작성 약속", desc: "간단하게 리뷰만 남기면 끝!", prefix: "최대", pct: "20" },
+  { title: "리뷰 작성 약속", desc: "간단하게 리뷰만 남기면 끝!", prefix: "최대", pct: "20", to: "/review/type" },
 ];
 
 // 버블 — 배경 위 물 공간에 보글보글 떠다님 (left/top %, 크기 %, 투명도, 애니메이션 진폭/주기/지연)
@@ -107,7 +108,7 @@ function CtaButton({ variant }: { variant: "mobile" | "desktop" }) {
       to="/review/type"
       style={dStyle}
       className={[
-        "group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-[#4a97df] to-[#2f86d8] text-white font-extrabold tracking-tight ring-2 ring-white/90 ring-offset-2 ring-offset-transparent shadow-[0_0_24px_6px_rgba(90,180,255,0.65),0_8px_22px_rgba(45,131,214,0.45)] hover:shadow-[0_0_32px_10px_rgba(90,180,255,0.8),0_8px_22px_rgba(45,131,214,0.5)] hover:from-[#3f8cd6] hover:to-[#2a7ace] active:scale-[0.98] transition",
+        "group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-[#4a97df] to-[#2f86d8] text-white font-extrabold tracking-tight ring-2 ring-white/90 ring-offset-2 ring-offset-transparent shadow-[0_0_10px_1px_rgba(200,230,255,0.75),0_8px_22px_rgba(45,131,214,0.45)] hover:shadow-[0_0_16px_3px_rgba(200,230,255,0.9),0_8px_22px_rgba(45,131,214,0.5)] hover:from-[#3f8cd6] hover:to-[#2a7ace] active:scale-[0.98] transition",
         isDesktop ? "" : "h-[50px] px-8 text-[18px]",
       ].join(" ")}
     >
@@ -197,11 +198,21 @@ export function EventSection() {
             transition={{ duration: 0.5 }}
             className="flex justify-center items-start gap-[1.5vw] w-full"
           >
-            {COUPONS.map((c) => (
-              <div key={c.title} className="w-[10.5vw] max-w-[202px]">
-                <CouponCard coupon={c} />
-              </div>
-            ))}
+            {COUPONS.map((c) =>
+              c.to ? (
+                <Link
+                  key={c.title}
+                  to={c.to}
+                  className="w-[10.5vw] max-w-[202px] block transition hover:-translate-y-1 hover:drop-shadow-[0_10px_20px_rgba(13,71,120,0.3)]"
+                >
+                  <CouponCard coupon={c} />
+                </Link>
+              ) : (
+                <div key={c.title} className="w-[10.5vw] max-w-[202px]">
+                  <CouponCard coupon={c} />
+                </div>
+              )
+            )}
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -256,10 +267,13 @@ export function EventSection() {
   );
 }
 
-/** 모바일 쿠폰 — 흰 가로 행 카드 (좌: 텍스트, 우: 퍼센트), 양옆 노치 */
+/** 모바일 쿠폰 — 흰 가로 행 카드 (좌: 텍스트, 우: 퍼센트), 양옆 노치. to 있으면 클릭 이동 */
 function CouponRowMobile({ coupon }: { coupon: Coupon }) {
-  return (
-    <div className="relative flex items-center justify-between gap-3 rounded-2xl bg-white shadow-[0_8px_22px_rgba(13,71,120,0.22)] px-5 py-4">
+  const cls =
+    "relative flex items-center justify-between gap-3 rounded-2xl bg-white shadow-[0_8px_22px_rgba(13,71,120,0.22)] px-5 py-4" +
+    (coupon.to ? " active:scale-[0.99] transition" : "");
+  const inner = (
+    <>
       <span className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 rounded-full bg-[#3aaef0]" />
       <span className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 rounded-full bg-[#3aaef0]" />
       <div className="min-w-0">
@@ -276,6 +290,13 @@ function CouponRowMobile({ coupon }: { coupon: Coupon }) {
         <span className="text-[34px] font-black leading-none tracking-tight">{coupon.pct}</span>
         <span className="text-[17px] font-black leading-none">%</span>
       </div>
-    </div>
+    </>
+  );
+  return coupon.to ? (
+    <Link to={coupon.to} className={cls + " block"}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={cls}>{inner}</div>
   );
 }
