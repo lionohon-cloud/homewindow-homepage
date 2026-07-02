@@ -1,4 +1,5 @@
 import type { ReviewTier } from "../app/styles/reviewTokens";
+import { resizeImageFile } from "./resizeImage";
 
 const MOCK = import.meta.env.VITE_REVIEW_MOCK === "1";
 
@@ -108,10 +109,15 @@ export async function submitReview(input: SubmitReviewInput): Promise<{ id: stri
   form.append("reviewText", input.reviewText);
   if (input.tags) form.append("tags", JSON.stringify(input.tags));
   if (input.photos) {
-    for (const p of input.photos) {
-      form.append("photos", p.file, p.file.name);
+    // 업로드 전 병렬 리사이즈/압축 (전송량·시간 대폭 감소)
+    const resized = await Promise.all(
+      input.photos.map((p) => resizeImageFile(p.file))
+    );
+    input.photos.forEach((p, i) => {
+      const file = resized[i];
+      form.append("photos", file, file.name);
       form.append("photoLabels", p.label || "other");
-    }
+    });
   }
   form.append("hw_website", "");
   const res = await fetch("/api/review/submit", { method: "POST", body: form });

@@ -114,26 +114,27 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
   const seq = String(now.getTime() % 100).padStart(2, '0');
   const docId = `${yy}${mm}${dd}-${last4}-${seq}`;
 
-  // ---------- 사진 업로드 ----------
-  const uploaded: Array<{ path: string; url: string; label: string; mime: string }> = [];
-  for (let i = 0; i < photoFiles.length; i++) {
-    const f = photoFiles[i];
-    const label = (photoLabels[i] || 'other').slice(0, 12);
-    const ext = (f.name.match(/\.[a-zA-Z0-9]+$/)?.[0] || '.jpg').toLowerCase();
-    const path = `reviews/${docId}/photos/${i}-${label}${ext}`;
-    try {
-      const buf = await f.arrayBuffer();
-      await uploadStorageObject(session, path, buf, f.type || 'image/jpeg');
-      uploaded.push({
-        path,
-        url: storageDownloadUrl(session.storageBucket, path),
-        label,
-        mime: f.type || 'image/jpeg',
-      });
-    } catch (e) {
-      console.error('[review/submit] 사진 업로드 실패:', path, e);
-      return errorResponse('사진 업로드에 실패했습니다.', 500);
-    }
+  // ---------- 사진 업로드 (병렬) ----------
+  let uploaded: Array<{ path: string; url: string; label: string; mime: string }>;
+  try {
+    uploaded = await Promise.all(
+      photoFiles.map(async (f, i) => {
+        const label = (photoLabels[i] || 'other').slice(0, 12);
+        const ext = (f.name.match(/\.[a-zA-Z0-9]+$/)?.[0] || '.jpg').toLowerCase();
+        const path = `reviews/${docId}/photos/${i}-${label}${ext}`;
+        const buf = await f.arrayBuffer();
+        await uploadStorageObject(session, path, buf, f.type || 'image/jpeg');
+        return {
+          path,
+          url: storageDownloadUrl(session.storageBucket, path),
+          label,
+          mime: f.type || 'image/jpeg',
+        };
+      }),
+    );
+  } catch (e) {
+    console.error('[review/submit] 사진 업로드 실패:', e);
+    return errorResponse('사진 업로드에 실패했습니다.', 500);
   }
 
   // ---------- ERP snapshot 자동 매핑 ----------
