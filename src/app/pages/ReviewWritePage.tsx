@@ -119,8 +119,9 @@ export function Component() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!token) return <Navigate to="/review/new" replace />;
+  // 흐름: 유형 선택 → 본인확인 → 작성(현재). 앞 단계 누락 시 해당 단계로 되돌림
   if (!tier) return <Navigate to="/review/type" replace />;
+  if (!token) return <Navigate to="/review/new" replace />;
 
   const update = (patch: Partial<FormState>) => setForm((p) => ({ ...p, ...patch }));
 
@@ -238,7 +239,7 @@ function MobileForm({
     <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
       <header className="sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-[#ebe5e0]">
         <div className="max-w-screen-sm mx-auto px-5 h-14 flex items-center">
-          <Link to="/review/type" aria-label="뒤로" className="-ml-2 p-2">
+          <Link to="/review/new" aria-label="뒤로" className="-ml-2 p-2">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="ml-1 text-[15px] font-bold tracking-tight flex items-center gap-1.5">
@@ -632,7 +633,7 @@ function DesktopForm({
             {/* CTA */}
             <div className="flex gap-3 justify-between mt-2">
               <Link
-                to="/review/type"
+                to="/review/new"
                 className="inline-flex items-center justify-center h-12 px-7 rounded-[10px] bg-transparent border border-[#ebe5e0] text-[#4a423f] font-semibold text-[14px] tracking-tight hover:bg-[#faf7f4]"
               >
                 {isPremium ? "이전 단계" : "취소"}

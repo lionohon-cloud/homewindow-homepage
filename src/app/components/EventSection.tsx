@@ -104,10 +104,10 @@ function CtaButton({ variant }: { variant: "mobile" | "desktop" }) {
     : undefined;
   return (
     <Link
-      to="/review/new"
+      to="/review/type"
       style={dStyle}
       className={[
-        "group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-[#4a97df] to-[#2f86d8] text-white font-extrabold tracking-tight shadow-[0_0_24px_6px_rgba(90,180,255,0.65),0_8px_22px_rgba(45,131,214,0.45)] hover:shadow-[0_0_32px_10px_rgba(90,180,255,0.8),0_8px_22px_rgba(45,131,214,0.5)] hover:from-[#3f8cd6] hover:to-[#2a7ace] active:scale-[0.98] transition",
+        "group inline-flex items-center justify-center rounded-full bg-gradient-to-b from-[#4a97df] to-[#2f86d8] text-white font-extrabold tracking-tight ring-2 ring-white/90 ring-offset-2 ring-offset-transparent shadow-[0_0_24px_6px_rgba(90,180,255,0.65),0_8px_22px_rgba(45,131,214,0.45)] hover:shadow-[0_0_32px_10px_rgba(90,180,255,0.8),0_8px_22px_rgba(45,131,214,0.5)] hover:from-[#3f8cd6] hover:to-[#2a7ace] active:scale-[0.98] transition",
         isDesktop ? "" : "h-[50px] px-8 text-[18px]",
       ].join(" ")}
     >

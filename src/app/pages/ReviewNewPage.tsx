@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link, Navigate } from "react-router";
 import { ArrowLeft, User, Phone, Loader2 } from "lucide-react";
 import { HoneypotField } from "@/lib/HoneypotField";
 import { lookupCustomer } from "@/lib/reviewApi";
@@ -8,11 +8,17 @@ import { REVIEW_SESSION_KEYS } from "../styles/reviewTokens";
 
 export function Component() {
   const navigate = useNavigate();
+  // 흐름: 유형 선택(/review/type) → 본인확인(현재) → 작성(/review/write)
+  // 유형을 아직 안 골랐으면 선택 단계로 되돌림
+  const hasTier =
+    typeof window !== "undefined" && !!sessionStorage.getItem(REVIEW_SESSION_KEYS.TIER);
   const [name, setName] = useState("");
   const [last4, setLast4] = useState("");
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  if (!hasTier) return <Navigate to="/review/type" replace />;
 
   const canSubmit =
     name.trim().length >= 1 &&
@@ -36,7 +42,7 @@ export function Component() {
           sessionStorage.removeItem(REVIEW_SESSION_KEYS.SNAPSHOT);
         }
         trackReview("lookup_customer_success", {});
-        navigate("/review/type");
+        navigate("/review/write");
         return;
       }
       trackReview("lookup_customer_fail", { reason: res.matched });
@@ -58,7 +64,7 @@ export function Component() {
     <main className="min-h-screen bg-[#faf7f4] text-[#1c1614] md:bg-[#dcd5d0]">
       <header className="sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-[#ebe5e0] md:hidden">
         <div className="max-w-screen-sm mx-auto px-5 h-14 flex items-center">
-          <Link to="/" aria-label="홈으로" className="-ml-2 p-2 text-[#1c1614]">
+          <Link to="/review/type" aria-label="이전" className="-ml-2 p-2 text-[#1c1614]">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="ml-1 text-[15px] font-bold tracking-tight">후기 작성 본인 확인</h1>
@@ -68,12 +74,12 @@ export function Component() {
       <section className="max-w-screen-sm mx-auto px-5 pt-8 pb-16 md:max-w-xl md:py-16">
         <div className="rounded-2xl bg-white border border-[#ebe5e0] p-6 md:p-9 md:rounded-3xl md:shadow-2xl">
           <Link
-            to="/"
-            aria-label="홈으로"
+            to="/review/type"
+            aria-label="이전"
             className="hidden md:inline-flex items-center gap-1 -mt-1 mb-3 p-1.5 -ml-1 text-[#6b6460] hover:text-[#1c1614]"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-[12.5px] font-semibold">홈으로</span>
+            <span className="text-[12.5px] font-semibold">이전</span>
           </Link>
           <div className="mb-6">
             <h2 className="text-[20px] md:text-[22px] font-extrabold tracking-tight leading-tight break-keep">

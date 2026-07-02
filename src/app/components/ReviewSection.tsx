@@ -352,7 +352,7 @@ function LiveReviewSection() {
             </a>
           </div>
           <Link
-            to="/review/new"
+            to="/review/type"
             className="inline-flex items-center gap-1 text-[12.5px] text-[#9a948f] hover:text-[#952c2c] transition"
           >
             <PenLine className="w-3.5 h-3.5" />
