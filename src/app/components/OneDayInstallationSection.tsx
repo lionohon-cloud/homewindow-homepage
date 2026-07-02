@@ -171,21 +171,25 @@ export function OneDayInstallationSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-200px" }}
                   transition={{ duration: 0.5, delay: 0.3 + index * 0.15 }}
+                  onClick={step.isLast ? undefined : () => setSelectedStep(step.id)}
+                  role={step.isLast ? undefined : "button"}
+                  aria-label={step.isLast ? undefined : `${step.title} 상세정보`}
                   className={`flex flex-col items-center flex-1 ${
                     step.isLast ? 'bg-[#D22727]' : 'bg-white'
                   } border-2 ${
                     step.isLast ? 'border-[#D22727]' : 'border-[#E5E5E5]'
-                  } rounded-[24px] p-4 relative`}
+                  } rounded-[24px] p-4 relative ${
+                    step.isLast ? '' : 'cursor-pointer hover:border-[#D22727] hover:shadow-md transition'
+                  }`}
                 >
-                  {/* ? Button - Top Right Corner */}
+                  {/* ? Button - Top Right Corner (시각 힌트, 카드 전체 클릭과 동일 동작) */}
                   {!step.isLast && (
-                    <button
-                      onClick={() => setSelectedStep(step.id)}
-                      className="absolute top-3 right-3 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-colors bg-[#f5f5f5] hover:bg-[#e5e5e5] cursor-pointer"
-                      aria-label="상세정보"
+                    <span
+                      className="absolute top-3 right-3 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-colors bg-[#f5f5f5]"
+                      aria-hidden="true"
                     >
                       <HelpCircle className="w-3.5 h-3.5 text-[#999]" />
-                    </button>
+                    </span>
                   )}
                   
                   <step.icon 
@@ -229,7 +233,10 @@ export function OneDayInstallationSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-200px" }}
                   transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                  className={`flex items-center gap-4 ${ step.isLast ? 'bg-[#D22727]' : 'bg-white' } border-2 ${ step.isLast ? 'border-[#D22727]' : 'border-[#E5E5E5]' } rounded-[12px] pl-[10px] pr-[20px] py-[2px]`}
+                  onClick={step.isLast ? undefined : () => setSelectedStep(step.id)}
+                  role={step.isLast ? undefined : "button"}
+                  aria-label={step.isLast ? undefined : `${step.title} 상세정보`}
+                  className={`flex items-center gap-4 ${ step.isLast ? 'bg-[#D22727]' : 'bg-white' } border-2 ${ step.isLast ? 'border-[#D22727]' : 'border-[#E5E5E5]' } rounded-[12px] pl-[10px] pr-[20px] py-[2px] ${ step.isLast ? '' : 'cursor-pointer active:bg-[#faf7f4] transition' }`}
                 >
                   <div className={`flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-full ${
                     step.isLast ? 'bg-white/20' : 'bg-[#FEF5F5]'
@@ -246,13 +253,12 @@ export function OneDayInstallationSection() {
                       {step.title}
                     </p>
                     {!step.isLast && (
-                      <button
-                        onClick={() => setSelectedStep(step.id)}
-                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors bg-[#f5f5f5] active:bg-[#e5e5e5]"
-                        aria-label="상세정보"
+                      <span
+                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-[#f5f5f5]"
+                        aria-hidden="true"
                       >
                         <HelpCircle className="w-4 h-4 text-[#999]" />
-                      </button>
+                      </span>
                     )}
                   </div>
                 </motion.div>
