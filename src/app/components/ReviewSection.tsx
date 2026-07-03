@@ -279,7 +279,7 @@ function LiveReviewSection() {
           <div className="mt-10 md:mt-14">
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
-                {[0, 1, 2, 3].map((i) => (
+                {[0, 1].map((i) => (
                   <div
                     key={i}
                     className="rounded-2xl bg-white border border-[#ebe5e0] overflow-hidden animate-pulse"
@@ -295,7 +295,7 @@ function LiveReviewSection() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
-                {premiumItems.slice(0, 4).map((it, i) => (
+                {premiumItems.slice(0, 2).map((it, i) => (
                   <motion.div
                     key={it.id}
                     initial={{ opacity: 0, y: 20 }}
