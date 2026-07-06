@@ -11,15 +11,19 @@ import {
   type ReviewSort,
 } from "../components/review/ReviewFilterBar";
 import {
-  PremiumReviewCard,
-  type PremiumCardData,
-} from "../components/review/PremiumReviewCard";
+  ReviewRowCard,
+  type ReviewRowData,
+} from "../components/review/ReviewRowCard";
 import {
-  SimpleReviewCard,
-  type SimpleRowData,
-} from "../components/review/SimpleReviewCard";
+  PhotoReviewCard,
+  type PhotoReviewData,
+} from "../components/review/PhotoReviewCard";
+import { PhotoReviewCarousel } from "../components/review/PhotoReviewCarousel";
 import { keywordTags } from "@/lib/reviewTags";
-import { displayablePhotos, firstDisplayableUrl } from "@/lib/displayablePhotos";
+import { displayablePhotos } from "@/lib/displayablePhotos";
+
+// "더보기" 초기 노출 개수 / 클릭당 추가 개수
+const PAGE_SIZE = 5;
 
 interface ListItem {
   id: string;
@@ -61,6 +65,12 @@ export function Component() {
   const [part, setPart] = useState<string>("");
   const [data, setData] = useState<ListResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // 필터/정렬/탭이 바뀌면 노출 개수 초기화
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [tab, sort, part]);
 
   useEffect(() => {
     setLoading(true);
@@ -81,8 +91,11 @@ export function Component() {
     return data.items;
   }, [data, tab]);
 
-  const premium = filteredItems.filter((i) => i.tier === "premium");
-  const simple = filteredItems.filter((i) => i.tier === "simple");
+  // "사진 후기 모아보기" — 사진 있는 후기만 (탭 무관, 데스크톱은 5개씩 슬라이드)
+  const photoItems = useMemo(
+    () => filteredItems.filter((i) => displayablePhotos(i.photos).length > 0),
+    [filteredItems]
+  );
 
   return (
     <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
@@ -141,33 +154,60 @@ export function Component() {
           onPartChange={setPart}
         />
 
-        {/* premium grid (사진 후기는 프리미엄 카드로 노출) */}
-        {premium.length > 0 && (
+        {/* 사진 후기 모아보기 */}
+        {photoItems.length > 0 && (
           <div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {premium.slice(0, 50).map((it) => (
-                <PremiumReviewCard
-                  key={it.id}
-                  data={toPremiumCard(it)}
-                />
+            <div className="flex items-baseline gap-2 mb-4">
+              <span className="w-1 h-4 bg-[#952c2c] rounded-full translate-y-0.5" />
+              <strong className="text-[17px] font-extrabold text-[#1c1614]">
+                사진 후기 모아보기
+              </strong>
+              <span className="text-[13px] text-[#9a948f] font-semibold">
+                총 {photoItems.length}건
+              </span>
+            </div>
+            {/* 모바일: 2열 그리드 (상위 4개) */}
+            <div className="grid grid-cols-2 gap-3 md:hidden">
+              {photoItems.slice(0, 4).map((it) => (
+                <PhotoReviewCard key={it.id} data={toPhotoCard(it)} />
               ))}
+            </div>
+            {/* 데스크톱: 5개씩 슬라이드 */}
+            <div className="hidden md:block">
+              <PhotoReviewCarousel items={photoItems.map(toPhotoCard)} />
             </div>
           </div>
         )}
 
-        {/* simple list (전체 탭에서만 노출) */}
-        {tab === "all" && simple.length > 0 && (
-          <div>
-            <div className="text-[13px] text-[#6b6460] mb-1">
-              <strong className="text-[#1c1614]">최근 후기</strong>
-            </div>
-            <div>
-              {simple.slice(0, 50).map((it) => (
-                <SimpleReviewCard key={it.id} data={toSimpleRow(it)} />
-              ))}
+        {/* 전체 후기 리스트 */}
+        <div>
+          <div className="flex items-baseline justify-between pb-3.5 mb-1 border-b-2 border-[#1c1614]">
+            <div className="flex items-baseline gap-2.5">
+              <strong className="text-[20px] font-black text-[#1c1614]">
+                {tab === "photo" ? "사진 후기" : "전체 후기"}
+              </strong>
+              <span className="text-[14px] font-extrabold text-[#952c2c]">
+                {filteredItems.length}건
+              </span>
             </div>
           </div>
-        )}
+
+          <div>
+            {filteredItems.slice(0, visibleCount).map((it) => (
+              <ReviewRowCard key={it.id} data={toRowCard(it)} />
+            ))}
+          </div>
+
+          {filteredItems.length > visibleCount && (
+            <button
+              type="button"
+              onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              className="mt-7 mx-auto flex h-12 items-center justify-center rounded-xl border border-[#ebe5e0] bg-white px-8 text-[14px] font-extrabold text-[#3a3531] hover:border-[#c8b8a8] transition"
+            >
+              후기 더보기 ({filteredItems.length - visibleCount}건 남음)
+            </button>
+          )}
+        </div>
 
         {!loading && filteredItems.length === 0 && (
           <div className="text-center py-16 text-[#9a948f]">
@@ -194,35 +234,28 @@ const emptySummary: RatingSummary & {
   counts: { all: 0, simple: 0, premium: 0 },
 };
 
-function toPremiumCard(it: ListItem): PremiumCardData {
+function toRowCard(it: ListItem): ReviewRowData {
   return {
     id: it.id,
     customerName: it.customerName,
     location: it.snapshot?.locationLabel || "",
-    productLabel: it.snapshot?.productLabel,
-    modelLabel:
-      it.brand && it.model
-        ? `${it.brand} · ${it.model}`
-        : it.model || it.brand || undefined,
+    brand: it.brand,
+    model: it.model,
     rating: it.rating,
-    photoCount: displayablePhotos(it.photos).length,
-    videoCount: it.videoCount,
     publishedAt: formatRelative(it.publishedAt) || it.publishedAt,
-    excerpt: it.reviewText,
-    thumbnailUrl: firstDisplayableUrl(it.photos),
+    reviewText: it.reviewText,
+    tags: keywordTags(it.tags),
+    photoUrls: displayablePhotos(it.photos)
+      .map((p) => p.url)
+      .filter((u): u is string => !!u),
   };
 }
 
-function toSimpleRow(it: ListItem): SimpleRowData {
+function toPhotoCard(it: ListItem): PhotoReviewData {
   return {
     id: it.id,
-    customerName: it.customerName,
+    thumbnailUrl: displayablePhotos(it.photos)[0]?.url || "",
     location: it.snapshot?.locationLabel || "",
-    publishedAt: formatRelative(it.publishedAt) || it.publishedAt,
-    rating: it.rating,
-    reviewText: it.reviewText,
-    tags: keywordTags(it.tags),
-    helpfulCount: it.helpfulCount,
   };
 }
 
