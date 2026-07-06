@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { submitLead } from "@/lib/submitLead";
+import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
 interface ConsultationModalProps {
@@ -23,6 +24,9 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
   const honeypotRef = useRef<HTMLInputElement>(null);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  // W2 2단계 접수 팝업
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [leadDocId, setLeadDocId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +51,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
 
     try {
-      const ok = await submitLead({
+      const { ok, docId } = await submitLead({
         phone: phoneNumber,
         entryForm: `홈페이지 ${device} 상담모달`,
         honeypot: honeypotRef.current?.value,
@@ -57,7 +61,13 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
         setPhone2("");
         setPhone3("");
         onClose();
-        navigate('/thanks');
+        // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
+        if (docId) {
+          setLeadDocId(docId);
+          setShowDetailModal(true);
+        } else {
+          navigate('/thanks');
+        }
       } else {
         throw new Error("전송 실패");
       }
@@ -68,6 +78,18 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
+    setShowDetailModal(false);
+    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
+    navigate('/thanks');
+  };
+
+  const handleDetailSkip = () => {
+    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
+    setShowDetailModal(false);
+    navigate('/thanks');
   };
 
   const handleViewPrivacy = () => {
@@ -198,7 +220,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                           className="w-4 h-4 cursor-pointer accent-[#D22727] disabled:cursor-not-allowed"
                         />
                         <span className="text-[11px] md:text-[13px] text-[#666]">
-                          상담을 위한 연락처 수집에 동의합니다.{" "}
+                          상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
                           <button
                             type="button"
                             onClick={handleViewPrivacy}
@@ -259,7 +281,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                     <h4 className="font-bold text-[#333] mb-2">1. 수집하는 개인정보 항목</h4>
                     <p>회사는 상담 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다:</p>
                     <ul className="list-disc list-inside ml-2 mt-2 space-y-1">
-                      <li>필수항목: 연락처(휴대전화번호)</li>
+                      <li>필수항목: 연락처(휴대전화번호), 상담 지역, 상담분야</li>
                     </ul>
                   </section>
 
@@ -401,6 +423,13 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
           </div>
         )}
       </AnimatePresence>
+
+      {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
+      <ConsultRegionFieldModal
+        isOpen={showDetailModal}
+        onComplete={handleDetailComplete}
+        onSkip={handleDetailSkip}
+      />
     </>
   );
 }
