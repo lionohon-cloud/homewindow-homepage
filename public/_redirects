@@ -1,9 +1,24 @@
-# 정적 자산(/assets/*)은 실제 파일이 있으면 그대로 서빙되고,
-# 없으면 진짜 404가 나야 한다. SPA fallback(/index.html)로 넘기면
-# 사라진 옛 배포의 .css/.js 요청에 HTML이 반환되어(MIME text/html)
-# 브라우저가 스타일/스크립트 적용을 거부 → 화면 붕괴.
-# (배포 교체기에 옛 HTML을 캐시한 사용자에게서 발생)
-/assets/* 404
+# Cloudflare Pages에서 전체 `/* /index.html 200` fallback을 쓰면
+# 존재하지 않는 /assets/*.css, /assets/*.js 요청까지 HTML 200으로 응답한다.
+# 그래서 실제 React 라우트만 index.html로 rewrite하고, 정적 자산 miss는
+# Cloudflare가 진짜 404로 처리하게 둔다.
 
-# 나머지 경로는 SPA 라우팅을 위해 index.html 로 fallback
-/* /index.html 200
+/thanks / 200
+
+/partners / 200
+
+/as / 200
+
+/admin/as / 200
+/admin/utm / 200
+/admin/dashboard / 200
+
+/review / 200
+
+/admin/reviews / 200
+
+/partners/* / 200
+/as/* / 200
+/admin/as/* / 200
+/review/* / 200
+/admin/reviews/* / 200

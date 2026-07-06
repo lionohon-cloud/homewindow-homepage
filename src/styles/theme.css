@@ -1,6 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --hw-css-cache-bust: "2026-07-06-pages-routing";
   --font-size: 16px;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
