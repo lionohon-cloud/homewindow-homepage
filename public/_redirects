@@ -1,1 +1,9 @@
+# 정적 자산(/assets/*)은 실제 파일이 있으면 그대로 서빙되고,
+# 없으면 진짜 404가 나야 한다. SPA fallback(/index.html)로 넘기면
+# 사라진 옛 배포의 .css/.js 요청에 HTML이 반환되어(MIME text/html)
+# 브라우저가 스타일/스크립트 적용을 거부 → 화면 붕괴.
+# (배포 교체기에 옛 HTML을 캐시한 사용자에게서 발생)
+/assets/* 404
+
+# 나머지 경로는 SPA 라우팅을 위해 index.html 로 fallback
 /* /index.html 200
