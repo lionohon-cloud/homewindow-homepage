@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { EstimateModal } from "./EstimateModal";
 import { X, Phone, MessageSquare, Loader2 } from "lucide-react";
-import { submitLead } from "@/lib/submitLead";
+import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
 export function BottomBar() {
@@ -19,6 +20,9 @@ export function BottomBar() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  // W2 2단계 접수 팝업
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [leadDocId, setLeadDocId] = useState<string | null>(null);
 
   const phone2Ref = useRef<HTMLInputElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
@@ -43,7 +47,7 @@ export function BottomBar() {
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     try {
       const honeypot = honeypotPopupRef.current?.value || honeypotPcRef.current?.value;
-      const ok = await submitLead({
+      const { ok, docId } = await submitLead({
         phone,
         entryForm: `홈페이지 ${device} 하단바`,
         honeypot,
@@ -53,7 +57,13 @@ export function BottomBar() {
         setPhone2("");
         setPhone3("");
         setShowMobilePopup(false);
-        navigate('/thanks');
+        // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
+        if (docId) {
+          setLeadDocId(docId);
+          setShowDetailModal(true);
+        } else {
+          navigate('/thanks');
+        }
       } else throw new Error();
     } catch {
       setAlertMessage("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -61,6 +71,18 @@ export function BottomBar() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
+    setShowDetailModal(false);
+    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
+    navigate('/thanks');
+  };
+
+  const handleDetailSkip = () => {
+    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
+    setShowDetailModal(false);
+    navigate('/thanks');
   };
 
   // 공통 입력 스타일 (PC용: 테두리형 흰 배경)
@@ -171,7 +193,7 @@ export function BottomBar() {
                 className="w-3.5 h-3.5 cursor-pointer accent-[#D22727]"
               />
               <span className="text-[11px] text-[#888]">
-                상담을 위한 연락처 수집에 동의합니다.{" "}
+                상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
                 <button
                   type="button"
                   onClick={() => setShowPrivacy(true)}
@@ -311,7 +333,7 @@ export function BottomBar() {
                   className="w-4 h-4 cursor-pointer accent-[#D22727] mt-0.5 shrink-0"
                 />
                 <span className="text-[12px] text-[#666] leading-relaxed">
-                  상담을 위한 연락처 수집에 동의합니다.{" "}
+                  상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setShowPrivacy(true); }}
@@ -355,7 +377,7 @@ export function BottomBar() {
               </button>
             </div>
             <div className="p-6 overflow-y-auto text-[14px] leading-[1.8] text-[#666]">
-              <p>회사는 상담 서비스 제공을 위해 연락처(휴대전화번호)를 수집합니다. 수집된 정보는 창호 교체 상담 및 견적 안내 목적으로만 이용되며, 상담 완료 후 3개월 이내 파기됩니다. 고객의 동의 없이 제3자에게 제공하지 않습니다.</p>
+              <p>회사는 상담 서비스 제공을 위해 연락처(휴대전화번호)·상담 지역·상담분야를 수집합니다. 수집된 정보는 창호 교체 상담 및 견적 안내 목적으로만 이용되며, 상담 완료 후 3개월 이내 파기됩니다. 고객의 동의 없이 제3자에게 제공하지 않습니다.</p>
               <p className="text-[#999] text-[13px] mt-4">공고일자: 2024년 1월 1일 · 시행일자: 2024년 1월 1일</p>
             </div>
           </div>
@@ -386,6 +408,13 @@ export function BottomBar() {
           </div>
         </div>
       )}
+
+      {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
+      <ConsultRegionFieldModal
+        isOpen={showDetailModal}
+        onComplete={handleDetailComplete}
+        onSkip={handleDetailSkip}
+      />
 
       <EstimateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>

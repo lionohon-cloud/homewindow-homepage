@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Phone, Check, ChevronRight, X, Send, RotateCcw, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { submitLead } from "@/lib/submitLead";
+import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwKDr2j1EzTEZkMtUUoFZGhxoC_f6HBh505pcuD3CNDR8fGlChqFz1MkUfh2NkenTP/exec";
@@ -53,6 +54,9 @@ export function EstimateForm() {
   const [isPhoneSubmitting, setIsPhoneSubmitting] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  // W2 2단계 접수 팝업 (contact-phone 카드 + 상담모달 두 경로 공용)
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [leadDocId, setLeadDocId] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
@@ -457,8 +461,14 @@ export function EstimateForm() {
     setIsPhoneSubmitting(true);
     addUserText(formatted);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
-    await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}` });
-    navigate('/thanks');
+    // honeypot 없는 경로 (contact-phone 카드). 접수 확정 직후 2단계 팝업.
+    const { docId } = await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}` });
+    if (docId) {
+      setLeadDocId(docId);
+      setShowDetailModal(true);
+    } else {
+      navigate('/thanks');
+    }
   };
 
   const openConsultationModal = () => {
@@ -500,12 +510,30 @@ export function EstimateForm() {
 
     setIsSubmitting(true);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
-    await submitLead({
+    const { docId } = await submitLead({
       phone,
       entryForm: `AI채팅 ${device}`,
       honeypot: honeypotRef.current?.value,
     });
     closeConsultationModal();
+    // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
+    if (docId) {
+      setLeadDocId(docId);
+      setShowDetailModal(true);
+    } else {
+      navigate('/thanks');
+    }
+  };
+
+  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
+    setShowDetailModal(false);
+    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
+    navigate('/thanks');
+  };
+
+  const handleDetailSkip = () => {
+    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
+    setShowDetailModal(false);
     navigate('/thanks');
   };
 
@@ -815,7 +843,7 @@ export function EstimateForm() {
                       className="w-4 h-4 cursor-pointer accent-[#D22727] disabled:cursor-not-allowed"
                     />
                     <span className="text-[11px] text-[#666]">
-                      상담을 위한 연락처 수집에 동의합니다.{" "}
+                      상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
                       <button
                         type="button"
                         onClick={() => setShowPrivacy(true)}
@@ -924,7 +952,7 @@ export function EstimateForm() {
             <div className="space-y-4">
               <div className="text-sm text-gray-500">
                 <p>청암홈윈도우는 고객님의 개인정보를 다음과 같이 수집하고 이용합니다.</p>
-                <p>1. 수집하는 개인정보 항목: 전화번호</p>
+                <p>1. 수집하는 개인정보 항목: 전화번호, 상담 지역, 상담분야</p>
                 <p>2. 개인정보의 수집 및 이용 목적: 상담 신청 및 견적 제공</p>
                 <p>3. 개인정보의 보유 및 이용 기간: 상담 완료 후 1년간 보유 후 파기</p>
                 <p>4. 개인정보의 제공: 제3자에게 제공하지 않음</p>
@@ -1037,6 +1065,13 @@ export function EstimateForm() {
           </div>
         </div>
       </div>
+
+      {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
+      <ConsultRegionFieldModal
+        isOpen={showDetailModal}
+        onComplete={handleDetailComplete}
+        onSkip={handleDetailSkip}
+      />
     </div>
   );
 }
