@@ -73,14 +73,22 @@ export async function submitLead(params: {
     timestamp: new Date().toISOString(),
   };
 
-  const gasPromise = fetch(GAS_URL, {
+  // GAS 는 append-only 구글시트 로그(비필수). 응답을 기다리지 않는다.
+  //  - GAS /exec 는 script.googleusercontent.com 으로 302 리다이렉트 → 왕복 2배(측정 2.5~3s).
+  //    이 지연이 상담 접수 UX를 통째로 막던 주범이라, 화면 대기에서 분리한다.
+  //  - keepalive: /thanks 이동·탭 종료 후에도 전송 완료 보장.
+  //  - resolve 는 성공/실패 여부만 담아, ERP 가 실패했을 때의 폴백 판정에만 쓴다.
+  const gasPromise: Promise<{ ok: boolean }> = fetch(GAS_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(gasPayload),
-  }).catch((err) => {
-    console.error('[GAS 전송 실패]', err);
-    throw err;
-  });
+    keepalive: true,
+  })
+    .then(() => ({ ok: true }))
+    .catch((err) => {
+      console.error('[GAS 전송 실패]', err);
+      return { ok: false };
+    });
 
   // ── (a-2) ERP — 청암홈윈도우 ERP 자동등록 ─────────────────
   // 사용자 확정 스펙대로 페이로드 구성. 실패해도 사용자 화면은 영향 없음.
@@ -168,20 +176,20 @@ export async function submitLead(params: {
     console.error('[GA4 dataLayer 실패]', err);
   }
 
-  // ── 병렬 대기 ─────────────────────────────────────────────
-  // GAS 또는 ERP 중 하나라도 성공이면 화면에 "접수됨" 표시.
-  // (2026-05-19) 광고차단 익스텐션이 script.googleusercontent.com 차단하는 환경에서
-  // GAS 만 실패하고 ERP 는 정상 들어가는 케이스 → 잘못된 "전송 실패" 표시 방지.
-  // ERP 만 성공해도 진짜 데이터는 들어갔으므로 접수 처리.
-  const results = await Promise.allSettled([gasPromise, erpPromise]);
-  const gasOk = results[0].status === 'fulfilled';
+  // ── ERP 우선 대기 ────────────────────────────────────────
+  // 화면 진행에 필요한 건 ERP 응답(접수 확정 + docId)뿐이므로 ERP 만 기다린다.
+  // GAS(느린 비필수 로그)는 백그라운드에서 계속 전송된다 → 대기 시간 ~5s → ~1s.
   // erpPromise 는 항상 { ok, docId } 로 resolve (실패도 .catch 에서 흡수).
-  const erpResult = results[1];
-  const erp =
-    erpResult.status === 'fulfilled'
-      ? erpResult.value
-      : { ok: false, docId: null };
-  const submitted = gasOk || erp.ok;
+  const erp = await erpPromise;
+
+  // (2026-05-19) 광고차단 익스텐션이 script.googleusercontent.com 차단 환경 대응은
+  // 이제 ERP 를 주 경로로 삼는 것으로 해결됨.
+  // 단, ERP 가 실패한 경우엔 GAS 성공 여부를 폴백으로 확인해 잘못된 "전송 실패" 표시를 막는다.
+  let submitted = erp.ok;
+  if (!submitted) {
+    const gas = await gasPromise;
+    submitted = gas.ok;
+  }
 
   if (submitted) {
     // /thanks 가드용 플래그
