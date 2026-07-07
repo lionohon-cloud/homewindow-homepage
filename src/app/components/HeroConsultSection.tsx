@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { X, Phone, Loader2 } from "lucide-react";
-import { submitLead } from "@/lib/submitLead";
+import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
 export function HeroConsultSection() {
@@ -14,6 +15,9 @@ export function HeroConsultSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  // W2 2단계 접수 팝업
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [leadDocId, setLeadDocId] = useState<string | null>(null);
   const phone2Ref = useRef<HTMLInputElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
   const honeypotRef = useRef<HTMLInputElement>(null);
@@ -35,7 +39,7 @@ export function HeroConsultSection() {
     const phone = `${phone1}-${phone2}-${phone3}`;
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     try {
-      const ok = await submitLead({
+      const { ok, docId } = await submitLead({
         phone,
         entryForm: `홈페이지 ${device} 메인`,
         honeypot: honeypotRef.current?.value,
@@ -44,7 +48,13 @@ export function HeroConsultSection() {
         setPhone1("010");
         setPhone2("");
         setPhone3("");
-        navigate('/thanks');
+        // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
+        if (docId) {
+          setLeadDocId(docId);
+          setShowDetailModal(true);
+        } else {
+          navigate('/thanks');
+        }
       } else throw new Error();
     } catch {
       setAlertMessage("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -52,6 +62,18 @@ export function HeroConsultSection() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
+    setShowDetailModal(false);
+    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
+    navigate('/thanks');
+  };
+
+  const handleDetailSkip = () => {
+    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
+    setShowDetailModal(false);
+    navigate('/thanks');
   };
 
   const inputCls =
@@ -153,7 +175,7 @@ export function HeroConsultSection() {
                   className="w-3.5 h-3.5 cursor-pointer accent-[#D22727]"
                 />
                 <span className="text-[11px] md:text-[12px] text-[#999]">
-                  상담을 위한 연락처 수집에 동의합니다.{" "}
+                  상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
                   <button
                     type="button"
                     onClick={() => setShowPrivacy(true)}
@@ -183,7 +205,7 @@ export function HeroConsultSection() {
               </button>
             </div>
             <div className="p-6 overflow-y-auto text-[14px] leading-[1.8] text-[#666]">
-              <p>회사는 상담 서비스 제공을 위해 연락처(휴대전화번호)를 수집합니다. 수집된 정보는 창호 교체 상담 및 견적 안내 목적으로만 이용되며, 상담 완료 후 3개월 이내 파기됩니다. 고객의 동의 없이 제3자에게 제공하지 않습니다.</p>
+              <p>회사는 상담 서비스 제공을 위해 연락처(휴대전화번호)·상담 지역·상담분야를 수집합니다. 수집된 정보는 창호 교체 상담 및 견적 안내 목적으로만 이용되며, 상담 완료 후 3개월 이내 파기됩니다. 고객의 동의 없이 제3자에게 제공하지 않습니다.</p>
               <p className="text-[#999] text-[13px] mt-4">공고일자: 2024년 1월 1일 · 시행일자: 2024년 1월 1일</p>
             </div>
           </div>
@@ -214,6 +236,13 @@ export function HeroConsultSection() {
           </div>
         </div>
       )}
+
+      {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
+      <ConsultRegionFieldModal
+        isOpen={showDetailModal}
+        onComplete={handleDetailComplete}
+        onSkip={handleDetailSkip}
+      />
     </>
   );
 }

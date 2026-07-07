@@ -10,6 +10,10 @@ import {
   buildErpUtm,
   buildErpInflowChannel,
 } from './channelMap';
+import {
+  regionLabel,
+  consultFieldLabel,
+} from '@/app/components/ConsultRegionFieldModal';
 
 // 상담접수 GAS (ConsultationModal/HeroConsultSection/BottomBar/EstimateForm 공용)
 const GAS_URL =
@@ -22,18 +26,24 @@ declare global {
   }
 }
 
+/** submitLead(Call1) 결과. docId 는 ERP 응답에서 파싱 — 2단계(지역·분야) 반영(Call2)에 사용. */
+export interface SubmitLeadResult {
+  ok: boolean;
+  docId: string | null;
+}
+
 export async function submitLead(params: {
   phone: string;
   entryForm: string;
   honeypot?: string;
-}): Promise<boolean> {
+}): Promise<SubmitLeadResult> {
   const { phone, entryForm, honeypot } = params;
 
   // Honeypot: 사람은 숨겨진 필드를 보지 못함. 값이 채워져 들어오면 봇으로 판단.
   // UX는 정상 제출처럼 보이게 하되 GAS/GA4로는 전송하지 않음.
   if (honeypot && honeypot.trim().length > 0) {
     sessionStorage.setItem('hw_just_submitted', '1');
-    return true;
+    return { ok: true, docId: null };
   }
 
   const utm = getUtmData();
@@ -43,6 +53,9 @@ export async function submitLead(params: {
   // 시트 스키마: A접수일시 B전화번호 C유입매체 D유입채널
   //            E~I utm_source/medium/campaign/content/term
   //            J visit_id K landing_path L referrer
+  // region/consult_field: 2단계 팝업(Call2)에서 받는 값. Call1 시점엔 아직 미선택 →
+  // 시트 컬럼만 확보하도록 빈값으로 전송(GAS 는 시트에 append-only, 키로 update 안 함).
+  // Call2 에서 GAS 재전송하면 같은 접수 건이 두 행으로 중복되므로 재전송하지 않음.
   const gasPayload = {
     phone,
     channel_media: channelMedia,          // C열
@@ -55,6 +68,8 @@ export async function submitLead(params: {
     visit_id: utm.visit_id,               // J
     landing_path: utm.landing_path,       // K
     referrer: utm.referrer,               // L
+    region: '',                           // 지역 라벨 (Call2 미반영 → 빈값)
+    consult_field: '',                    // 상담분야 라벨 (Call2 미반영 → 빈값)
     timestamp: new Date().toISOString(),
   };
 
@@ -81,23 +96,34 @@ export async function submitLead(params: {
     managerId: null,
     // createdAt은 ERP 서버에서 serverTimestamp() 설정
   };
-  const erpPromise = fetch('/api/erp-lead', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(erpPayload),
-  })
+  // ERP 응답 본문에서 docId 파싱 → 2단계(지역·분야) 반영(Call2)에 사용.
+  // ok/docId 를 함께 담아 반환 (r.ok 만으론 docId 를 알 수 없음).
+  const erpPromise: Promise<{ ok: boolean; docId: string | null }> = fetch(
+    '/api/erp-lead',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(erpPayload),
+    },
+  )
     .then(async (r) => {
+      const text = await r.text().catch(() => '');
       if (!r.ok) {
-        const t = await r.text().catch(() => '');
-        console.error('[ERP 등록 실패]', r.status, t);
+        console.error('[ERP 등록 실패]', r.status, text);
         // GA4 이벤트로 실패 추적
         try {
           if (typeof window.gtag === 'function') {
             window.gtag('event', 'erp_lead_failed', { status: r.status });
           }
         } catch { /* ignore */ }
+        return { ok: false, docId: null };
       }
-      return r;
+      let docId: string | null = null;
+      try {
+        const json = JSON.parse(text) as { docId?: unknown };
+        if (typeof json.docId === 'string') docId = json.docId;
+      } catch { /* 파싱 실패 시 docId 없이 진행 */ }
+      return { ok: true, docId };
     })
     .catch((err) => {
       console.error('[ERP 네트워크 실패]', err);
@@ -106,7 +132,7 @@ export async function submitLead(params: {
           window.gtag('event', 'erp_lead_failed', { status: 'network' });
         }
       } catch { /* ignore */ }
-      return null;
+      return { ok: false, docId: null };
     });
 
   // ── (b) GA4 이벤트 전송 — gtag.js + dataLayer 이중 전송 ──
@@ -149,19 +175,74 @@ export async function submitLead(params: {
   // ERP 만 성공해도 진짜 데이터는 들어갔으므로 접수 처리.
   const results = await Promise.allSettled([gasPromise, erpPromise]);
   const gasOk = results[0].status === 'fulfilled';
-  // erpPromise 는 .catch 에서 null 반환하므로 fulfilled 라도 r 가 null 이면 실패.
-  // r.ok 가 true 일 때만 진짜 성공.
+  // erpPromise 는 항상 { ok, docId } 로 resolve (실패도 .catch 에서 흡수).
   const erpResult = results[1];
-  const erpOk =
-    erpResult.status === 'fulfilled' &&
-    erpResult.value !== null &&
-    (erpResult.value as Response).ok === true;
-  const submitted = gasOk || erpOk;
+  const erp =
+    erpResult.status === 'fulfilled'
+      ? erpResult.value
+      : { ok: false, docId: null };
+  const submitted = gasOk || erp.ok;
 
   if (submitted) {
     // /thanks 가드용 플래그
     sessionStorage.setItem('hw_just_submitted', '1');
   }
 
-  return submitted;
+  return { ok: submitted, docId: erp.docId };
+}
+
+/**
+ * Call2 — 접수 건에 지역·상담분야 추가 반영.
+ * POST /api/erp-lead-update (docId, region, consultField). GA4 이벤트도 함께 발송.
+ * 실패해도 throw 하지 않음(고객 흐름을 막지 않는다). 결과 boolean 만 반환.
+ */
+export async function submitLeadDetail(
+  docId: string,
+  region: string,
+  consultField: string,
+): Promise<boolean> {
+  let ok = false;
+  try {
+    const res = await fetch('/api/erp-lead-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docId, region, consultField }),
+    });
+    ok = res.ok;
+    if (!ok) {
+      const t = await res.text().catch(() => '');
+      console.error('[ERP 상세 반영 실패]', res.status, t);
+    }
+  } catch (err) {
+    console.error('[ERP 상세 반영 네트워크 실패]', err);
+    ok = false;
+  }
+
+  // GA4: Call2 성공 시 신규 이벤트 (gtag + dataLayer 이중 전송, generate_lead 패턴 동일).
+  if (ok) {
+    const ga4Params = {
+      region,
+      consult_field: consultField,
+      region_label: regionLabel(region),
+      consult_field_label: consultFieldLabel(consultField),
+    };
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'consult_detail_submitted', ga4Params);
+      }
+    } catch (err) {
+      console.error('[GA4 gtag 실패]', err);
+    }
+    try {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'consult_detail_submitted',
+        ...ga4Params,
+      });
+    } catch (err) {
+      console.error('[GA4 dataLayer 실패]', err);
+    }
+  }
+
+  return ok;
 }
