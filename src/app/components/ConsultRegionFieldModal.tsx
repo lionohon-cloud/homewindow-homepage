@@ -11,8 +11,8 @@ import { X, ArrowLeft } from "lucide-react";
  */
 
 export const CONSULT_REGIONS: readonly { code: string; label: string }[] = [
-  { code: "SEOUL_GYEONGGI_N", label: "서울·경기(한강 이북)" },
-  { code: "SEOUL_GYEONGGI_S", label: "서울·경기(한강 이남)" },
+  { code: "SEOUL_GYEONGGI_N", label: "서울, 경기북부" },
+  { code: "SEOUL_GYEONGGI_S", label: "경기남부" },
   { code: "INCHEON", label: "인천" },
   { code: "GYEONGNAM", label: "경남" },
   { code: "CHUNGCHEONG", label: "충청·대전·세종" },
