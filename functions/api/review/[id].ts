@@ -7,6 +7,7 @@ import {
   getRestSession,
   decodeFields,
 } from '../../_shared/firestoreRest';
+import { compressLocation } from '../../_shared/locationCompress';
 import type { FirebaseEnv } from '../../_shared/firebaseEnv';
 
 export const onRequestOptions: PagesFunction<FirebaseEnv> = async () =>
@@ -51,7 +52,7 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({
     tags: f.tags,
     reviewText: f.reviewText,
     photos: f.photos,
-    snapshot: f.snapshot, // 자동 매핑된 메타 (productLabel/locationLabel/installDate 등)
+    snapshot: sanitizeSnapshot(f.snapshot), // 자동 매핑된 메타 (productLabel/locationLabel/installDate 등)
     customerName: maskName(stripLast4Suffix(name)),
     // 화면 표기는 "리뷰 작성일"(createdAt) 기준 — 승인/게시일(publishedAt)이 아니라
     publishedAt: f.createdAt || f.publishedAt,
@@ -65,4 +66,13 @@ function stripLast4Suffix(n: string): string {
 function maskName(n: string): string {
   if (n.length <= 2) return n[0] + '*';
   return n[0] + '*'.repeat(n.length - 2) + n[n.length - 1];
+}
+// 과거 박제된 snapshot.locationLabel 에 동호수("102동")가 남아 있어 읽기 시점에 재압축
+function sanitizeSnapshot(snap: unknown): unknown {
+  if (!snap || typeof snap !== 'object') return snap;
+  const s = snap as Record<string, unknown>;
+  if (typeof s.locationLabel === 'string' && s.locationLabel) {
+    return { ...s, locationLabel: compressLocation(s.locationLabel) };
+  }
+  return snap;
 }
