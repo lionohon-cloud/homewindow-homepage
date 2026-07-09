@@ -21,6 +21,7 @@ import {
 import { PhotoReviewCarousel } from "../components/review/PhotoReviewCarousel";
 import { keywordTags } from "@/lib/reviewTags";
 import { displayablePhotos } from "@/lib/displayablePhotos";
+import { BottomBar } from "../components/BottomBar";
 
 // "더보기" 초기 노출 개수 / 클릭당 추가 개수
 const PAGE_SIZE = 5;
@@ -98,7 +99,7 @@ export function Component() {
   );
 
   return (
-    <main className="min-h-screen bg-[#faf7f4] text-[#1c1614]">
+    <main className="min-h-screen bg-[#faf7f4] text-[#1c1614] pb-[100px] md:pb-[110px]">
       {/* 좌상단 floating 칩 — 메인으로 가는 출구 */}
       <Link
         to="/"
@@ -221,6 +222,9 @@ export function Component() {
           </div>
         )}
       </section>
+
+      {/* 하단 고정 상담신청 CTA — 메인과 동일. 콘텐츠 가림 방지는 main pb-[100px] */}
+      <BottomBar />
     </main>
   );
 }
