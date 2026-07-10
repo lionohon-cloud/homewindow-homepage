@@ -494,7 +494,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
           </button>
         )}
         {pinchHint && (
-          <div className="pointer-events-none absolute top-12 left-0 right-0 z-20 flex justify-center">
+          <div className="pointer-events-none absolute bottom-4 left-0 right-0 z-20 flex justify-center">
             <div className="flex items-center gap-2.5 rounded-full bg-black/55 px-4 py-2 text-white backdrop-blur-[2px]">
               <span className="text-[22px] leading-none animate-pulse">🤏</span>
               <span className="text-left">
