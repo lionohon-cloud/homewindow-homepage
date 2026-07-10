@@ -139,20 +139,6 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
 
                     {/* 입력 및 버튼 */}
                     <div className="flex flex-col gap-2 relative">
-                      {/* Floating Micro CTA Badge */}
-                      <motion.div
-                        animate={{ y: [0, -8, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="hidden md:block absolute md:-top-[50px] md:right-0 z-10"
-                      >
-                        <div className="relative bg-[#FFD700] px-3 py-1.5 md:px-4 md:py-2 rounded-2xl shadow-lg">
-                          <p className="text-[#D22727] font-black text-[11px] md:text-[14px] whitespace-nowrap">
-                            지금 상담접수 시 10% 할인
-                          </p>
-                          <div className="absolute bottom-[-7px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[26px] w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[7px] border-t-[#FFD700]" />
-                        </div>
-                      </motion.div>
-
                       {/* 연락처 + 버튼 */}
                       <div className="flex items-center justify-center md:justify-start gap-2 md:gap-5">
                         <div className="flex items-center gap-1.5 md:gap-2">
