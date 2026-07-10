@@ -72,18 +72,9 @@ export const onRequestOptions: PagesFunction<AiChatEnv> = async () =>
   new Response(null, { status: 204, headers: corsHeaders });
 
 export const onRequestPost: PagesFunction<AiChatEnv> = async ({ request, env }) => {
-  // 임시 진단 모드 (배포 트러블슈팅) — 헤더 있을 때만 에러 원문 노출. 원인 확인 후 제거.
-  const debug = request.headers.get('x-hw-debug') === '1';
   const apiKey = env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    if (debug) return jsonResponse({ debug: 'no ANTHROPIC_API_KEY in env' });
     return errorResponse('AI 상담 환경변수(ANTHROPIC_API_KEY) 미설정', 503);
-  }
-  if (debug) {
-    // 키 자체는 노출하지 않고 길이·앞뒤 문자만 (공백/개행 혼입 검출용)
-    const head = apiKey.slice(0, 12);
-    const tailCode = apiKey.charCodeAt(apiKey.length - 1);
-    console.log(`[ai-chat][debug] keyLen=${apiKey.length} head=${head} lastCharCode=${tailCode}`);
   }
 
   // rate limit — LLM 비용 보호 (리드 프록시들과 달리 필수)
@@ -146,11 +137,6 @@ export const onRequestPost: PagesFunction<AiChatEnv> = async ({ request, env }) 
     if (!res.ok) {
       const t = await res.text().catch(() => '');
       console.error('[ai-chat] Anthropic 오류:', res.status, t.slice(0, 300));
-      if (debug) {
-        return jsonResponse({
-          debug: `anthropic ${res.status}: ${t.slice(0, 300)} | keyLen=${apiKey.length} keyTrimLen=${apiKey.trim().length}`,
-        });
-      }
       return errorResponse('AI 분류 실패', 502);
     }
     const data = (await res.json()) as {
@@ -165,11 +151,6 @@ export const onRequestPost: PagesFunction<AiChatEnv> = async ({ request, env }) 
     return jsonResponse({ intent, reply });
   } catch (e) {
     console.error('[ai-chat] 호출 실패:', e);
-    if (debug) {
-      return jsonResponse({
-        debug: `throw: ${(e as Error).name} ${(e as Error).message} | keyLen=${apiKey.length} keyTrimLen=${apiKey.trim().length}`,
-      });
-    }
     return errorResponse('AI 분류 시간 초과', 504);
   } finally {
     clearTimeout(timer);
