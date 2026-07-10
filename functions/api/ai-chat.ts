@@ -118,10 +118,10 @@ export const onRequestPost: PagesFunction<AiChatEnv> = async ({ request, env }) 
   }
 
   // Anthropic 은 Cloudflare 엣지発 직접 호출을 403 으로 차단 → 회사 AI Gateway 경유 (ERP 동일 패턴).
-  const apiUrl =
-    env.CF_ACCOUNT_ID && env.CF_AI_GATEWAY_ID
-      ? `https://gateway.ai.cloudflare.com/v1/${env.CF_ACCOUNT_ID}/${env.CF_AI_GATEWAY_ID}/anthropic/v1/messages`
-      : 'https://api.anthropic.com/v1/messages';
+  //   계정/게이트웨이 ID 는 비밀값 아님(대시보드 URL·게이트웨이 이름) — env 로 덮어쓰기 가능한 기본값.
+  const gwAccount = env.CF_ACCOUNT_ID || 'c4f7a789a4be601f8ba3f46c4fe2a62f';
+  const gwId = env.CF_AI_GATEWAY_ID || 'cahwindow';
+  const apiUrl = `https://gateway.ai.cloudflare.com/v1/${gwAccount}/${gwId}/anthropic/v1/messages`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10_000);
