@@ -132,6 +132,13 @@ const GYEONGGI_SI_TO_TERRITORY: Record<string, { code: string; label: string }> 
 };
 
 const W = 560, H = 610;
+// 모바일 (사장님 지시 2026-07-10): 어르신도 찍기 쉽게 지도를 화면에 꽉 채운다.
+//   세로 캔버스 + 본토 기준 fit (제주는 하단에 살짝 걸쳐도 OK — 검색·부분 클릭으로 보완).
+const MOBILE_H = 920;
+const JEJU_SIDO_CODE = "39";
+const IS_MOBILE =
+  typeof window !== "undefined" &&
+  window.matchMedia("(max-width: 639px)").matches;
 
 export interface RegionSelection {
   /** ERP TERRITORY_MASTER 4자리 코드 */
@@ -153,6 +160,19 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   const [q, setQ] = useState("");
   const [loadErr, setLoadErr] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  // 핀치 확대·팬 (사장님 지시 2026-07-10 — 모바일 손가락 확대). zoomVb=null 이면 기본 전체보기.
+  const [zoomVb, setZoomVb] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const mapWrapRef = useRef<HTMLDivElement>(null);
+  const gestureRef = useRef<{
+    mode: "none" | "pinch" | "pan";
+    dist: number;
+    vb0: { x: number; y: number; w: number; h: number };
+    midVbX: number; midVbY: number;
+    panX: number; panY: number;
+    moved: boolean;
+  }>({ mode: "none", dist: 0, vb0: { x: 0, y: 0, w: 0, h: 0 }, midVbX: 0, midVbY: 0, panX: 0, panY: 0, moved: false });
+  // 더블탭 = 확인 없이 바로 선택 진행 (사장님 지시 2026-07-10).
+  const lastTapRef = useRef<{ code: string; ts: number } | null>(null);
 
   useEffect(() => {
     loadSido().then(setSido).catch(() => setLoadErr(true));
@@ -173,8 +193,20 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       curSido && sgg
         ? sgg.features.filter((f) => f.properties.code.slice(0, 2) === curSido)
         : sido.features;
-    const proj = makeProj(feats, W, H, 0.09);
-    return { feats, proj, mode: curSido ? ("sgg" as const) : ("kr" as const) };
+    const canvasH = IS_MOBILE ? MOBILE_H : H;
+    // 모바일 전국 뷰: 본토(제주 제외) 기준으로 fit → 본토가 화면 폭을 꽉 채움 (제주 하단 일부 잘림 허용).
+    const fitFeats =
+      IS_MOBILE && !curSido
+        ? feats.filter((f) => f.properties.code !== JEJU_SIDO_CODE)
+        : feats;
+    const pad = IS_MOBILE ? (curSido ? 0.04 : 0.02) : 0.09;
+    const proj = makeProj(fitFeats.length ? fitFeats : feats, W, canvasH, pad);
+    return {
+      feats,
+      proj,
+      mode: curSido ? ("sgg" as const) : ("kr" as const),
+      canvasH,
+    };
   }, [sido, sgg, curSido]);
 
   // 검색 인덱스 (시군구 + 세종 읍면). 경기 "시+구"는 시 대표 하나로 접음.
@@ -224,6 +256,8 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   };
 
   const handleFeatureClick = (f: GeoFeature) => {
+    // 팬·핀치 제스처 끝에 발생하는 클릭은 선택으로 치지 않는다.
+    if (gestureRef.current.moved) return;
     const code = f.properties.code;
     if (!curSido) {
       // 시도 클릭
@@ -234,6 +268,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       }
       setCurSido(code);
       setPending(null);
+      setZoomVb(null);
       return;
     }
     // 경기 "시+구" 폴리곤: 어느 구를 눌러도 그 시 대표 코드+시 라벨로 선택 (구는 ERP 주소 판정).
@@ -242,18 +277,33 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       const rep = GYEONGGI_SI_TO_TERRITORY[si];
       if (rep) {
         pick(rep.code, rep.label);
+        confirmIfDoubleTap(rep.code, rep.label);
         return;
       }
     }
     // 그 외 시군구 클릭
     const t = MAP_TO_TERRITORY[code];
-    if (t) pick(t);
+    if (t) {
+      pick(t);
+      confirmIfDoubleTap(t, TERRITORY_LABELS[t] ?? t);
+    }
+  };
+
+  /** 같은 지역을 450ms 안에 두 번 탭하면 확인 버튼 없이 바로 진행. */
+  const confirmIfDoubleTap = (territoryCode: string, label: string) => {
+    const now = Date.now();
+    const last = lastTapRef.current;
+    lastTapRef.current = { code: territoryCode, ts: now };
+    if (last && last.code === territoryCode && now - last.ts < 450) {
+      onSelect({ territoryCode, label });
+    }
   };
 
   const goNational = () => {
     setCurSido(null);
     setSejongOpen(false);
     setPending(null);
+    setZoomVb(null);
   };
 
   if (loadErr) {
@@ -272,7 +322,90 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
     );
   }
 
-  const { feats, proj, mode } = view;
+  const { feats, proj, mode, canvasH } = view;
+  const vb = zoomVb ?? { x: 0, y: 0, w: W, h: canvasH };
+
+  // ── 핀치 확대·팬 (viewBox 조작 — 라벨·터치영역이 같이 커져 어르신 UX에 유리) ──
+  const MIN_W = W / 5; // 최대 5배 확대
+  const clampVb = (v: { x: number; y: number; w: number; h: number }) => {
+    const w = Math.min(W, Math.max(MIN_W, v.w));
+    const h = (w * canvasH) / W;
+    const x = Math.min(Math.max(v.x, 0), W - w);
+    const y = Math.min(Math.max(v.y, 0), canvasH - h);
+    return { x, y, w, h };
+  };
+  const clientToVb = (cx: number, cy: number) => {
+    const rect = mapWrapRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+    return {
+      x: vb.x + ((cx - rect.left) / rect.width) * vb.w,
+      y: vb.y + ((cy - rect.top) / rect.height) * vb.h,
+    };
+  };
+  const onTouchStart = (e: React.TouchEvent) => {
+    const g = gestureRef.current;
+    if (e.touches.length === 2) {
+      const [a, b] = [e.touches[0], e.touches[1]];
+      const mid = clientToVb((a.clientX + b.clientX) / 2, (a.clientY + b.clientY) / 2);
+      g.mode = "pinch";
+      g.dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      g.vb0 = { ...vb };
+      g.midVbX = mid.x;
+      g.midVbY = mid.y;
+      g.moved = true; // 핀치 후 클릭 무시
+    } else if (e.touches.length === 1) {
+      g.mode = "pan";
+      g.panX = e.touches[0].clientX;
+      g.panY = e.touches[0].clientY;
+      g.moved = false;
+    }
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    const g = gestureRef.current;
+    const rect = mapWrapRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    if (g.mode === "pinch" && e.touches.length === 2) {
+      const [a, b] = [e.touches[0], e.touches[1]];
+      const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      if (d < 10) return;
+      const newW = g.vb0.w * (g.dist / d);
+      const midClientX = (a.clientX + b.clientX) / 2;
+      const midClientY = (a.clientY + b.clientY) / 2;
+      const nw = Math.min(W, Math.max(MIN_W, newW));
+      const nh = (nw * canvasH) / W;
+      const next = clampVb({
+        x: g.midVbX - ((midClientX - rect.left) / rect.width) * nw,
+        y: g.midVbY - ((midClientY - rect.top) / rect.height) * nh,
+        w: nw,
+        h: nh,
+      });
+      setZoomVb(next.w >= W ? null : next);
+    } else if (g.mode === "pan" && e.touches.length === 1 && zoomVb) {
+      const t = e.touches[0];
+      const dx = t.clientX - g.panX;
+      const dy = t.clientY - g.panY;
+      if (Math.abs(dx) + Math.abs(dy) > 6) g.moved = true;
+      g.panX = t.clientX;
+      g.panY = t.clientY;
+      setZoomVb((cur) =>
+        cur
+          ? clampVb({
+              ...cur,
+              x: cur.x - dx * (cur.w / rect.width),
+              y: cur.y - dy * (cur.h / rect.height),
+            })
+          : cur,
+      );
+    }
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const g = gestureRef.current;
+    if (e.touches.length === 0) {
+      g.mode = "none";
+      // moved 플래그는 click 이벤트(touchend 직후 발생)가 소비하도록 잠깐 유지 후 해제.
+      if (g.moved) setTimeout(() => { g.moved = false; }, 80);
+    }
+  };
   // 선택 하이라이트할 지도코드. 경기 시 선택 시엔 그 시의 모든 구 폴리곤을 함께 강조.
   const selectedMapCodes = new Set<string>(
     pending
@@ -297,7 +430,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   return (
     <div>
       {/* 검색 (모바일 폴백) */}
-      <div className="relative mb-2.5" ref={searchRef}>
+      <div className="sticky top-0 z-30 bg-white pb-2.5" ref={searchRef}>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -310,8 +443,8 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
               <button
                 key={h.key}
                 type="button"
-                onClick={() => pick(h.territoryCode)}
-                className="block w-full text-left px-4 py-2.5 text-[14px] hover:bg-[#fff8f8] cursor-pointer"
+                onClick={() => pick(h.territoryCode, h.full)}
+                className="block w-full text-left px-4 py-3.5 min-h-[48px] text-[15px] hover:bg-[#fff8f8] cursor-pointer"
               >
                 {h.full}
               </button>
@@ -321,7 +454,14 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       </div>
 
       {/* 지도 */}
-      <div className="relative bg-[#fdfbf9] border border-[#eee4dc] rounded-xl overflow-hidden">
+      <div
+        ref={mapWrapRef}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ touchAction: zoomVb ? "none" : "pan-y" }}
+        className="relative bg-[#fdfbf9] border border-[#eee4dc] rounded-xl overflow-hidden"
+      >
         <button
           type="button"
           onClick={mode === "sgg" ? goNational : undefined}
@@ -333,7 +473,19 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
         >
           {mode === "sgg" ? "← 전국 지도" : "전국"}
         </button>
-        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full h-auto select-none">
+        {zoomVb && (
+          <button
+            type="button"
+            onClick={() => setZoomVb(null)}
+            className="absolute top-2.5 right-3 z-10 text-[12.5px] font-bold px-3 py-1 rounded-full border text-[#D22727] border-[#f2c9c2] bg-white cursor-pointer hover:bg-[#fff8f8]"
+          >
+            ↺ 확대 초기화
+          </button>
+        )}
+        <svg
+          viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
+          className="block w-full h-auto select-none"
+        >
           {feats.map((f, i) => {
             const isSel = mode === "sgg" && selectedMapCodes.has(f.properties.code);
             return (
@@ -414,7 +566,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
 
       {/* 선택 확인 바 */}
       {pending && (
-        <div className="mt-2.5 flex items-center justify-between gap-3 bg-[#fff3f1] border border-[#f2c9c2] rounded-xl px-4 py-3">
+        <div className="sticky bottom-0 z-30 mt-2.5 flex items-center justify-between gap-3 bg-[#fff3f1] border border-[#f2c9c2] rounded-xl px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           <div className="min-w-0">
             <div className="text-[15px] font-extrabold text-[#2A2A2A] truncate">{pending.label}</div>
             <div className="text-[11.5px] text-[#999]">이 지역이 맞나요?</div>
@@ -430,7 +582,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       )}
 
       <p className="mt-2 text-center text-[12px] text-[#999]">
-        지도를 누르기 어려우시면 위 검색을 이용해 보세요
+        두 손가락으로 확대할 수 있어요 · 같은 지역을 두 번 누르면 바로 선택돼요
       </p>
     </div>
   );

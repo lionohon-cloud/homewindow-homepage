@@ -138,9 +138,10 @@ export function ConsultRegionFieldModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
-      <div className="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-[560px] max-h-[90vh] flex flex-col overflow-hidden">
+      {/* 모바일 = 전체화면 (사장님 지시 2026-07-10 — 지도 찍기 쉽게), sm 이상 = 기존 팝업 */}
+      <div className="relative z-10 bg-white rounded-none sm:rounded-2xl shadow-2xl w-full h-[100dvh] sm:h-auto max-w-none sm:max-w-[560px] max-h-[100dvh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         {/* 헤더 */}
         <div className="border-b border-[#e5e5e5] p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
@@ -176,7 +177,7 @@ export function ConsultRegionFieldModal({
         </div>
 
         {/* 본문 */}
-        <div className="p-5 overflow-y-auto">
+        <div className="p-3 sm:p-5 overflow-y-auto">
           {step === 1 ? (
             <>
               <p className="text-[12.5px] text-[#999] -mt-1 mb-2.5">
