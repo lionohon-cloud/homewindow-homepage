@@ -82,6 +82,10 @@ export function InsuranceSection() {
                   <p className="text-[#333] font-semibold text-[15px] md:text-[16px]">{item}</p>
                 </motion.div>
               ))}
+              {/* 보증 범위 조건 — 가입금액 내 보증임을 명시 (고객 트러블 방지) */}
+              <p className="text-[12px] md:text-[13px] text-[#999] pt-1 text-left md:text-right">
+                * 선금보증보험 전액 가입시
+              </p>
             </div>
           </motion.div>
         </motion.div>
