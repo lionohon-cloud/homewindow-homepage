@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
-import { EstimateForm } from "./EstimateForm";
+// Phase E (2026-07-10): AI상담 셸 — 창호 분기에서 기존 매크로(EstimateForm) 마운트.
+import { AiConsultChat } from "./AiConsultChat";
 
 interface EstimateModalProps {
   isOpen: boolean;
@@ -30,7 +31,7 @@ export function EstimateModal({ isOpen, onClose }: EstimateModalProps) {
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-[1000px] h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5] shrink-0">
-          <h2 className="text-lg font-bold text-[#2c2c2c]">실시간 견적 계산기</h2>
+          <h2 className="text-lg font-bold text-[#2c2c2c]">AI 상담</h2>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f5] transition-colors text-[#888] hover:text-[#333]"
@@ -42,7 +43,7 @@ export function EstimateModal({ isOpen, onClose }: EstimateModalProps) {
 
         {/* React Component replaced iframe */}
         <div className="w-full flex-1 min-h-0 flex flex-col border-0">
-          <EstimateForm />
+          <AiConsultChat />
         </div>
       </div>
     </div>

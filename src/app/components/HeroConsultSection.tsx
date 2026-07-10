@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { X, Phone, Loader2 } from "lucide-react";
-import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { submitLead } from "@/lib/submitLead";
+import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
@@ -16,8 +17,8 @@ export function HeroConsultSection() {
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   // W2 2단계 접수 팝업
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [leadDocId, setLeadDocId] = useState<string | null>(null);
+  // 시군구 개편 (2026-07-10): 4폼 복붙 제거 — 공용 훅.
+  const detail = useConsultDetail();
   const phone2Ref = useRef<HTMLInputElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
   const honeypotRef = useRef<HTMLInputElement>(null);
@@ -50,8 +51,7 @@ export function HeroConsultSection() {
         setPhone3("");
         // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
         if (docId) {
-          setLeadDocId(docId);
-          setShowDetailModal(true);
+          detail.open(docId);
         } else {
           navigate('/thanks');
         }
@@ -64,17 +64,6 @@ export function HeroConsultSection() {
     }
   };
 
-  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
-    setShowDetailModal(false);
-    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
-    navigate('/thanks');
-  };
-
-  const handleDetailSkip = () => {
-    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
-    setShowDetailModal(false);
-    navigate('/thanks');
-  };
 
   const inputCls =
     "h-[46px] md:h-[50px] border-2 border-[#e5e5e5] rounded-xl text-center text-[14px] md:text-[15px] font-semibold text-[#2A2A2A] bg-white focus:border-[#D22727] outline-none transition-colors disabled:bg-[#f5f5f5]";
@@ -239,9 +228,10 @@ export function HeroConsultSection() {
 
       {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
       <ConsultRegionFieldModal
-        isOpen={showDetailModal}
-        onComplete={handleDetailComplete}
-        onSkip={handleDetailSkip}
+        isOpen={detail.isOpen}
+        onComplete={detail.onComplete}
+        onSkip={detail.onSkip}
+        onClose={detail.onClose}
       />
     </>
   );

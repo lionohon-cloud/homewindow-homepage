@@ -68,6 +68,9 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
 
   // ERP 호출용 multipart 재구성 (필드명 매핑: 홈페이지 → ERP)
   const erpForm = new FormData();
+  // Phase E (2026-07-10): AI상담 챗봇 접수 구분 (asTickets.source — 모니터링 조회 키)
+  const srcRaw = String(form.get('source') || '');
+  if (srcRaw === 'ai-chat') erpForm.append('source', 'ai-chat');
   erpForm.append('customerName', validation.data.contractor_name);
   erpForm.append('customerPhone', validation.data.phone);
   erpForm.append('customerAddress', validation.data.address);

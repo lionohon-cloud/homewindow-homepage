@@ -47,7 +47,8 @@ export function validateAsInput(raw: Partial<AsRequestInput>): ValidationResult 
   if (!PHONE_RE.test(phone)) return { ok: false, error: '연락처 형식이 올바르지 않습니다.' };
   if (!address) return { ok: false, error: '주소를 입력해 주세요.' };
   if (address.length > 200) return { ok: false, error: '주소가 너무 깁니다.' };
-  if (!EMAIL_RE.test(email)) return { ok: false, error: '이메일 형식이 올바르지 않습니다.' };
+  // Phase E (2026-07-10): AI상담 챗봇 AS 분기는 이메일 미수집(명세서 스펙) — 빈값 허용, 있으면 형식검사.
+  if (email && !EMAIL_RE.test(email)) return { ok: false, error: '이메일 형식이 올바르지 않습니다.' };
   if (!description) return { ok: false, error: 'AS 상세내용을 입력해 주세요.' };
   if (description.length > 2000) return { ok: false, error: 'AS 상세내용은 2000자 이내로 입력해 주세요.' };
 
