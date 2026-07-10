@@ -494,11 +494,13 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
           </button>
         )}
         {pinchHint && (
-          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-black/55 px-6 py-4 text-white backdrop-blur-[2px]">
-              <div className="text-[38px] leading-none animate-pulse">🤏</div>
-              <div className="text-[13.5px] font-bold">두 손가락을 벌려 확대할 수 있어요</div>
-              <div className="text-[11.5px] opacity-80">같은 지역을 두 번 누르면 바로 선택돼요</div>
+          <div className="pointer-events-none absolute top-12 left-0 right-0 z-20 flex justify-center">
+            <div className="flex items-center gap-2.5 rounded-full bg-black/55 px-4 py-2 text-white backdrop-blur-[2px]">
+              <span className="text-[22px] leading-none animate-pulse">🤏</span>
+              <span className="text-left">
+                <span className="block text-[12.5px] font-bold leading-tight">두 손가락을 벌려 확대할 수 있어요</span>
+                <span className="block text-[11px] opacity-80 leading-tight">같은 지역 두 번 누르면 바로 선택</span>
+              </span>
             </div>
           </div>
         )}
