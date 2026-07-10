@@ -265,9 +265,9 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   </button>
                 </div>
 
-                {/* 무료상담 전화번호 (단독 우측 CTA) */}
+                {/* 무료상담 전화번호 (단독 우측 CTA) — 재클릭 시 닫힘 (토글) */}
                 <button
-                  onClick={() => setIsConsultationOpen(true)}
+                  onClick={() => setIsConsultationOpen((prev) => !prev)}
                   className="flex items-center gap-2 bg-[#d22727] text-white px-5 py-2.5 rounded-full hover:bg-[#b81f1f] transition-colors cursor-pointer"
                 >
                   <Phone className="w-5 h-5" />
