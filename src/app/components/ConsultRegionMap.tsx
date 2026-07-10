@@ -136,7 +136,7 @@ const W = 560, H = 610;
 //   세로 캔버스 + 본토 기준 fit (제주는 하단에 살짝 걸쳐도 OK — 검색·부분 클릭으로 보완).
 const MOBILE_H = 920;
 const JEJU_SIDO_CODE = "39";
-const IS_MOBILE =
+const IS_MOBILE_INIT =
   typeof window !== "undefined" &&
   window.matchMedia("(max-width: 639px)").matches;
 
@@ -174,7 +174,15 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   // 더블탭 = 확인 없이 바로 선택 진행 (사장님 지시 2026-07-10).
   const lastTapRef = useRef<{ code: string; ts: number } | null>(null);
   // 핀치 안내 오버레이 (사장님 지시 2026-07-10 — 확대 제스처를 손 이모티콘으로 보여주기).
-  const [pinchHint, setPinchHint] = useState(IS_MOBILE);
+  const [pinchHint, setPinchHint] = useState(true);
+  // 모바일 여부 실시간 감지 (창 크기 변경·개발자도구 반응형에도 즉시 반영 — 새로고침 불필요).
+  const [isMobile, setIsMobile] = useState(IS_MOBILE_INIT);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const fn = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
 
   useEffect(() => {
     loadSido().then(setSido).catch(() => setLoadErr(true));
@@ -195,13 +203,13 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       curSido && sgg
         ? sgg.features.filter((f) => f.properties.code.slice(0, 2) === curSido)
         : sido.features;
-    const canvasH = IS_MOBILE ? MOBILE_H : H;
+    const canvasH = isMobile ? MOBILE_H : H;
     // 모바일 전국 뷰: 본토(제주 제외) 기준으로 fit → 본토가 화면 폭을 꽉 채움 (제주 하단 일부 잘림 허용).
     const fitFeats =
-      IS_MOBILE && !curSido
+      isMobile && !curSido
         ? feats.filter((f) => f.properties.code !== JEJU_SIDO_CODE)
         : feats;
-    const pad = IS_MOBILE ? (curSido ? 0.02 : 0.006) : 0.09;
+    const pad = isMobile ? (curSido ? 0.02 : 0.006) : 0.09;
     const proj = makeProj(fitFeats.length ? fitFeats : feats, W, canvasH, pad);
     return {
       feats,
@@ -209,7 +217,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       mode: curSido ? ("sgg" as const) : ("kr" as const),
       canvasH,
     };
-  }, [sido, sgg, curSido]);
+  }, [sido, sgg, curSido, isMobile]);
 
   // 검색 인덱스 (시군구 + 세종 읍면). 경기 "시+구"는 시 대표 하나로 접음.
   const searchIndex = useMemo(() => {
@@ -250,7 +258,6 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
 
   // 화면(전국↔시도) 전환 시 핀치 안내 4.5초 표시 후 자동 숨김 (모바일만).
   useEffect(() => {
-    if (!IS_MOBILE) return;
     setPinchHint(true);
     const t = setTimeout(() => setPinchHint(false), 7000);
     return () => clearTimeout(t);
