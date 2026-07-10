@@ -47,6 +47,11 @@ export default defineConfig({
     fs: {
       // Allow serving files from the project root
       allow: ['..']
+    },
+    // 로컬 /api(Cloudflare Pages Functions)는 wrangler(8788)가 담당 —
+    // vite(5173)에서 접수·챗봇 테스트 시 404 나던 문제 해결 (wrangler pages dev 동시 실행 필요).
+    proxy: {
+      '/api': 'http://localhost:8788',
     }
   }
 })

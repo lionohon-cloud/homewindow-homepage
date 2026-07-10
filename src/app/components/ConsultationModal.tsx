@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { submitLead } from "@/lib/submitLead";
+import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
@@ -25,8 +26,8 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   // W2 2단계 접수 팝업
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [leadDocId, setLeadDocId] = useState<string | null>(null);
+  // 시군구 개편 (2026-07-10): 4폼 복붙 제거 — 공용 훅.
+  const detail = useConsultDetail();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +64,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
         onClose();
         // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
         if (docId) {
-          setLeadDocId(docId);
-          setShowDetailModal(true);
+          detail.open(docId);
         } else {
           navigate('/thanks');
         }
@@ -80,17 +80,6 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
     }
   };
 
-  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
-    setShowDetailModal(false);
-    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
-    navigate('/thanks');
-  };
-
-  const handleDetailSkip = () => {
-    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
-    setShowDetailModal(false);
-    navigate('/thanks');
-  };
 
   const handleViewPrivacy = () => {
     setShowPrivacy(true);
@@ -412,9 +401,10 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
 
       {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
       <ConsultRegionFieldModal
-        isOpen={showDetailModal}
-        onComplete={handleDetailComplete}
-        onSkip={handleDetailSkip}
+        isOpen={detail.isOpen}
+        onComplete={detail.onComplete}
+        onSkip={detail.onSkip}
+        onClose={detail.onClose}
       />
     </>
   );

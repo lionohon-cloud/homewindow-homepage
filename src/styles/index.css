@@ -1,3 +1,8 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+/* cache-bust 2026-07-06: 오염된 엣지 캐시(index-kIIlvCba.css) 우회용 해시 변경 */
+:root {
+  --hw-build: 20260706;
+}

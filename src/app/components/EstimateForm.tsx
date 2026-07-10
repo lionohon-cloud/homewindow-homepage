@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Phone, Check, ChevronRight, X, Send, RotateCcw, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { submitLead } from "@/lib/submitLead";
+import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
@@ -55,8 +56,8 @@ export function EstimateForm() {
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   // W2 2단계 접수 팝업 (contact-phone 카드 + 상담모달 두 경로 공용)
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [leadDocId, setLeadDocId] = useState<string | null>(null);
+  // 시군구 개편 (2026-07-10): 4폼 복붙 제거 — 공용 훅.
+  const detail = useConsultDetail();
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
@@ -439,6 +440,24 @@ export function EstimateForm() {
     }
   };
 
+  // Phase E (2026-07-10): 매크로 견적 문답 요약 — 접수와 함께 ERP 전송 (팀장이 전화 전 맥락 파악).
+  const buildAiChatSummary = (): string | undefined => {
+    if (!windows.length) return undefined;
+    const parts = windows.map((w: any) =>
+      [
+        w.building,
+        w.isDouble ? '이중창' : '단창',
+        w.isThreeW ? '3W' : '2W',
+        // width/height 는 mm 저장 — 요약은 cm 로 환산 (10배 오표기 수리, 배포 전 검증 지적)
+        w.width && w.height ? `${Math.round(w.width / 10)}x${Math.round(w.height / 10)}cm` : '',
+        w.qty ? `${w.qty}틀` : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+    );
+    return `견적 문답: ${parts.join(' / ')}`;
+  };
+
   const phoneSubmittingRef = useRef(false);
   const handlePhoneSubmit = async (raw: string) => {
     // 중복 제출 방지
@@ -462,10 +481,9 @@ export function EstimateForm() {
     addUserText(formatted);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     // honeypot 없는 경로 (contact-phone 카드). 접수 확정 직후 2단계 팝업.
-    const { docId } = await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}` });
+    const { docId } = await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}`, aiChat: { summary: buildAiChatSummary() }, consultField: 'WINDOW_QUOTE' });
     if (docId) {
-      setLeadDocId(docId);
-      setShowDetailModal(true);
+      detail.open(docId);
     } else {
       navigate('/thanks');
     }
@@ -514,28 +532,18 @@ export function EstimateForm() {
       phone,
       entryForm: `AI채팅 ${device}`,
       honeypot: honeypotRef.current?.value,
+      aiChat: { summary: buildAiChatSummary() },
+      consultField: 'WINDOW_QUOTE',
     });
     closeConsultationModal();
     // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
     if (docId) {
-      setLeadDocId(docId);
-      setShowDetailModal(true);
+      detail.open(docId);
     } else {
       navigate('/thanks');
     }
   };
 
-  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
-    setShowDetailModal(false);
-    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
-    navigate('/thanks');
-  };
-
-  const handleDetailSkip = () => {
-    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
-    setShowDetailModal(false);
-    navigate('/thanks');
-  };
 
   return (
     <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full bg-[#f7f7f5] text-[#2c2c2c] overflow-hidden font-sans">
@@ -1068,9 +1076,12 @@ export function EstimateForm() {
 
       {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
       <ConsultRegionFieldModal
-        isOpen={showDetailModal}
-        onComplete={handleDetailComplete}
-        onSkip={handleDetailSkip}
+        isOpen={detail.isOpen}
+        onComplete={detail.onComplete}
+        onSkip={detail.onSkip}
+        onClose={detail.onClose}
+        // 견적 매크로를 마친 고객의 분야는 자명 (창호 견적) — 분야 질문 생략 (사장님 지시 2026-07-10).
+        fixedConsultField="WINDOW_QUOTE"
       />
     </div>
   );

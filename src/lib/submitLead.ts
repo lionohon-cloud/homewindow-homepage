@@ -36,8 +36,19 @@ export async function submitLead(params: {
   phone: string;
   entryForm: string;
   honeypot?: string;
+  /**
+   * AI상담 셸 접수 마커 (시군구 개편 Phase E, 2026-07-10).
+   *   설정 시 inflowChannel 이 AI_CHAT 으로 찍히고(모니터링 페이지 조회 키),
+   *   summary(매크로 견적 문답 요약)가 ERP 에 함께 저장돼 팀장이 전화 전 맥락 파악.
+   */
+  aiChat?: { summary?: string };
+  /**
+   * 접수 시점에 이미 확정된 상담분야 (AI상담 분기 — 사장님 지시 2026-07-10).
+   *   지도 팝업(Call2)을 닫거나 건너뛰어도 ERP 배지에 분야가 남도록 Call1 에 싣는다.
+   */
+  consultField?: string;
 }): Promise<SubmitLeadResult> {
-  const { phone, entryForm, honeypot } = params;
+  const { phone, entryForm, honeypot, aiChat, consultField } = params;
 
   // Honeypot: 사람은 숨겨진 필드를 보지 못함. 값이 채워져 들어오면 봇으로 판단.
   // UX는 정상 제출처럼 보이게 하되 GAS/GA4로는 전송하지 않음.
@@ -69,7 +80,8 @@ export async function submitLead(params: {
     landing_path: utm.landing_path,       // K
     referrer: utm.referrer,               // L
     region: '',                           // 지역 라벨 (Call2 미반영 → 빈값)
-    consult_field: '',                    // 상담분야 라벨 (Call2 미반영 → 빈값)
+    // 상담분야 라벨 — AI상담 분기는 접수 시점에 이미 확정 → 시트에도 기록.
+    consult_field: consultField ? consultFieldLabel(consultField) : '',
     timestamp: new Date().toISOString(),
   };
 
@@ -96,12 +108,19 @@ export async function submitLead(params: {
     phone,
     // customerName, address: 폼에서 받지 않으므로 생략 (ERP 측 optional)
     utm: buildErpUtm(utm),
-    inflowChannel: buildErpInflowChannel(),
+    // AI상담 셸 접수는 AI_CHAT 채널로 구분 (모니터링·통계 조회 키. 사장님 지시 2026-07-10)
+    inflowChannel: aiChat
+      ? { type: 'auto', code: 'AI_CHAT', label: 'AI 상담' }
+      : buildErpInflowChannel(),
     status: '신규고객',
     category: 'INTAKE',
     consultationNotes: [],
     createdBy: 'homepage-form',
     managerId: null,
+    // 매크로 견적 문답 요약 — ERP 상담 상세·입찰 알림에서 표시 (undefined 면 필드 생략)
+    aiChatSummary: aiChat?.summary?.slice(0, 500) || undefined,
+    // 접수 시점 확정 분야 (AI상담 분기) — ERP 가 FIELD_CODES 로 검증 후 저장.
+    consultField: consultField || undefined,
     // createdAt은 ERP 서버에서 serverTimestamp() 설정
   };
   // ERP 응답 본문에서 docId 파싱 → 2단계(지역·분야) 반영(Call2)에 사용.
@@ -201,20 +220,23 @@ export async function submitLead(params: {
 
 /**
  * Call2 — 접수 건에 지역·상담분야 추가 반영.
- * POST /api/erp-lead-update (docId, region, consultField). GA4 이벤트도 함께 발송.
+ * POST /api/erp-lead-update (docId, region, consultField, consultFieldText?). GA4 이벤트도 함께 발송.
+ * 시군구 개편 (2026-07-10): region = TERRITORY 4자리 시군구 코드 (ERP 는 과도기에 9권역도 수용).
+ *   consultFieldText = 상담분야 「직접입력」 자유 텍스트 (consultField='ETC' 동반).
  * 실패해도 throw 하지 않음(고객 흐름을 막지 않는다). 결과 boolean 만 반환.
  */
 export async function submitLeadDetail(
   docId: string,
   region: string,
   consultField: string,
+  consultFieldText?: string,
 ): Promise<boolean> {
   let ok = false;
   try {
     const res = await fetch('/api/erp-lead-update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ docId, region, consultField }),
+      body: JSON.stringify({ docId, region, consultField, consultFieldText }),
     });
     ok = res.ok;
     if (!ok) {

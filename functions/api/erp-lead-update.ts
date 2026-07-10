@@ -26,7 +26,12 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
     return errorResponse('ERP 연동 환경변수가 설정되지 않았습니다.', 503);
   }
 
-  let payload: { docId?: unknown; region?: unknown; consultField?: unknown };
+  let payload: {
+    docId?: unknown;
+    region?: unknown;
+    consultField?: unknown;
+    consultFieldText?: unknown;
+  };
   try {
     payload = (await request.json()) as typeof payload;
   } catch {
@@ -42,6 +47,11 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
     region: typeof payload.region === 'string' ? payload.region : undefined,
     consultField:
       typeof payload.consultField === 'string' ? payload.consultField : undefined,
+    // 시군구 개편 (2026-07-10): 상담분야 「직접입력」 자유 텍스트 passthrough.
+    consultFieldText:
+      typeof payload.consultFieldText === 'string'
+        ? payload.consultFieldText
+        : undefined,
   };
 
   const target = `${erpBase.replace(/\/$/, '')}/api/external/inbound-customers/${encodeURIComponent(docId)}`;

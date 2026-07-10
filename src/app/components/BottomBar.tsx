@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { EstimateModal } from "./EstimateModal";
 import { X, Phone, MessageSquare, Loader2 } from "lucide-react";
-import { submitLead, submitLeadDetail } from "@/lib/submitLead";
+import { submitLead } from "@/lib/submitLead";
+import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 
@@ -21,8 +22,8 @@ export function BottomBar() {
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   // W2 2단계 접수 팝업
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [leadDocId, setLeadDocId] = useState<string | null>(null);
+  // 시군구 개편 (2026-07-10): 4폼 복붙 제거 — 공용 훅.
+  const detail = useConsultDetail();
 
   const phone2Ref = useRef<HTMLInputElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
@@ -59,8 +60,7 @@ export function BottomBar() {
         setShowMobilePopup(false);
         // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
         if (docId) {
-          setLeadDocId(docId);
-          setShowDetailModal(true);
+          detail.open(docId);
         } else {
           navigate('/thanks');
         }
@@ -73,17 +73,6 @@ export function BottomBar() {
     }
   };
 
-  const handleDetailComplete = async ({ region, consultField }: { region: string; consultField: string }) => {
-    setShowDetailModal(false);
-    if (leadDocId) await submitLeadDetail(leadDocId, region, consultField);
-    navigate('/thanks');
-  };
-
-  const handleDetailSkip = () => {
-    // 이탈 = 미지정 접수(상담원 선상담 폴백). 접수는 이미 확정 → 완료 안내를 보여줘야 재제출(중복 접수)을 막는다.
-    setShowDetailModal(false);
-    navigate('/thanks');
-  };
 
   // 공통 입력 스타일 (PC용: 테두리형 흰 배경)
   const pcInput =
@@ -225,7 +214,7 @@ export function BottomBar() {
           </div>
         </button>
 
-        {/* ════ 직접견적 / AI 채팅 견적 (1/3) ════ */}
+        {/* ════ 직접견적 / AI 상담 (1/3) ════ */}
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex-[1] bg-[#f5f5f5] md:bg-[#D22727] hover:bg-[#ececec] md:hover:bg-[#b02020] active:bg-[#e5e5e5] md:active:bg-[#a01818] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
@@ -233,7 +222,7 @@ export function BottomBar() {
           <MessageSquare size={18} className="text-[#D22727] md:text-white md:size-5" strokeWidth={2} />
           <span className="text-[#2A2A2A] md:text-white font-bold text-[13px] md:text-[17px] text-center leading-tight">
             <span className="lg:hidden">AI 채팅<br />견적</span>
-            <span className="hidden lg:inline">AI 채팅 견적</span>
+            <span className="hidden lg:inline">AI 상담</span>
           </span>
         </button>
       </div>
@@ -411,9 +400,10 @@ export function BottomBar() {
 
       {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
       <ConsultRegionFieldModal
-        isOpen={showDetailModal}
-        onComplete={handleDetailComplete}
-        onSkip={handleDetailSkip}
+        isOpen={detail.isOpen}
+        onComplete={detail.onComplete}
+        onSkip={detail.onSkip}
+        onClose={detail.onClose}
       />
 
       <EstimateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
