@@ -769,29 +769,29 @@ export function EstimateForm() {
                 className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-2xl z-[70] border border-[#e5e5e5]"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-6 text-center">
+                <div className="p-4 sm:p-6 text-center">
                   <HoneypotField ref={honeypotRef} />
-                  {/* Header */}
-                  <div className="flex items-center justify-center mb-4 relative">
-                    <h3 className="font-black text-[#333] text-[20px] mx-[0px] mt-[-3px] mb-[-11px] text-[#d22727]">창호교체 비용이 궁금하신가요?</h3>
+                  {/* Header — 제목 좌우 px-9 로 X 버튼과 절대 안 겹침 */}
+                  <div className="relative mb-1.5">
+                    <h3 className="font-black text-[18px] sm:text-[20px] text-[#d22727] px-9 leading-snug">창호교체 비용이 궁금하신가요?</h3>
                     <button
                       onClick={closeConsultationModal}
-                      className="absolute right-0 w-9 h-9 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer"
                       aria-label="닫기"
                     >
                       <X className="w-4 h-4 text-[#666]" />
                     </button>
                   </div>
-                  
-                  <p className="text-[#666] mb-4 text-[13px]">무료견적상담, 지금 연락처만 남겨주세요!</p>
+
+                  <p className="text-[#666] mb-3 text-[12.5px]">무료견적상담, 지금 연락처만 남겨주세요!</p>
                   
                   {/* Phone Input */}
-                  <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2.5">
                     <input
                       type="text"
                       value={phone1}
                       readOnly
-                      className="w-[90px] h-[44px] border-2 border-[#e5e5e5] rounded-lg text-center text-[14px] font-medium bg-[#f8f8f8] text-[#999]"
+                      className="flex-1 min-w-0 max-w-[80px] h-[44px] border-2 border-[#e5e5e5] rounded-lg text-center text-[14px] font-medium bg-[#f8f8f8] text-[#999]"
                     />
                     <span className="text-[#999] text-[16px]">-</span>
                     <input
@@ -809,7 +809,7 @@ export function EstimateForm() {
                       placeholder="0000"
                       maxLength={4}
                       disabled={isSubmitting}
-                      className="w-[110px] h-[44px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[14px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
+                      className="flex-1 min-w-0 max-w-[110px] h-[44px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[14px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
                     />
                     <span className="text-[#999] text-[16px]">-</span>
                     <input
@@ -823,7 +823,7 @@ export function EstimateForm() {
                       placeholder="0000"
                       maxLength={4}
                       disabled={isSubmitting}
-                      className="w-[110px] h-[44px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[14px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
+                      className="flex-1 min-w-0 max-w-[110px] h-[44px] border-2 border-[#e5e5e5] focus:border-[#D22727] rounded-lg text-center text-[14px] font-medium outline-none transition-colors disabled:bg-[#f5f5f5] disabled:cursor-not-allowed"
                     />
                   </div>
                   
@@ -831,7 +831,7 @@ export function EstimateForm() {
                     type="button"
                     onClick={handleConsultationSubmit}
                     disabled={isSubmitting}
-                    className="w-[55%] h-[44px] mb-3 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[14px] rounded-lg transition-colors cursor-pointer disabled:bg-[#999] disabled:cursor-not-allowed"
+                    className="w-full sm:w-[55%] h-[46px] mb-2.5 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[14px] rounded-lg transition-colors cursor-pointer disabled:bg-[#999] disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <span className="inline-flex items-center justify-center gap-2">

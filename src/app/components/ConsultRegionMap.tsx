@@ -173,6 +173,8 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   }>({ mode: "none", dist: 0, vb0: { x: 0, y: 0, w: 0, h: 0 }, midVbX: 0, midVbY: 0, panX: 0, panY: 0, moved: false });
   // 더블탭 = 확인 없이 바로 선택 진행 (사장님 지시 2026-07-10).
   const lastTapRef = useRef<{ code: string; ts: number } | null>(null);
+  // 핀치 안내 오버레이 (사장님 지시 2026-07-10 — 확대 제스처를 손 이모티콘으로 보여주기).
+  const [pinchHint, setPinchHint] = useState(IS_MOBILE);
 
   useEffect(() => {
     loadSido().then(setSido).catch(() => setLoadErr(true));
@@ -199,7 +201,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
       IS_MOBILE && !curSido
         ? feats.filter((f) => f.properties.code !== JEJU_SIDO_CODE)
         : feats;
-    const pad = IS_MOBILE ? (curSido ? 0.04 : 0.02) : 0.09;
+    const pad = IS_MOBILE ? (curSido ? 0.02 : 0.006) : 0.09;
     const proj = makeProj(fitFeats.length ? fitFeats : feats, W, canvasH, pad);
     return {
       feats,
@@ -245,6 +247,14 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   const hits = q.trim()
     ? searchIndex.filter((x) => x.full.includes(q.trim())).slice(0, 8)
     : [];
+
+  // 화면(전국↔시도) 전환 시 핀치 안내 4.5초 표시 후 자동 숨김 (모바일만).
+  useEffect(() => {
+    if (!IS_MOBILE) return;
+    setPinchHint(true);
+    const t = setTimeout(() => setPinchHint(false), 4500);
+    return () => clearTimeout(t);
+  }, [curSido]);
 
   const pick = (territoryCode: string, labelOverride?: string) => {
     setQ("");
@@ -343,6 +353,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
     };
   };
   const onTouchStart = (e: React.TouchEvent) => {
+    setPinchHint(false);
     const g = gestureRef.current;
     if (e.touches.length === 2) {
       const [a, b] = [e.touches[0], e.touches[1]];
@@ -460,7 +471,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         style={{ touchAction: zoomVb ? "none" : "pan-y" }}
-        className="relative bg-[#fdfbf9] border border-[#eee4dc] rounded-xl overflow-hidden"
+        className="relative bg-[#fdfbf9] border-y border-[#eee4dc] -mx-3 rounded-none sm:mx-0 sm:border sm:rounded-xl overflow-hidden"
       >
         <button
           type="button"
@@ -481,6 +492,15 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
           >
             ↺ 확대 초기화
           </button>
+        )}
+        {pinchHint && (
+          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-black/55 px-6 py-4 text-white backdrop-blur-[2px]">
+              <div className="text-[38px] leading-none animate-pulse">🤏</div>
+              <div className="text-[13.5px] font-bold">두 손가락을 벌려 확대할 수 있어요</div>
+              <div className="text-[11.5px] opacity-80">같은 지역을 두 번 누르면 바로 선택돼요</div>
+            </div>
+          </div>
         )}
         <svg
           viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
