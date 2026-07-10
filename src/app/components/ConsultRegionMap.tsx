@@ -173,8 +173,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   }>({ mode: "none", dist: 0, vb0: { x: 0, y: 0, w: 0, h: 0 }, midVbX: 0, midVbY: 0, panX: 0, panY: 0, moved: false });
   // 더블탭 = 확인 없이 바로 선택 진행 (사장님 지시 2026-07-10).
   const lastTapRef = useRef<{ code: string; ts: number } | null>(null);
-  // 핀치 안내 오버레이 (사장님 지시 2026-07-10 — 확대 제스처를 손 이모티콘으로 보여주기).
-  const [pinchHint, setPinchHint] = useState(true);
+  // 핀치 안내 오버레이 — 항상 표시 (사장님 확정 2026-07-10 "쭉 나오게").
   // 모바일 여부 실시간 감지 (창 크기 변경·개발자도구 반응형에도 즉시 반영 — 새로고침 불필요).
   const [isMobile, setIsMobile] = useState(IS_MOBILE_INIT);
   useEffect(() => {
@@ -255,13 +254,6 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   const hits = q.trim()
     ? searchIndex.filter((x) => x.full.includes(q.trim())).slice(0, 8)
     : [];
-
-  // 화면(전국↔시도) 전환 시 핀치 안내 4.5초 표시 후 자동 숨김 (모바일만).
-  useEffect(() => {
-    setPinchHint(true);
-    const t = setTimeout(() => setPinchHint(false), 7000);
-    return () => clearTimeout(t);
-  }, [curSido]);
 
   const pick = (territoryCode: string, labelOverride?: string) => {
     setQ("");
@@ -360,7 +352,6 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
     };
   };
   const onTouchStart = (e: React.TouchEvent) => {
-    setPinchHint(false);
     const g = gestureRef.current;
     if (e.touches.length === 2) {
       const [a, b] = [e.touches[0], e.touches[1]];
@@ -500,7 +491,7 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
             ↺ 확대 초기화
           </button>
         )}
-        {pinchHint && (
+        {(
           <div className="pointer-events-none absolute top-12 left-0 right-0 z-20 flex justify-center">
             <div className="flex items-center gap-2.5 rounded-full bg-black/55 px-4 py-2 text-white backdrop-blur-[2px]">
               <span className="text-[22px] leading-none animate-pulse">🤏</span>
