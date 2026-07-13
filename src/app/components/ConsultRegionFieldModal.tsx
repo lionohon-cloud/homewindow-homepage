@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, ArrowLeft } from "lucide-react";
 import { ConsultRegionMap, type RegionSelection } from "./ConsultRegionMap";
 import { TERRITORY_LABELS } from "@/lib/regionMap/territoryMapping";
+import { resolveMeshConsultChoice } from "@/lib/meshReferral";
 
 /**
  * 상담배정 제도 — W2 2단계 접수 팝업 (시군구 개편 2026-07-10).
@@ -62,6 +63,8 @@ export function consultFieldLabel(code: string): string {
 export interface ConsultDetailResult {
   region: string;
   consultField: string;
+  /** 방충망 단독 선택을 ERP 제휴이관 대기 건으로 구분하는 명시적 표식. */
+  meshReferralRequested?: boolean;
   /** 「직접입력」 자유 텍스트 (consultField='ETC' 일 때) */
   consultFieldText?: string;
 }
@@ -103,7 +106,7 @@ export function ConsultRegionFieldModal({
 
   const handleRegionSelect = (sel: RegionSelection) => {
     // 방충망 확정 진입(AI상담 「방충망 문의」) — 지역 선택 후 방충망 재확인 1스텝 필수.
-    //   제휴 자동발송은 되돌리기 불가 → 「방충망만/창호도 같이/괜찮아요」 재확인을 반드시 거친다.
+    //   고객 선택을 제휴이관 대기 또는 창호 상담으로 명확히 나누기 위해 재확인한다.
     //   step 을 2로 올려야 지도(step===1) 대신 재확인 화면이 렌더된다.
     if (fixedConsultField === "SAFETY_SCREEN") {
       setRegion(sel.territoryCode);
@@ -128,7 +131,7 @@ export function ConsultRegionFieldModal({
       setDirectMode(true);
       return;
     }
-    // 방충망 = 재확인 1스텝 필수 (제휴 자동발송은 되돌리기 불가 → 마지막 방어선).
+    // 방충망 = 재확인 1스텝 필수 (제휴이관 대기와 창호 상담을 구분).
     if (code === "SAFETY_SCREEN") {
       setMeshConfirmMode(true);
       return;
@@ -139,11 +142,15 @@ export function ConsultRegionFieldModal({
 
   const handleMeshOnly = () => {
     // 「네, 방충망만 할게요」 = 제휴 전문업체 이관 대상으로 접수.
-    onComplete({ region, consultField: "SAFETY_SCREEN" });
+    onComplete(resolveMeshConsultChoice('mesh_only', region));
     reset();
   };
-  // 「아니오, 창호랑 같이」·「아니에요 괜찮아요」 = 재확인만 닫고 분야 선택 화면으로 복귀
-  //   (setMeshConfirmMode(false) — 유도 없이 고객이 분야를 다시 고르게. 사장님 지시 260713).
+
+  const handleWindowsTogether = () => {
+    // 「창호랑 같이」 = 창호 견적 상담으로 즉시 확정. 방충망 제휴이관 대상이 아니다.
+    onComplete(resolveMeshConsultChoice('with_windows', region));
+    reset();
+  };
 
   const handleDirectSubmit = () => {
     const text = directText.trim();
@@ -256,17 +263,10 @@ export function ConsultRegionFieldModal({
               </button>
               <button
                 type="button"
-                onClick={() => setMeshConfirmMode(false)}
+                onClick={handleWindowsTogether}
                 className="w-full min-h-[50px] px-4 py-3 border-2 border-[#e5e5e5] rounded-xl text-[14px] font-semibold text-[#2A2A2A] bg-white hover:border-[#D22727] hover:bg-[#fff8f8] transition-colors cursor-pointer"
               >
                 아니오, 창호랑 같이 하고 싶어요
-              </button>
-              <button
-                type="button"
-                onClick={() => setMeshConfirmMode(false)}
-                className="w-full min-h-[50px] px-4 py-3 border-2 border-[#e5e5e5] rounded-xl text-[14px] font-semibold text-[#2A2A2A] bg-white hover:border-[#D22727] hover:bg-[#fff8f8] transition-colors cursor-pointer"
-              >
-                아니에요 괜찮아요
               </button>
             </div>
           ) : (
