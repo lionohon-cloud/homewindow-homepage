@@ -2,7 +2,11 @@ import { useState } from "react";
 import { X, ArrowLeft } from "lucide-react";
 import { ConsultRegionMap, type RegionSelection } from "./ConsultRegionMap";
 import { TERRITORY_LABELS } from "@/lib/regionMap/territoryMapping";
-import { resolveMeshConsultChoice } from "@/lib/meshReferral";
+import {
+  MESH_CONSULT_OPTIONS,
+  resolveMeshConsultChoice,
+  type MeshConsultChoice,
+} from "@/lib/meshReferral";
 
 /**
  * 상담배정 제도 — W2 2단계 접수 팝업 (시군구 개편 2026-07-10).
@@ -140,15 +144,13 @@ export function ConsultRegionFieldModal({
     reset();
   };
 
-  const handleMeshOnly = () => {
-    // 「네, 방충망만 할게요」 = 제휴 전문업체 이관 대상으로 접수.
-    onComplete(resolveMeshConsultChoice('mesh_only', region));
-    reset();
-  };
-
-  const handleWindowsTogether = () => {
-    // 「창호랑 같이」 = 창호 견적 상담으로 즉시 확정. 방충망 제휴이관 대상이 아니다.
-    onComplete(resolveMeshConsultChoice('with_windows', region));
+  const handleMeshChoice = (choice: MeshConsultChoice) => {
+    const result = resolveMeshConsultChoice(choice, region);
+    if (!result) {
+      setMeshConfirmMode(false);
+      return;
+    }
+    onComplete(result);
     reset();
   };
 
@@ -254,20 +256,16 @@ export function ConsultRegionFieldModal({
               <p className="text-[13.5px] text-[#555] -mt-1 leading-relaxed whitespace-pre-line">
                 {"청암홈윈도우는 창호(샷시) 전문 시공업체라, 방충망 단독 교체는 진행하지 않습니다.\n대신 전국에서 방충망을 전문으로 취급하는 제휴 전문업체에서 직접 연락드리도록 도와드리고 있어요.\n창호와 방충망을 함께 교체하실 거라면 저희가 방충망까지 한 번에 견적을 도와드립니다."}
               </p>
-              <button
-                type="button"
-                onClick={handleMeshOnly}
-                className="w-full min-h-[50px] px-4 py-3 border-2 border-[#e5e5e5] rounded-xl text-[14px] font-semibold text-[#2A2A2A] bg-white hover:border-[#D22727] hover:bg-[#fff8f8] transition-colors cursor-pointer"
-              >
-                네, 방충망만 할게요 (제휴사에서 연락 부탁드려요)
-              </button>
-              <button
-                type="button"
-                onClick={handleWindowsTogether}
-                className="w-full min-h-[50px] px-4 py-3 border-2 border-[#e5e5e5] rounded-xl text-[14px] font-semibold text-[#2A2A2A] bg-white hover:border-[#D22727] hover:bg-[#fff8f8] transition-colors cursor-pointer"
-              >
-                아니오, 창호랑 같이 하고 싶어요
-              </button>
+              {MESH_CONSULT_OPTIONS.map(({ choice, label }) => (
+                <button
+                  key={choice}
+                  type="button"
+                  onClick={() => handleMeshChoice(choice)}
+                  className="w-full min-h-[50px] px-4 py-3 border-2 border-[#e5e5e5] rounded-xl text-[14px] font-semibold text-[#2A2A2A] bg-white hover:border-[#D22727] hover:bg-[#fff8f8] transition-colors cursor-pointer"
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           ) : (
             <>
