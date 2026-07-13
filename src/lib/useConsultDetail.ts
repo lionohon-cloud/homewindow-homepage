@@ -25,10 +25,21 @@ export function useConsultDetail() {
     setIsOpen(true);
   };
 
-  const onComplete = async ({ region, consultField, consultFieldText }: ConsultDetailResult) => {
+  const onComplete = async ({
+    region,
+    consultField,
+    consultFieldText,
+    meshReferralRequested,
+  }: ConsultDetailResult) => {
     setIsOpen(false);
     if (leadDocId) {
-      await submitLeadDetail(leadDocId, region, consultField, consultFieldText);
+      await submitLeadDetail(
+        leadDocId,
+        region,
+        consultField,
+        consultFieldText,
+        meshReferralRequested,
+      );
     }
     navigate('/thanks');
   };

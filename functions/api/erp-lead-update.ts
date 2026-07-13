@@ -3,7 +3,9 @@
  * W2 2단계 접수 팝업(지역·상담분야)을 이미 등록된 ERP inboundCustomers 문서에 반영.
  * 브라우저는 EXTERNAL_LEAD_API_KEY를 모름 — 서버에서만 보유.
  *
- * 입력 (POST JSON): { docId: string, region: string, consultField: string }
+ * 입력 (POST JSON):
+ * { docId: string, region: string, consultField: string,
+ *   intakeRequestId?: string, meshReferralRequested?: boolean }
  * ERP 로 PATCH {ERP_API_BASE}/api/external/inbound-customers/{docId} 포워드.
  *
  * 환경변수 (erp-lead.ts와 동일):
@@ -31,6 +33,8 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
     region?: unknown;
     consultField?: unknown;
     consultFieldText?: unknown;
+    intakeRequestId?: unknown;
+    meshReferralRequested?: unknown;
   };
   try {
     payload = (await request.json()) as typeof payload;
@@ -51,6 +55,14 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
     consultFieldText:
       typeof payload.consultFieldText === 'string'
         ? payload.consultFieldText
+        : undefined,
+    intakeRequestId:
+      typeof payload.intakeRequestId === 'string'
+        ? payload.intakeRequestId.slice(0, 200)
+        : undefined,
+    meshReferralRequested:
+      typeof payload.meshReferralRequested === 'boolean'
+        ? payload.meshReferralRequested
         : undefined,
   };
 

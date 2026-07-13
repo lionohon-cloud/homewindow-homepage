@@ -104,8 +104,14 @@ export async function submitLead(params: {
 
   // ── (a-2) ERP — 청암홈윈도우 ERP 자동등록 ─────────────────
   // 사용자 확정 스펙대로 페이로드 구성. 실패해도 사용자 화면은 영향 없음.
+  const intakeRequestId =
+    typeof globalThis.crypto?.randomUUID === 'function'
+      ? globalThis.crypto.randomUUID()
+      : `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   const erpPayload = {
     phone,
+    // 같은 요청의 네트워크 재시도만 멱등 처리하고, 같은 날 별도 재접수는 모두 이력에 남긴다.
+    intakeRequestId,
     // customerName, address: 폼에서 받지 않으므로 생략 (ERP 측 optional)
     utm: buildErpUtm(utm),
     // AI상담 셸 접수는 AI_CHAT 채널로 구분 (모니터링·통계 조회 키. 사장님 지시 2026-07-10)
@@ -121,6 +127,8 @@ export async function submitLead(params: {
     aiChatSummary: aiChat?.summary?.slice(0, 500) || undefined,
     // 접수 시점 확정 분야 (AI상담 분기) — ERP 가 FIELD_CODES 로 검증 후 저장.
     consultField: consultField || undefined,
+    // AI 방충망 분기는 Call2 전에 이탈해도 제휴이관 대기 표식이 남아야 한다.
+    meshReferralRequested: consultField === 'SAFETY_SCREEN' ? true : undefined,
     // createdAt은 ERP 서버에서 serverTimestamp() 설정
   };
   // ERP 응답 본문에서 docId 파싱 → 2단계(지역·분야) 반영(Call2)에 사용.
@@ -200,6 +208,10 @@ export async function submitLead(params: {
   // GAS(느린 비필수 로그)는 백그라운드에서 계속 전송된다 → 대기 시간 ~5s → ~1s.
   // erpPromise 는 항상 { ok, docId } 로 resolve (실패도 .catch 에서 흡수).
   const erp = await erpPromise;
+  if (erp.docId) {
+    // Call2가 같은 접수의 지역·분야 이력을 정확히 연결하도록 탭 단위로 잠시 보관한다.
+    sessionStorage.setItem(`hw_intake_request_id:${erp.docId}`, intakeRequestId);
+  }
 
   // (2026-05-19) 광고차단 익스텐션이 script.googleusercontent.com 차단 환경 대응은
   // 이제 ERP 를 주 경로로 삼는 것으로 해결됨.
@@ -220,7 +232,8 @@ export async function submitLead(params: {
 
 /**
  * Call2 — 접수 건에 지역·상담분야 추가 반영.
- * POST /api/erp-lead-update (docId, region, consultField, consultFieldText?). GA4 이벤트도 함께 발송.
+ * POST /api/erp-lead-update
+ * (docId, region, consultField, consultFieldText?, meshReferralRequested?). GA4 이벤트도 함께 발송.
  * 시군구 개편 (2026-07-10): region = TERRITORY 4자리 시군구 코드 (ERP 는 과도기에 9권역도 수용).
  *   consultFieldText = 상담분야 「직접입력」 자유 텍스트 (consultField='ETC' 동반).
  * 실패해도 throw 하지 않음(고객 흐름을 막지 않는다). 결과 boolean 만 반환.
@@ -230,13 +243,26 @@ export async function submitLeadDetail(
   region: string,
   consultField: string,
   consultFieldText?: string,
+  meshReferralRequested?: boolean,
 ): Promise<boolean> {
   let ok = false;
+  const intakeRequestId = sessionStorage.getItem(
+    `hw_intake_request_id:${docId}`,
+  ) ?? undefined;
   try {
     const res = await fetch('/api/erp-lead-update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ docId, region, consultField, consultFieldText }),
+      body: JSON.stringify({
+        docId,
+        region,
+        consultField,
+        consultFieldText,
+        intakeRequestId,
+        // 구 홈페이지/다른 호출부도 SAFETY_SCREEN이면 안전하게 대기 표식을 남긴다.
+        meshReferralRequested:
+          meshReferralRequested ?? consultField === 'SAFETY_SCREEN',
+      }),
     });
     ok = res.ok;
     if (!ok) {
@@ -246,6 +272,10 @@ export async function submitLeadDetail(
   } catch (err) {
     console.error('[ERP 상세 반영 네트워크 실패]', err);
     ok = false;
+  }
+
+  if (ok) {
+    sessionStorage.removeItem(`hw_intake_request_id:${docId}`);
   }
 
   // GA4: Call2 성공 시 신규 이벤트 (gtag + dataLayer 이중 전송, generate_lead 패턴 동일).
