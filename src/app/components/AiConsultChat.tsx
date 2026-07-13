@@ -24,6 +24,7 @@ type Intent =
   | "window_estimate"
   | "window_consult_quote" // 메뉴 전용 (사장님 지시 2026-07-10): 창호 교체·견적 '상담' — 대화형 접수(연락처→지도)
   | "window_consult"
+  | "mesh_screen" // 방충망 문의 — 제휴 전문업체 이관 대상. 연락처→지도 접수(consultField=SAFETY_SCREEN)
   | "as"
   | "inquiry";
 
@@ -38,6 +39,7 @@ const INTENT_LABEL: Record<Intent, string> = {
   window_estimate: "직접 견적 내보기",
   window_consult_quote: "창호 교체·견적 상담",
   window_consult: "그린리모델링 및 무이자 문의",
+  mesh_screen: "방충망 문의",
   as: "AS 접수",
   inquiry: "기타 문의",
 };
@@ -67,7 +69,7 @@ export function AiConsultChat() {
   const [inqRequest, setInqRequest] = useState("");
   // 창호 상담(견적 스킵) 전화 + 진입 경로 (ERP 문답 요약 구분용)
   const [consultPhone, setConsultPhone] = useState("");
-  const [consultVia, setConsultVia] = useState<"window_consult_quote" | "window_consult">("window_consult");
+  const [consultVia, setConsultVia] = useState<"window_consult_quote" | "window_consult" | "mesh_screen">("window_consult");
 
   const scrollDown = () =>
     setTimeout(() => bodyRef.current?.scrollTo({ top: 99999, behavior: "smooth" }), 60);
@@ -87,6 +89,10 @@ export function AiConsultChat() {
     } else if (intent === "window_consult") {
       push({ role: "bot", text: "네! 그린리모델링(창호 교체 지원 사업)과 무이자 할부 상담이시군요.\n지원 조건과 할부 혜택은 주택 상황에 따라 달라져서, 전문 영업팀장님이 직접 확인해드리는 것이 가장 정확해요.\n연락처와 시공 지역을 남겨주시면 담당 영업팀장님이 최대한 빨리 전화드릴게요." });
       setConsultVia("window_consult");
+      setBranch("consultPhone");
+    } else if (intent === "mesh_screen") {
+      push({ role: "bot", text: "네! 방충망 문의시군요.\n청암홈윈도우는 방충망 단독 교체는 진행하지 않고, 제휴 전문업체를 연결해 드리고 있어요.\n연락처와 지역을 남겨주시면 방충망 전문업체에서 직접 연락드리도록 바로 접수해드릴게요.\n(창호도 함께 상담하시면 방충망까지 저희가 함께 견적을 도와드려요.)" });
+      setConsultVia("mesh_screen");
       setBranch("consultPhone");
     } else if (intent === "as") {
       push({ role: "bot", text: "AS 접수를 도와드릴게요. 아래 정보를 입력해 주세요!" });
@@ -164,7 +170,7 @@ export function AiConsultChat() {
       }
       push({ role: "bot", text: reply });
       // 확인 대기 — 사용자가 칩을 눌러야 진행 (바로 안 넘어감)
-      if (["window_estimate", "window_consult", "as", "inquiry"].includes(intent)) {
+      if (["window_estimate", "window_consult", "mesh_screen", "as", "inquiry"].includes(intent)) {
         setPendingIntent(intent as Intent);
       }
     } catch {
@@ -202,10 +208,17 @@ export function AiConsultChat() {
           summary:
             consultVia === "window_consult_quote"
               ? "창호 교체·견적 상담 (전문 영업팀장 상담 연결)"
-              : "그린리모델링/무이자 등 창호 상담 (견적 미산출)",
+              : consultVia === "mesh_screen"
+                ? "방충망 문의 (제휴 전문업체 이관 대상)"
+                : "그린리모델링/무이자 등 창호 상담 (견적 미산출)",
         },
         // 챗 분기에서 이미 확정된 분야 — 지도를 닫아도 ERP 배지에 남는다 (사장님 지시).
-        consultField: consultVia === "window_consult" ? "GREEN_REMODEL" : "WINDOW_QUOTE",
+        consultField:
+          consultVia === "window_consult"
+            ? "GREEN_REMODEL"
+            : consultVia === "mesh_screen"
+              ? "SAFETY_SCREEN"
+              : "WINDOW_QUOTE",
       });
       if (docId) {
         detail.open(docId); // 지도(지역)+분야 팝업 → 접수 완료 시 /thanks
@@ -363,6 +376,9 @@ export function AiConsultChat() {
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("window_consult")}>
               그린리모델링 및 무이자 문의
             </button>
+            <button type="button" className={chipCls} onClick={() => chooseFromMenu("mesh_screen")}>
+              방충망 문의
+            </button>
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("as")}>
               AS 접수
             </button>
@@ -443,7 +459,13 @@ export function AiConsultChat() {
         isOpen={detail.isOpen}
         onComplete={detail.onComplete}
         onSkip={detail.onSkip}
-        fixedConsultField={consultVia === "window_consult" ? "GREEN_REMODEL" : "WINDOW_QUOTE"}
+        fixedConsultField={
+          consultVia === "window_consult"
+            ? "GREEN_REMODEL"
+            : consultVia === "mesh_screen"
+              ? "SAFETY_SCREEN"
+              : "WINDOW_QUOTE"
+        }
         onClose={() => {
           // X = 지도만 닫고 대화로 복귀 (접수는 유지 — 다시 열 수 있게 안내).
           detail.onClose();
