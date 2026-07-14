@@ -1,6 +1,7 @@
 import { motion, useInView } from "motion/react";
 import { Factory, Award } from "lucide-react";
-import factoryBg from "figma:asset/9fbac59e103efcdd3b35d71230e34e1af0dbbeab.png";
+// 260714: 5835px·21MB PNG → 1920px·572KB JPEG (배경 이미지 최적화)
+import factoryBg from "../../assets/production-factory.jpeg";
 import { useState, useEffect, useRef } from "react";
 
 export function ProductionSection() {

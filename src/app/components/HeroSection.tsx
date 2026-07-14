@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import heroBg from "figma:asset/043d32be9e8d4e45d2ea3135af6c4c2ad7644c36.png";
+// 260714: 4096px·20MB PNG → 1920px·363KB JPEG (블러 배경이라 화질 차이 없음)
+import heroBg from "../../assets/hero-bg.jpeg";
 import { ConsultationModal } from "./ConsultationModal";
 import { VideoModal } from "./VideoModal";
 
@@ -31,26 +32,32 @@ export function HeroSection() {
         ><span className="text-[#d22727]">창호 교체, </span><span>이제</span><br /><span>믿을 수 있는 곳에서</span><br /><span>한번에 끝내세요.</span></motion.h1>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        onClick={() => setIsVideoOpen(true)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIsVideoOpen(true); } }}
-        aria-label="회사 소개 영상 재생"
-        className="absolute bottom-[100px] right-6 md:right-10 text-right z-10 cursor-pointer select-none hover:scale-[1.02] active:scale-[0.98] transition-transform outline-none"
-      >
-        <div className="mb-4">
-          <p className="text-[#d22727] text-sm md:text-base font-bold mb-1">Since. 1996</p>
-          <p className="text-white text-3xl md:text-4xl font-extrabold">창호 제조 30년</p>
+      {/* 260714: GNB 무료상담접수 버튼의 오른쪽 끝선(max-w-screen-xl 컨테이너 라인)에 정렬
+          — 뷰포트 우측 끝(right-10)이 아니라 컨테이너 기준이라 측면 인디케이터와 안 겹침 */}
+      <div className="absolute bottom-[100px] inset-x-0 z-10 pointer-events-none">
+        <div className="max-w-screen-xl mx-auto px-6 md:px-10 flex justify-end">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            onClick={() => setIsVideoOpen(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIsVideoOpen(true); } }}
+            aria-label="회사 소개 영상 재생"
+            className="inline-block text-right pointer-events-auto cursor-pointer select-none hover:scale-[1.02] active:scale-[0.98] transition-transform outline-none"
+          >
+            <div className="mb-4">
+              <p className="text-[#d22727] text-sm md:text-base font-bold mb-1">Since. 1996</p>
+              <p className="text-white text-3xl md:text-4xl font-extrabold">창호 제조 30년</p>
+            </div>
+            <div>
+              <p className="text-[#d22727] text-sm md:text-base font-bold mb-1">국내 최대 자동화 공장</p>
+              <p className="text-white text-3xl md:text-4xl font-extrabold">38,000평</p>
+            </div>
+          </motion.div>
         </div>
-        <div>
-          <p className="text-[#d22727] text-sm md:text-base font-bold mb-1">국내 최대 자동화 공장</p>
-          <p className="text-white text-3xl md:text-4xl font-extrabold">38,000평</p>
-        </div>
-      </motion.div>
+      </div>
 
       <ConsultationModal
         isOpen={isConsultOpen}

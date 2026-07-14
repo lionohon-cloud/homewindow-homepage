@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { Link } from "react-router";
 import { FaPhone, FaYoutube, FaInstagram } from "react-icons/fa";
 import { SiNaver } from "react-icons/si";
 import logoImage from "figma:asset/771e2a28afe6f5e97ddf040de4e16d1715624cd8.png";
@@ -44,8 +45,16 @@ export function Footer() {
             </a>
 
             <p className="text-[13px] text-gray-400 leading-[1.7] mt-4">
-              운영시간 : 연중무휴 (1년 365일)
+              접수시간 : 연중무휴 (1년 365일)
             </p>
+
+            {/* 자주 묻는 질문 링크 (260714 — 일반 질문 페이지. 상단 메뉴 FAQ(/faq)와 별도) */}
+            <Link
+              to="/faq/general"
+              className="mt-2 text-[14px] font-bold text-white/85 hover:text-white transition-colors"
+            >
+              [자주묻는 질문]
+            </Link>
           </motion.div>
         </div>
 

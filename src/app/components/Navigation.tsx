@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { Phone, Handshake } from "lucide-react";
 import { ConsultationModal } from "./ConsultationModal";
 import logo from "figma:asset/4ae621bc1ae2b4dd2f88bf2d3c6c087ff22567bb.png";
@@ -36,26 +36,23 @@ type DesktopMenuItem =
 // ON : VITE_REVIEW_SECTION_LIVE=1
 const REVIEW_LIVE = import.meta.env.VITE_REVIEW_SECTION_LIVE === "1";
 
+// 260714 상단 메뉴 개편: 이벤트·제작공장·15년보증·시공후기·FAQ 5개 균등 정렬 (+파트너스)
 const desktopMenuItems: DesktopMenuItem[] = [
   { type: "section", id: "event", label: "이벤트" },
   { type: "section", id: "production", label: "제작공장" },
-  { type: "section", id: "brands", label: "브랜드" },
-  { type: "section", id: "glass", label: "단열유리" },
-  { type: "section", id: "installation", label: "원데이시공" },
   { type: "section", id: "warranty", label: "15년보증" },
   ...(REVIEW_LIVE
     ? [{ type: "section" as const, id: "review", label: "시공후기" }]
     : []),
-  // 260503: Cloudflare 이관 완료 후 재개
-  { type: "route", href: "/as", label: "AS접수" },
+  { type: "route", href: "/faq", label: "FAQ" },
 ];
 
 export function Navigation({ onMenuClick }: NavigationProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [activeSection, setActiveSection] = useState("hero");
-  const [showIndicator, setShowIndicator] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -126,8 +123,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
           
           // 현재 활성 섹션 감지
           let currentSection = "hero";
-          let foundAwards = false;
-          
+
           // 역순으로 순회하여 화면 상단을 지난 섹션 중 가장 마지막 것을 찾기
           for (let i = sections.length - 1; i >= 0; i--) {
             const { id } = sections[i];
@@ -141,18 +137,8 @@ export function Navigation({ onMenuClick }: NavigationProps) {
               }
             }
           }
-          
-          // awards 섹션 지나갔는지 체크
-          const awardsElement = document.getElementById("awards");
-          if (awardsElement) {
-            const rect = awardsElement.getBoundingClientRect();
-            if (rect.top < window.innerHeight / 2) {
-              foundAwards = true;
-            }
-          }
-          
+
           setActiveSection(currentSection);
-          setShowIndicator(foundAwards);
           
           ticking = false;
         });
@@ -203,7 +189,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
             animate={{ y: 0 }}
             exit={{ y: -100 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#eaeaea] shadow-sm"
+            className="hidden min-[1550px]:block fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#eaeaea] shadow-sm"
           >
             <div className="max-w-screen-xl mx-auto px-6 md:px-10">
               <div className="flex items-center justify-between h-[70px]">
@@ -215,8 +201,8 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   <img src={logo} alt="청암홈윈도우" className="h-[32px] w-auto" loading="lazy" decoding="async" />
                 </button>
 
-                {/* 메뉴 항목 */}
-                <div className="flex items-center gap-8">
+                {/* 메뉴 항목 — 로고~버튼 사이 균등 간격 (260714) */}
+                <div className="flex-1 flex items-center justify-evenly gap-2 px-4 md:px-8">
                   {desktopMenuItems.map((item) => {
                     if (item.type === "route") {
                       return (
@@ -296,7 +282,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
             animate={{ y: 0 }}
             exit={{ y: -100 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#eaeaea] shadow-sm"
+            className="min-[1550px]:hidden fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#eaeaea] shadow-sm"
           >
             <div className="flex items-center justify-between h-[60px] px-6">
               {/* 로고 */}
@@ -355,7 +341,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="md:hidden fixed inset-0 bg-black/50 z-[60]"
+              className="min-[1550px]:hidden fixed inset-0 bg-black/50 z-[60]"
             />
 
             {/* 메뉴 패널 (70%) */}
@@ -364,7 +350,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="md:hidden fixed right-0 top-0 bottom-0 w-[70%] bg-white z-[70] shadow-2xl overflow-y-auto overscroll-contain"
+              className="min-[1550px]:hidden fixed right-0 top-0 bottom-0 w-[70%] max-w-[420px] bg-white z-[70] shadow-2xl overflow-y-auto overscroll-contain"
             >
               {/* 메뉴 헤더 */}
               <div className="sticky top-0 bg-white border-b border-[#eaeaea] px-6 py-4 z-10">
@@ -414,6 +400,17 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   <span className="text-[15px] font-semibold">AS 접수</span>
                 </motion.button>
 
+                {/* FAQ — 업체 선택 가이드 (260714 신설, 데스크톱 메뉴와 동일) */}
+                <motion.button
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: (sections.length + 2) * 0.03, duration: 0.3 }}
+                  onClick={() => goToRoute('/faq')}
+                  className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#666] active:bg-[#f8f8f8]"
+                >
+                  <span className="text-[15px] font-semibold">FAQ</span>
+                </motion.button>
+
                 {/* 홈윈도우 파트너스 (별도 페이지) — 톤다운 (회색 + 파란 점) */}
                 <motion.button
                   initial={{ opacity: 0, x: 20 }}
@@ -433,27 +430,28 @@ export function Navigation({ onMenuClick }: NavigationProps) {
 
       {/* PC 섹션 인디케이터 */}
       <AnimatePresence>
-        {showIndicator && !isEstimateModalOpen && (
+        {/* 히어로부터 상시 노출 (260714 — 부사장님 지시). 메인 페이지 전용 목차라 '/' 에서만 */}
+        {location.pathname === "/" && !isEstimateModalOpen && (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
+            exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.4 }}
-            className="hidden md:block fixed right-8 top-1/2 -translate-y-1/2 z-[9999]"
+            className="hidden min-[1550px]:block fixed left-8 top-1/2 -translate-y-1/2 z-[9999]"
           >
-            <div className="flex flex-col gap-3 items-end relative">
+            <div className="flex flex-col gap-3 items-start relative">
               {/* 연결선 */}
-              <div className="absolute right-[7px] top-[4px] bottom-[4px] w-[2px] bg-[#e0e0e0] -z-10" />
-              
+              <div className="absolute left-[7px] top-[4px] bottom-[4px] w-[2px] bg-[#e0e0e0] -z-10" />
+
               {sections.map(({ id, label }) => (
                 <button
                   key={id}
                   onClick={() => scrollToSection(id)}
-                  className="group flex items-center gap-3 relative"
+                  className="group flex flex-row-reverse items-center gap-3 relative"
                 >
                   {/* 섹션 라벨 - 항상 표시 */}
                   <span
-                    className={`text-[13px] whitespace-nowrap transition-all duration-300 text-right ${
+                    className={`text-[13px] whitespace-nowrap transition-all duration-300 text-left ${
                       activeSection === id
                         ? "text-[#d22727] font-bold"
                         : "text-[#bbb] font-normal group-hover:text-[#666] cursor-pointer"

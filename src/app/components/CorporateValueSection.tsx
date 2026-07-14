@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Heart, GraduationCap, Users, ChevronLeft, ChevronRight, BookOpen, Award, Home, Globe } from "lucide-react";
+import { Heart, GraduationCap, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import imgCsr1 from "figma:asset/c7a590bf8bb8f1dcca5990725b6edeac8d41e181.png";
 import imgCsr2 from "figma:asset/95d7cd220cdc8297427a1c8101601c5607c31d90.png";
@@ -7,17 +7,8 @@ import imgCsr3 from "figma:asset/cf4a7868d49b07b78760598e00a3b9828024f091.png";
 import imgCsr4 from "figma:asset/afe5987009199bd2bc4ce73a1eb1caae19d72af9.png";
 import imgCsr5 from "figma:asset/f0bbbe3acb6f69aae47de13237979e903fc07cd9.png";
 import imgCsr6 from "figma:asset/b1e7ad01b897c73772bcce5c2a17ba61a6fce9bc.png";
-import imgCsr7 from "../../assets/csr-vietnam.jpeg";
+import imgCsr7 from "../../assets/csr-jeju-trip.jpeg"; // 260714: 수학여행 후원 단체사진으로 교체 (기존 csr-vietnam)
 import imgCsr8 from "../../assets/csr-bus.jpeg";
-
-const donationCategories = [
-  { label: "교육지원",          icon: BookOpen },
-  { label: "장학금",            icon: Award },
-  { label: "지역사회기부",       icon: Home },
-  { label: "의료취약계층 지원",  icon: Heart },
-  { label: "장학생 해외연수",    icon: Globe },
-  { label: "장애인복지개선",     icon: Users },
-];
 
 const activities = [
   {
@@ -44,21 +35,27 @@ export function CorporateValueSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const sliderImages = [imgCsr1, imgCsr2, imgCsr3, imgCsr4, imgCsr5, imgCsr6, imgCsr7, imgCsr8];
 
+  // 2장씩 한 페이지 슬라이드 (260714 — 높이 절반·2열)
+  const slidePages: string[][] = [];
+  for (let i = 0; i < sliderImages.length; i += 2) {
+    slidePages.push(sliderImages.slice(i, i + 2));
+  }
+
   // Auto slide every 4 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+      setCurrentSlide((prev) => (prev + 1) % slidePages.length);
     }, 3000);
 
     return () => clearInterval(timer);
-  }, [sliderImages.length]);
+  }, [slidePages.length]);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+    setCurrentSlide((prev) => (prev + 1) % slidePages.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length);
+    setCurrentSlide((prev) => (prev - 1 + slidePages.length) % slidePages.length);
   };
 
   return (
@@ -97,27 +94,24 @@ export function CorporateValueSection() {
           지속적인 나눔 실천은 오랜 시간 고객님을 든든히 책임질 기업의 증명입니다.
         </motion.p>
 
-        {/* Donation Categories Grid */}
-        <div className="grid grid-cols-3 gap-3 mb-12 w-full">
-          {donationCategories.map(({ label, icon: Icon }, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "0px" }}
-              transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-              className="rounded-2xl p-4 border bg-white border-[#e5e5e5] flex flex-col gap-2.5"
-            >
-              {/* Toss-style icon badge: size-7, rounded-lg, 10% accent tint */}
-              <div className="w-7 h-7 rounded-lg bg-[#D22727]/10 flex items-center justify-center">
-                <Icon className="w-4 h-4 text-[#D22727]" strokeWidth={2} />
-              </div>
-              <p className="text-[12px] md:text-[13px] font-bold text-[#2A2A2A] leading-snug break-keep">
-                {label}
-              </p>
-            </motion.div>
-          ))}
-        </div>
+        {/* YouTube 영상 (260714 — 기존 아이콘 그리드 자리) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-200px" }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg bg-black mb-12"
+        >
+          <iframe
+            className="w-full h-full"
+            src="https://www.youtube.com/embed/5yMZpO7o_tQ?si=A8PPjcJJQ2i5LqUX"
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          ></iframe>
+        </motion.div>
 
         {/* Foundation Section */}
         <motion.div
@@ -127,22 +121,26 @@ export function CorporateValueSection() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="bg-[#f8f8f8] rounded-2xl p-6 md:p-8 border border-[#e5e5e5] mb-8"
         >
-          {/* Image Slider */}
-          <div className="relative w-full aspect-[4/3] md:aspect-[16/9] mb-6 rounded-xl overflow-hidden bg-white">
+          {/* Image Slider — 2장씩 한 페이지, 높이 절반 (260714) */}
+          <div className="relative w-full aspect-[8/3] md:aspect-[32/9] mb-6 rounded-xl overflow-hidden bg-white">
             {/* Images */}
-            <div 
+            <div
               className="flex transition-transform duration-500 ease-out h-full"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
-              {sliderImages.map((img, index) => (
-                <div key={index} className="min-w-full h-full flex items-center justify-center overflow-hidden">
-                  <img
-                    src={img}
-                    alt={`장학금 활동 ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
+              {slidePages.map((pair, pageIndex) => (
+                <div key={pageIndex} className="min-w-full h-full grid grid-cols-2 gap-2 md:gap-3">
+                  {pair.map((img, i) => (
+                    <div key={i} className="h-full overflow-hidden rounded-lg">
+                      <img
+                        src={img}
+                        alt={`장학금 활동 ${pageIndex * 2 + i + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
@@ -167,7 +165,7 @@ export function CorporateValueSection() {
 
             {/* Indicators */}
             <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-              {sliderImages.map((_, index) => (
+              {slidePages.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
