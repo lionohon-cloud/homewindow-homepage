@@ -37,6 +37,7 @@ type DesktopMenuItem =
 const REVIEW_LIVE = import.meta.env.VITE_REVIEW_SECTION_LIVE === "1";
 
 // 260714 상단 메뉴 개편: 이벤트·제작공장·15년보증·시공후기·FAQ 5개 균등 정렬 (+파트너스)
+// 260715 AS접수 복원: 개편 때 데스크톱 GNB에서 누락된 것 FAQ 오른쪽 끝에 재추가 (부사장님 지시)
 const desktopMenuItems: DesktopMenuItem[] = [
   { type: "section", id: "event", label: "이벤트" },
   { type: "section", id: "production", label: "제작공장" },
@@ -45,6 +46,7 @@ const desktopMenuItems: DesktopMenuItem[] = [
     ? [{ type: "section" as const, id: "review", label: "시공후기" }]
     : []),
   { type: "route", href: "/faq", label: "FAQ" },
+  { type: "route", href: "/as", label: "AS접수" },
 ];
 
 export function Navigation({ onMenuClick }: NavigationProps) {
