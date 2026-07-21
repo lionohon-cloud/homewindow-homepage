@@ -162,8 +162,10 @@ export function EventSection() {
 
           <div className="mt-7 flex flex-col gap-3">
             {COUPONS.map((c, i) => (
+              // 카드 폭 90% (중앙) → @container 기준폭이 줄어 박스·내부 글자 모두 약 10% 축소
               <motion.div
                 key={c.title}
+                className="w-[90%] mx-auto"
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
