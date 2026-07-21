@@ -61,19 +61,26 @@
       </script>
       <noscript><img alt="Logger Script" width="1" height="1" src="https://ssl.logger.co.kr/tracker.1.tsp?u=115258&amp;js=N"/></noscript>
       <!-- END OF LOGGER TRACKING SCRIPT -->
+      <!-- 구조화 데이터(JSON-LD). aggregateRating(4.9/68건)은 현재 스냅샷 —
+           Phase 4에서 리뷰 API(functions/api/review/list.ts) 값으로 서버 주입 예정. -->
       <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "HomeAndConstructionBusiness",
+        "@id": "https://homewindow.kr/#business",
         "name": "청암홈윈도우",
         "alternateName": "CHEONG-AHM HOME WINDOW",
         "url": "https://homewindow.kr",
         "logo": "https://homewindow.kr/abcon.jpg",
         "image": "https://homewindow.kr/soimg.jpg",
-        "description": "38,000평 자동화 공장에서 직접 제조, 전국 직영팀 직접 시공하는 대한민국 유일의 완성창 창호시공 전문기업",
+        "description": "38,000평 자동화 공장에서 직접 제조, 전국 직영팀 직접 시공하는 대한민국 유일의 완성창 창호시공 전문기업. 업계 최장 15년 무상보증.",
+        "slogan": "창호 교체, 믿을 수 있는 곳에서 한번에",
         "telephone": "+82-1661-4830",
         "email": "homewindow@ca1996.co.kr",
         "foundingDate": "1996",
+        "vatID": "758-88-02425",
+        "priceRange": "$$",
+        "currenciesAccepted": "KRW",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "미사강변대로 96",
@@ -93,25 +100,59 @@
           "opens": "09:00",
           "closes": "18:00"
         },
-        "areaServed": {
-          "@type": "Country",
-          "name": "KR"
+        "areaServed": { "@type": "Country", "name": "대한민국" },
+        "sameAs": [
+          "https://www.youtube.com/@homewindowca",
+          "https://www.instagram.com/homewindow.ca/",
+          "https://blog.naver.com/homewindow_ca2"
+        ],
+        "award": ["LH 입주자 평가 우수업체 선정", "국토교통부 장관상 수상"],
+        "knowsAbout": ["창호 교체", "샷시 교체", "이중창", "시스템창호", "로이유리", "수퍼더블로이", "TPS 단열간봉", "안전방충망", "단열 시공", "그린리모델링"],
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "68",
+          "bestRating": "5",
+          "worstRating": "1"
         },
-        "priceRange": "$$",
-        "sameAs": []
+        "makesOffer": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "창호(샷시) 교체 시공", "description": "완성창 방식. 본사 직접 제작·시공·15년 무상보증." } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "안전방충망 시공" } }
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "창호 시공 서비스",
+          "itemListElement": [
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "이중창 교체" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "시스템창호 시공" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "로이유리(수퍼더블로이) 창호" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "안전방충망" } }
+          ]
+        }
       }
       </script>
       <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": "https://homewindow.kr/#organization",
         "name": "주식회사 청암홈윈도우",
+        "alternateName": "청암홈윈도우",
         "url": "https://homewindow.kr",
         "logo": "https://homewindow.kr/abcon.jpg",
+        "foundingDate": "1996",
+        "vatID": "758-88-02425",
+        "award": ["LH 입주자 평가 우수업체 선정", "국토교통부 장관상 수상"],
+        "sameAs": [
+          "https://www.youtube.com/@homewindowca",
+          "https://www.instagram.com/homewindow.ca/",
+          "https://blog.naver.com/homewindow_ca2"
+        ],
         "contactPoint": {
           "@type": "ContactPoint",
           "telephone": "+82-1661-4830",
           "contactType": "customer service",
+          "areaServed": "KR",
           "availableLanguage": "Korean"
         }
       }
@@ -119,9 +160,39 @@
       <script type="application/ld+json">
       {
         "@context": "https://schema.org",
+        "@type": "Service",
+        "@id": "https://homewindow.kr/#service",
+        "serviceType": "창호(샷시) 교체 시공",
+        "name": "청암홈윈도우 창호 교체 시공",
+        "provider": { "@id": "https://homewindow.kr/#business" },
+        "areaServed": { "@type": "Country", "name": "대한민국" },
+        "audience": { "@type": "Audience", "audienceType": "아파트·빌라(다세대)·단독주택 거주자" },
+        "description": "1996년 설립, 38,000평 자동화 공장에서 LX·KCC 정품 자재로 직접 제작하고 전국 직영팀이 원데이 시공. 업계 최장 15년 무상보증, 계약금은 SGI 서울보증보험(업계 최초·유일)으로 보증.",
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "KRW",
+          "availability": "https://schema.org/InStock",
+          "priceSpecification": { "@type": "PriceSpecification", "description": "방문 실측 후 무료 견적 (대표전화 1661-4830)" }
+        },
+        "additionalProperty": [
+          { "@type": "PropertyValue", "name": "무상보증기간", "value": "15년 (이후 유상 평생 사후관리)" },
+          { "@type": "PropertyValue", "name": "시공기간", "value": "원데이(하루) 시공" },
+          { "@type": "PropertyValue", "name": "계약보증", "value": "SGI 서울보증보험 (창호업계 최초·유일)" },
+          { "@type": "PropertyValue", "name": "로이유리 열관류율 개선", "value": "싱글로이 대비 약 39% 낮음 (LX 수퍼더블로이)" },
+          { "@type": "PropertyValue", "name": "여름 태양열취득률 개선", "value": "싱글로이 대비 약 44% 낮음" },
+          { "@type": "PropertyValue", "name": "정부지원", "value": "그린리모델링 60개월 이자지원 안내" }
+        ]
+      }
+      </script>
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
         "@type": "WebSite",
+        "@id": "https://homewindow.kr/#website",
         "name": "청암홈윈도우",
-        "url": "https://homewindow.kr"
+        "url": "https://homewindow.kr",
+        "publisher": { "@id": "https://homewindow.kr/#organization" },
+        "inLanguage": "ko-KR"
       }
       </script>
     </body>
