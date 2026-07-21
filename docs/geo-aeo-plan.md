@@ -65,23 +65,16 @@
 - **검증:** JSON 파싱 4/4 ✓, 빌드 통과 ✓ (배포 후 Rich Results Test 예정)
 - **참고:** aggregateRating은 현재 정적 스냅샷 → Phase 4에서 리뷰 API 값 동적 주입
 
-### Phase 3 — 라우트별 메타데이터 (P1) — **1 PR**
-- [ ] 경량 head 관리 도입(`react-helmet-async` 또는 자체 `useHead` 훅)
-- [ ] 각 공개 라우트에 고유 `title`·`description`·`canonical`·`og:*` 지정
-  - `/faq`(업체 선택 가이드), `/faq/general`(자주 묻는 질문), `/review`(시공 후기·평점), `/review/:id`(개별 후기), `/partners`
-- [ ] 관리자·감사 페이지 `noindex` 확인/보강
-- **산출물:** 라우트별 메타
-- **검증:** 각 라우트 렌더 후 `document.title`/메타 확인(초기 HTML 반영은 Phase 4에서 완성)
-- **위험:** 낮음
+### Phase 3 — 라우트별 메타데이터 (P1) → **Phase 4에 흡수** ✅
+- 서버 주입(Phase 4 미들웨어)이 라우트별 `title`·`description`·`canonical`·`og:*`를 초기 HTML에 직접 넣음 → 클라이언트 helmet 없이 크롤러·브라우저 모두 커버. 별도 helmet 도입 불필요.
 
-### Phase 4 — 핵심 페이지 프리렌더 / 서버 주입 (P0, 최대 효과) — **1 PR (가장 큰 작업)**
-- [ ] 방식 결정: **(A) Cloudflare Pages Functions/`_middleware`로 핵심 라우트 HTML에 본문 요약 + 전체 JSON-LD + 라우트 메타를 서버 주입** (권장, 현 구조 적합) vs (B) 빌드타임 프리렌더(react-snap/puppeteer)
-- [ ] 대상: `/`, `/faq`, `/faq/general`, `/review`(+ 승인 `/review/:id`)
-- [ ] 리뷰 `AggregateRating`+`Review` JSON-LD 서버 주입 (집계는 `functions/api/review/list.ts`에 이미 존재)
-- [ ] 초기 HTML에 **크롤러용 본문 요약 블록**(핵심 팩트·FAQ 질문·후기 요지) 삽입 — 사용자에겐 hydration 후 정상 화면
-- **산출물:** AI 크롤러가 보는 HTML에 실제 콘텐츠+구조화데이터 존재
-- **검증:** `curl -A GPTBot`로 본문/JSON-LD 확인, Rich Results Test 통과, 실제 화면 회귀 없음(Chrome)
-- **위험:** 중(렌더 파이프라인 변경) → 캐시/폴백 신중, 회귀 테스트 필수
+### Phase 4 — 핵심 페이지 서버 주입 (P0, 최대 효과) — **1 PR** ✅ 완료 (방식 A)
+- [x] `functions/_middleware.ts` 신설 — `HTMLRewriter`로 라우트별 `title`·`description`·`canonical`·`og:*` + JSON-LD(FAQPage·BreadcrumbList) 서버 주입. `/api`·`/admin`·정적자산·진짜 404는 미개입.
+- [x] **[중대 버그 수정]** `/faq`·`/faq/general`이 `_redirects` 누락으로 **HTTP 404(404.html)** 서빙되던 문제 발견 → `_redirects`에 규칙 추가해 **200 index.html** 서빙. (크롤러가 FAQ를 404로 보던 문제 해결)
+- [x] FAQ 데이터를 `src/app/data/faqData.ts`(순수 데이터)로 분리 → 화면·미들웨어 공유. 클라이언트측 FAQPage 중복 주입 제거.
+- [→] 리뷰 `AggregateRating`+`Review` 서버 주입은 리뷰 섹션 노출(플래그) 확정 후 추가 예정.
+- **검증(wrangler 로컬):** `/faq`·`/faq/general` HTTP 200 + 라우트 메타 + FAQPage/Breadcrumb/LocalBusiness JSON-LD 주입 확인 ✓ / 홈·파트너스 200 ✓ / 자산·관리자 미변경 ✓ / 미존재 라우트 404 유지 ✓ / 빌드 통과 ✓
+- **참고:** 크롤러용 본문 블록은 JSON-LD가 실질 콘텐츠(FAQ 전문·스펙)를 이미 담으므로 생략(클로킹·플래시 회피).
 
 ### Phase 5 — 콘텐츠 형태 최적화 (P2) — **1 PR**
 - [ ] H1 키워드 보강(현재 슬로건) — 회사·"창호 교체 시공" 엔티티 명시(슬로건 유지하되 접근성 텍스트/보조 heading 보강)
