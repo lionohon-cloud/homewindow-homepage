@@ -78,6 +78,9 @@ export function Component() {
     const url = new URL("/api/review/list", window.location.origin);
     if (part) url.searchParams.set("part", part);
     url.searchParams.set("sort", sort);
+    // 승인 후기 전체를 받아온다(서버 조회 상한 200과 동일). limit 미지정 시 50건만
+    // 내려와 목록 헤더("전체 후기 N건")가 요약 카드("총 시공후기 N건")와 어긋난다.
+    url.searchParams.set("limit", "200");
     fetch(url.toString())
       .then((r) => r.json())
       .then((d) => setData(d))
