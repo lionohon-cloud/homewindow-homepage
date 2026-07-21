@@ -103,62 +103,68 @@ function buildJsonLd(route: RouteMeta, canonical: string): string {
 
 export const onRequest: PagesFunction = async (ctx) => {
   const { request, next } = ctx;
-  const url = new URL(request.url);
-  // 트레일링 슬래시 정규화 ('/faq/' → '/faq', '/' 유지)
-  const path = url.pathname !== "/" ? url.pathname.replace(/\/+$/, "") : "/";
-
   const res = await next();
 
-  // HTML 응답만, 관리자 제외
-  const ct = res.headers.get("content-type") || "";
-  if (!ct.includes("text/html")) return res;
-  if (path.startsWith("/admin")) return res;
+  // fail-open: 주입 로직에서 어떤 오류가 나도 원본 응답을 그대로 반환한다.
+  // (SEO 주입이 안 될 뿐, 사이트는 절대 깨지지 않도록 보장)
+  try {
+    const url = new URL(request.url);
+    // 트레일링 슬래시 정규화 ('/faq/' → '/faq', '/' 유지)
+    const path = url.pathname !== "/" ? url.pathname.replace(/\/+$/, "") : "/";
 
-  const route = ROUTES[path];
-  if (!route) return res; // 정의 안 된 라우트는 SPA 기본값 유지
+    // HTML 응답만, 관리자 제외
+    const ct = res.headers.get("content-type") || "";
+    if (!ct.includes("text/html")) return res;
+    if (path.startsWith("/admin")) return res;
 
-  const canonical = SITE + (path === "/" ? "/" : path);
-  const jsonLd = buildJsonLd(route, canonical);
+    const route = ROUTES[path];
+    if (!route) return res; // 정의 안 된 라우트는 SPA 기본값 유지
 
-  let rw = new HTMLRewriter()
-    .on("title", {
-      element(e) {
-        e.setInnerContent(route.title);
-      },
-    })
-    .on('meta[name="description"]', {
-      element(e) {
-        e.setAttribute("content", route.description);
-      },
-    })
-    .on('link[rel="canonical"]', {
-      element(e) {
-        e.setAttribute("href", canonical);
-      },
-    })
-    .on('meta[property="og:title"]', {
-      element(e) {
-        e.setAttribute("content", route.title);
-      },
-    })
-    .on('meta[property="og:description"]', {
-      element(e) {
-        e.setAttribute("content", route.description);
-      },
-    })
-    .on('meta[property="og:url"]', {
-      element(e) {
-        e.setAttribute("content", canonical);
-      },
-    });
+    const canonical = SITE + (path === "/" ? "/" : path);
+    const jsonLd = buildJsonLd(route, canonical);
 
-  if (jsonLd) {
-    rw = rw.on("head", {
-      element(e) {
-        e.append(jsonLd, { html: true });
-      },
-    });
+    let rw = new HTMLRewriter()
+      .on("title", {
+        element(e) {
+          e.setInnerContent(route.title);
+        },
+      })
+      .on('meta[name="description"]', {
+        element(e) {
+          e.setAttribute("content", route.description);
+        },
+      })
+      .on('link[rel="canonical"]', {
+        element(e) {
+          e.setAttribute("href", canonical);
+        },
+      })
+      .on('meta[property="og:title"]', {
+        element(e) {
+          e.setAttribute("content", route.title);
+        },
+      })
+      .on('meta[property="og:description"]', {
+        element(e) {
+          e.setAttribute("content", route.description);
+        },
+      })
+      .on('meta[property="og:url"]', {
+        element(e) {
+          e.setAttribute("content", canonical);
+        },
+      });
+
+    if (jsonLd) {
+      rw = rw.on("head", {
+        element(e) {
+          e.append(jsonLd, { html: true });
+        },
+      });
+    }
+
+    return rw.transform(res);
+  } catch {
+    return res;
   }
-
-  return rw.transform(res);
 };
