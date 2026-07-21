@@ -56,15 +56,14 @@
 - **검증:** sitemap 유효 XML ✓, robots 14 UA 그룹 ✓ (배포 후 200 접근 확인 예정)
 - **위험:** 낮음
 
-### Phase 2 — 구조화데이터(JSON-LD) 확장 (P1) — **1 PR**
-- [ ] `index.html` LocalBusiness 보강: `aggregateRating`(리뷰 집계), `sameAs`(SNS/블로그/지도), `priceRange`, `areaServed`(전국/시군구), `hasOfferCatalog`, 보증(`15년`) 명시
-- [ ] **Service/Product/Offer** 추가: "창호 교체 시공" 서비스 + 로이유리 단열수치 등 스펙을 `additionalProperty`로
-- [ ] `FAQPage` JSON-LD를 **초기 HTML에 고정**(현재는 클라이언트 lazy 주입) — Phase 4 렌더링과 연계
-- [ ] `BreadcrumbList` — FAQ·리뷰 등 서브페이지
-- [ ] `Organization`에 `foundingDate`, `numberOfEmployees`, `award` 등 보강
-- **산출물:** 확장 JSON-LD (검증 통과)
-- **검증:** Rich Results Test, Schema Validator, 오류 0
-- **위험:** 낮음(마크업만)
+### Phase 2 — 구조화데이터(JSON-LD) 확장 (P1) — **1 PR** ✅ 완료(사이트 공통)
+- [x] `index.html` LocalBusiness 보강: `aggregateRating`(4.9/68건 스냅샷), `sameAs`(유튜브·인스타·네이버블로그), `award`(LH·국토부장관상), `knowsAbout`, `makesOffer`, `hasOfferCatalog`, `vatID`, `slogan`
+- [x] **Service** 블록 추가: "창호 교체 시공" + 스펙(15년보증·원데이·SGI보증·로이유리 39%/44%·그린리모델링)을 `additionalProperty`로
+- [x] `Organization`·`WebSite` 보강(@id·sameAs·publisher·inLanguage)
+- [→] `FAQPage` 초기 HTML 고정 + `BreadcrumbList`(서브페이지) → **Phase 4(서버 주입)로 이관** (페이지별 HTML 필요)
+- **산출물:** 4개 JSON-LD(HomeAndConstructionBusiness·Organization·Service·WebSite) — 전부 valid ✓
+- **검증:** JSON 파싱 4/4 ✓, 빌드 통과 ✓ (배포 후 Rich Results Test 예정)
+- **참고:** aggregateRating은 현재 정적 스냅샷 → Phase 4에서 리뷰 API 값 동적 주입
 
 ### Phase 3 — 라우트별 메타데이터 (P1) — **1 PR**
 - [ ] 경량 head 관리 도입(`react-helmet-async` 또는 자체 `useHead` 훅)
