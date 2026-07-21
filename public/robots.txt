@@ -1,3 +1,29 @@
+# 청암홈윈도우 (homewindow.kr) robots.txt
+# 정책: AI 검색·답변 크롤러를 포함해 모든 크롤러 허용. 관리자 영역만 제외.
+# (엣지단 접근 차단은 Cloudflare 설정에서 별도 관리 — robots.txt는 크롤 정책 신호)
+
+# --- AI 검색·답변 크롤러 명시적 허용 ---
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bingbot
+User-agent: CCBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+
+# --- 그 외 모든 크롤러 ---
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+
 Sitemap: https://homewindow.kr/sitemap.xml
