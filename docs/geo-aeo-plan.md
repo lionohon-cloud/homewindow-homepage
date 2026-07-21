@@ -106,3 +106,6 @@
 ## 5. 진행 로그
 - 2026-07-21: 계획 수립.
 - 2026-07-21: **Phase 0 완료** — 기준선 측정. **[중대발견]** Cloudflare가 AI 크롤러(OpenAI/Anthropic/Perplexity/CCBot) 403 전면 차단 확인. 부사장님 결정: 전부 허용 → 대시보드 해제 대기(P-1). Phase 1(코드) 병행 착수.
+- 2026-07-21: **Phase 1·2 완료·푸시**(PR #24) — robots/sitemap/llms.txt, JSON-LD 확장.
+- 2026-07-21: **Phase 3·4 완료·푸시**(PR #24) — 서버 주입 미들웨어. **[중대발견2]** `/faq`·`/faq/general`이 `_redirects` 누락으로 HTTP 404 서빙되던 버그 수정. 미들웨어 fail-open 안전장치 추가. wrangler 로컬 검증 완료.
+- 2026-07-21: Phase 5(콘텐츠) **보류**(부사장님). Cloudflare Pages 프리뷰에서 실환경 검증 후 머지 예정 → 이후 Phase 6.
