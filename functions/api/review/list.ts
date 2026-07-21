@@ -23,7 +23,9 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({
   const tierParam = url.searchParams.get('tier'); // 'simple' | 'premium' | null
   const partParam = url.searchParams.get('part'); // 한글 부위명 또는 null
   const sortParam = (url.searchParams.get('sort') as 'latest' | 'helpful' | 'rating') || 'latest';
-  const limit = Math.min(100, parseInt(url.searchParams.get('limit') || '50', 10) || 50);
+  // 상한은 approved 조회 상한(200)과 맞춘다. 목록 헤더 건수가 요약 카드 총건수와
+  // 어긋나지 않도록 — 100으로 잘리면 101건 이상일 때 숫자가 안 맞는다.
+  const limit = Math.min(200, parseInt(url.searchParams.get('limit') || '50', 10) || 50);
   // 메인 페이지 ReviewSection 용: ERP에서 featured=true 토글한 후기만
   const featuredOnly = url.searchParams.get('featured') === '1';
 
