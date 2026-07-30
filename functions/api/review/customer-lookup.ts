@@ -10,11 +10,23 @@
  *
  * Firestore endsWith 쿼리 불가 → 이름 기반 후보 fetch 후 client-side 필터.
  * 한쪽이라도 정확히 1건 매칭되면 통과 (양쪽 합쳐 1건도 OK).
+ *
+ * 2026-07-30 (부사장님 제보 — 실제 고객 후기 작성 차단):
+ *   ERP 에 있는 고객인데 "고객 정보가 확인되지 않습니다" 만 뜨던 사고.
+ *   원인 = 저장값 `customerName = "김진일-8733 "` (뒤 공백 1칸). 이름 **정확일치(EQUAL)**
+ *   4쿼리가 전부 0건 → 후기 작성 자체가 원천 차단. 전수 스캔 결과 이름에 공백 섞인 문서
+ *   256건(전부 CRM 이관분, ERP 30,425건 중)이 같은 이유로 막혀 있었음.
+ *   → ① 이름 **prefix 범위 쿼리**로 후보를 긁고(뒤 공백·접미사 흡수) client-side 에서 정규화 비교,
+ *     ② `contractorName`(계약자명)도 조회축에 추가(접수명과 계약자명이 다른 레거시 케이스),
+ *     ③ 앞 공백(`" 박성연"`)은 prefix 로도 못 잡아 ERP 측 데이터 정리로 해소
+ *        (cahwindow-Quote `scripts/backfill-inbound-customer-name-trim-260730.ts`).
+ *   흔한 이름이 prefix 20건 상한에 잘려도 놓치지 않도록 `-{뒷4자리}` 정확일치 쿼리는 유지.
  */
 import { jsonResponse, errorResponse, corsHeaders } from '../../_shared/cors';
 import {
   getRestSession,
   restQueryByField,
+  restQueryByPrefix,
   decodeFields,
   type RestDocument,
 } from '../../_shared/firestoreRest';
@@ -104,24 +116,43 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
     id: string;
     fullName: string;
     phone: string;
+    /** 이름 대조에 쓸 후보 이름들 (접수고객명·name·계약자명). */
+    altNames?: string[];
   };
 
   const candidates: Candidate[] = [];
 
-  // inboundCustomers — customerName 또는 name 매칭
-  // ERP 수기 등록 건은 이름이 "{이름}-{뒷4자리}" 형태로 저장되기도 함 → suffix 변형도 조회
+  // inboundCustomers — 이름 prefix (customerName / name / contractorName) + suffix 정확일치.
+  //   prefix 가 흡수하는 것: "김진일", "김진일-8733", "김진일-8733 "(뒤 공백), "김진일(남편)" 등.
+  //   suffix 정확일치를 남기는 이유: 흔한 이름이 prefix 20건 상한에 잘려도 본인은 잡히게.
   try {
-    const [byCustomerName, byName, byCustomerNameSuffix, byNameSuffix] = await Promise.all([
-      restQueryByField(session, 'inboundCustomers', 'customerName', name, 20),
-      restQueryByField(session, 'inboundCustomers', 'name', name, 20),
+    const [
+      byCustomerNamePrefix,
+      byNamePrefix,
+      byContractorNamePrefix,
+      byCustomerNameSuffix,
+      byNameSuffix,
+    ] = await Promise.all([
+      restQueryByPrefix(session, 'inboundCustomers', 'customerName', name, 20),
+      restQueryByPrefix(session, 'inboundCustomers', 'name', name, 20),
+      restQueryByPrefix(session, 'inboundCustomers', 'contractorName', name, 20),
       restQueryByField(session, 'inboundCustomers', 'customerName', `${name}-${last4}`, 20),
       restQueryByField(session, 'inboundCustomers', 'name', `${name}-${last4}`, 20),
     ]);
-    for (const d of dedupeDocs([...byCustomerName, ...byName, ...byCustomerNameSuffix, ...byNameSuffix])) {
+    for (const d of dedupeDocs([
+      ...byCustomerNamePrefix,
+      ...byNamePrefix,
+      ...byContractorNamePrefix,
+      ...byCustomerNameSuffix,
+      ...byNameSuffix,
+    ])) {
       const data = decodeFields(d.fields);
       const phone = String(data.phone || '');
       const fullName = String(
-        (data.customerName as string) || (data.name as string) || '',
+        (data.customerName as string) ||
+          (data.name as string) ||
+          (data.contractorName as string) ||
+          '',
       );
       if (!phone || !fullName) continue;
       candidates.push({
@@ -129,20 +160,26 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
         id: docIdFromName(d.name),
         fullName,
         phone,
+        // 계약자명으로만 걸린 건도 이름 대조에서 살아남게 후보 이름을 함께 보관.
+        altNames: [
+          String(data.customerName || ''),
+          String(data.name || ''),
+          String(data.contractorName || ''),
+        ].filter(Boolean),
       });
     }
   } catch (e) {
     console.warn('[review/customer-lookup] inboundCustomers 조회 실패:', e);
   }
 
-  // crm_customers — name 정확매칭 + name "{이름}-{last4}" suffix 패턴
+  // crm_customers — name prefix + name "{이름}-{last4}" 정확일치
   // ⚠️ Firestore 실제 필드는 snake_case (`phone_number`, `phone_number` 아닌 `phoneNumber`는 schema 정의만)
   try {
-    const [byName, bySuffix] = await Promise.all([
-      restQueryByField(session, 'crm_customers', 'name', name, 20),
+    const [byNamePrefix, bySuffix] = await Promise.all([
+      restQueryByPrefix(session, 'crm_customers', 'name', name, 20),
       restQueryByField(session, 'crm_customers', 'name', `${name}-${last4}`, 20),
     ]);
-    for (const d of dedupeDocs([...byName, ...bySuffix])) {
+    for (const d of dedupeDocs([...byNamePrefix, ...bySuffix])) {
       const data = decodeFields(d.fields);
       // 실제 필드는 phone_number (snake_case). phoneNumber 폴백.
       const phone = String(data.phone_number || data.phoneNumber || '');
@@ -153,14 +190,23 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
         id: docIdFromName(d.name),
         fullName,
         phone,
+        altNames: [fullName],
       });
     }
   } catch (e) {
     console.warn('[review/customer-lookup] crm_customers 조회 실패:', e);
   }
 
-  // ---------- 뒷 4자리 필터 ----------
-  const filtered = candidates.filter((c) => endsWithLast4(c.phone, last4));
+  // ---------- 뒷 4자리 + 이름 대조 필터 ----------
+  //   prefix 로 긁으면 "김진일" 입력에 "김진일자"(다른 사람) 도 섞이므로 이름 대조를 반드시 건다.
+  //   대조 규칙: 공백 제거 + `-{뒷4자리}` 접미사 제거 후 입력값과 완전일치.
+  const filtered = candidates.filter(
+    (c) =>
+      endsWithLast4(c.phone, last4) &&
+      (c.altNames ?? [c.fullName]).some(
+        (n) => normalizeName(n, last4) === normalizeName(name, last4),
+      ),
+  );
 
   // 같은 phone 으로 dedupe — inboundCustomers + crm_customers 양쪽에 동일 인물이
   // 박혀있어도 1명으로 간주. inboundCustomers 우선 (snapshot 풍부).
@@ -224,7 +270,9 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
       phone: hit.phone,
       source: hit.source,
       sourceId: hit.id,
-      customerName: hit.fullName,
+      // 저장 표기 오염(앞뒤 공백)이 reviews.customerName 으로 번지지 않게 공백만 정리.
+      //   `-{뒷4자리}` 접미사는 ERP 표기 그대로 보존(관리자 화면 대조축).
+      customerName: hit.fullName.replace(/\s+/g, ' ').trim(),
     },
     env.REVIEW_JWT_SECRET,
   );
@@ -233,7 +281,7 @@ export const onRequestPost: PagesFunction<FirebaseEnv> = async ({
     matched: 'one',
     token,
     masked: {
-      name: maskName(stripSuffix(hit.fullName, last4)),
+      name: maskName(displayName(hit.fullName, last4)),
       phone: maskPhone(hit.phone),
     },
     snapshot, // prefill 데이터 (제품/유리/사이즈/시공일/주소 등)
@@ -262,10 +310,30 @@ function endsWithLast4(phone: string, last4: string): boolean {
   return phone.replace(/[^0-9]/g, '').endsWith(last4);
 }
 
-function stripSuffix(fullName: string, last4: string): string {
-  return fullName.endsWith(`-${last4}`)
-    ? fullName.slice(0, -1 - last4.length)
-    : fullName;
+/**
+ * 이름 정규화 — 저장 표기 차이를 흡수해 「사람이 보는 이름」으로 맞춘다.
+ *   ① 앞뒤 공백 제거 + 안쪽 연속 공백 1칸으로 통일  (`"김진일-8733 "` → `"김진일-8733"`)
+ *   ② `-{입력한 뒷4자리}` 접미사 제거                 (`"김진일-8733"` → `"김진일"`)
+ *   ③ 그 외 끝의 `-####`(옛 전화 접미사) 제거          (`"김진일-1234"` → `"김진일"`)
+ *   ④ 대소문자 무시 (영문·상호명)
+ * ERP `apps/web/src/lib/customer-display.ts` 의 `cleanCustomerName` 과 같은 규칙.
+ * 본인확인 비교축이므로 이 함수만 통과하면 통과 — 전화 뒷4자리 일치는 별도로 함께 요구한다.
+ */
+function normalizeName(raw: string, last4: string): string {
+  const nm = raw.replace(/\s+/g, ' ').trim();
+  if (!nm) return '';
+  const dropped =
+    last4 && nm.endsWith(`-${last4}`)
+      ? nm.slice(0, -1 - last4.length).trim()
+      : (nm.match(/^(.*\S)\s*-\d{4}$/)?.[1] ?? nm).trim();
+  return dropped.toLowerCase();
+}
+
+/** 마스킹 표시용 — 정규화(공백·접미사 제거)하되 대소문자는 원문 유지. */
+function displayName(fullName: string, last4: string): string {
+  const nm = fullName.replace(/\s+/g, ' ').trim();
+  if (last4 && nm.endsWith(`-${last4}`)) return nm.slice(0, -1 - last4.length).trim();
+  return (nm.match(/^(.*\S)\s*-\d{4}$/)?.[1] ?? nm).trim();
 }
 
 function maskName(n: string): string {
