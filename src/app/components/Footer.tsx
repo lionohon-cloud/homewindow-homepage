@@ -3,6 +3,8 @@ import { Link } from "react-router";
 import { FaPhone, FaYoutube, FaInstagram } from "react-icons/fa";
 import { SiNaver } from "react-icons/si";
 import logoImage from "figma:asset/771e2a28afe6f5e97ddf040de4e16d1715624cd8.png";
+// LX Z:IN 공식대리점 마크 — LX하우시스 제공 원본 SVG (부사장님 전달 260731). 색·자간 임의 변경 금지.
+import lxDealerMark from "../../assets/lx-zin-dealer-mark.svg";
 
 function scrollToConsultForm(e: React.MouseEvent<HTMLAnchorElement>) {
   if (window.innerWidth >= 768) {
@@ -103,18 +105,24 @@ export function Footer() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="border-t border-gray-700 pt-8 mb-6"
         >
-          {/* 로고 블록(좌) + LX Z:IN 공식대리점 표기(우) — 부사장님 지시 260730.
-              모바일·PC 모두 같은 줄, 오른쪽 정렬. 로고 이미지가 아니라 텍스트라
-              색·크기 조정과 검색 노출(공식대리점 키워드) 둘 다 가능하다. */}
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex flex-col items-start gap-1.5">
+          {/* 로고 블록(좌) + LX Z:IN 공식대리점 마크(우) — 부사장님 지시 260730/260731.
+              마크는 LX하우시스 제공 공식 SVG(단색 #64646c) 그대로 사용 — 브랜드 규정상
+              색·비율 임의 변경 없이 높이만 지정한다. 검색·AI 크롤러 노출은 alt 텍스트가 담당. */}
+          {/* 좁은 화면(≈375px 이하)에서는 마크가 아랫줄로 내려간다(flex-wrap).
+              nowrap 로 한 줄에 밀어넣으면 Home WINDOW 로고 이미지가 가로로 찌그러진다
+              (flex 축소 — 320px 에서 가로비 9.88 → 6.29). 양쪽 다 shrink-0 로 원본 비율 고정. */}
+          <div className="flex flex-wrap items-start gap-x-3 gap-y-2 mb-4">
+            <div className="flex flex-col items-start gap-1.5 shrink-0">
               <img src={logoImage} alt="청암홈윈도우 로고" className="h-5 w-auto" loading="lazy" decoding="async" />
               <p className="text-[15px] text-[#dddddd] font-bold">주식회사 청암홈윈도우</p>
             </div>
-            <p className="flex items-baseline gap-1.5 whitespace-nowrap text-[#8a8a8a]">
-              <span className="text-[15px] md:text-[17px] font-bold tracking-tight">LX Z:IN</span>
-              <span className="text-[12px] md:text-[14px]">공식대리점</span>
-            </p>
+            <img
+              src={lxDealerMark}
+              alt="LX Z:IN 공식대리점"
+              className="h-[11px] md:h-[15px] w-auto shrink-0 ml-auto mt-1"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           
           <div className="space-y-2 text-[13px] text-gray-400 leading-relaxed">
