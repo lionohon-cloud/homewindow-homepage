@@ -221,6 +221,82 @@ export async function restQueryByField(
 }
 
 /**
+ * prefix 범위 상한 sentinel — Firestore 문서 권장값(U+F8FF, private use area 상위).
+ *   `field < prefix + U+F8FF` 로 "prefix 로 시작하는 모든 문자열" 범위를 만든다.
+ */
+const PREFIX_HIGH = '\uf8ff';
+
+/**
+ * 단일 필드 prefix (앞부분 일치) 쿼리 — `field >= prefix && field < prefix + U+F8FF`.
+ *
+ * 왜 필요한가 (2026-07-30, 후기 본인확인 실패건):
+ *   ERP 저장값이 `"김진일-8733 "` 처럼 **앞뒤 공백**이나 `-{뒷4자리}` 접미사로 오염된 케이스가
+ *   있어(CRM 이관분 256건) 정확일치(EQUAL) 쿼리로는 통째로 빗나간다. 이름은 사람이 보기에
+ *   같으니 원인 파악도 어렵다. → 이름 앞부분으로 후보를 긁어와 client-side 로 정규화 비교.
+ *
+ * 주의:
+ *   - Firestore 는 부등호 필터가 있으면 **첫 orderBy 가 그 필드**여야 하므로 명시적으로 넣는다.
+ *   - 단일 필드 자동 인덱스로 동작 (복합 인덱스 추가 불필요).
+ *   - 뒤 공백은 prefix 로 잡히지만 **앞 공백(`" 박성연"`)은 못 잡는다** — 그건 ERP 데이터 정리 몫
+ *     (`scripts/backfill-inbound-customer-name-trim-260730.ts`).
+ *   - pageLimit 은 read 상한. 흔한 이름은 잘릴 수 있어 호출부가 정확일치 쿼리를 함께 쓴다.
+ */
+export async function restQueryByPrefix(
+  session: RestSession,
+  collection: string,
+  field: string,
+  prefix: string,
+  pageLimit = 20,
+): Promise<RestDocument[]> {
+  if (!prefix) return [];
+  const url = `${FIRESTORE_BASE}/projects/${session.projectId}/databases/(default)/documents:runQuery`;
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: collection }],
+      where: {
+        compositeFilter: {
+          op: 'AND',
+          filters: [
+            {
+              fieldFilter: {
+                field: { fieldPath: field },
+                op: 'GREATER_THAN_OR_EQUAL',
+                value: { stringValue: prefix },
+              },
+            },
+            {
+              fieldFilter: {
+                field: { fieldPath: field },
+                op: 'LESS_THAN',
+                value: { stringValue: `${prefix}${PREFIX_HIGH}` },
+              },
+            },
+          ],
+        },
+      },
+      orderBy: [{ field: { fieldPath: field }, direction: 'ASCENDING' }],
+      limit: pageLimit,
+    },
+  };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.idToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error(
+      `runQuery(prefix) 실패 [${res.status}] ${collection}/${field}: ${t.slice(0, 200)}`,
+    );
+  }
+  const data = (await res.json()) as Array<{ document?: RestDocument }>;
+  return data.map((r) => r.document).filter((d): d is RestDocument => !!d);
+}
+
+/**
  * 도큐먼트 생성 — POST로 documentId 지정.
  */
 export async function restCreateDocument(
