@@ -14,7 +14,7 @@ type Coupon = {
 
 const COUPONS: Coupon[] = [
   { title: "선금보증보험 할인", desc: "견적 상담시 적용", pct: "10" },
-  { title: "기간 내 선착순 할인", desc: "7월 전용 프로모션", pct: "10" },
+  { title: "기간 내 선착순 할인", desc: "8월 전용 프로모션", pct: "10" },
   { title: "리뷰 작성 약속", desc: "간단하게 리뷰만 남기면 끝!", prefix: "최대", pct: "20" },
 ];
 
