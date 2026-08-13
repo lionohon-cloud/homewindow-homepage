@@ -26,6 +26,7 @@ if (!existsSync(notFoundPath)) {
 }
 
 const requiredRewrites = [
+  '/request /request/ 301',
   '/thanks / 200',
   '/partners / 200',
   '/partners/* / 200',
@@ -40,6 +41,19 @@ const requiredRewrites = [
   '/admin/reviews / 200',
   '/admin/reviews/* / 200',
 ];
+
+if (redirects.some((line) => /^\/request\/\*\s+\/index\.html\s+200$/.test(line))) {
+  failures.push('Do not rewrite /request/* to the React app; the request funnel is a static sub-app.');
+}
+
+if (redirects.includes('/request /request/index.html 200')) {
+  failures.push('Redirect /request to /request/ so relative funnel assets resolve below /request/.');
+}
+
+const requestAssetUrl = new URL('app.css', 'https://homewindow.kr/request/');
+if (requestAssetUrl.pathname !== '/request/app.css') {
+  failures.push('The request entry URL must resolve relative assets below /request/.');
+}
 
 for (const rewrite of requiredRewrites) {
   if (!redirects.includes(rewrite)) {

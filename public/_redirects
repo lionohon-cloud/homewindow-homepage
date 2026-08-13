@@ -5,6 +5,9 @@
 
 /thanks / 200
 
+# 독립 정적 견적 퍼널. 하위 HTML/CSS/JS는 실제 asset으로 직접 서빙한다.
+/request /request/ 301
+
 /faq / 200
 /faq/general / 200
 

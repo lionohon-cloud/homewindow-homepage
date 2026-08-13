@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>창호 교체 상담 · 청암홈윈도우</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <img class="logo" src="lx-logo.svg" width="220" height="21" alt="LX Z:IN 공식대리점 청암홈윈도우">
+  </div>
+</header>
+
+<main class="main fill">
+
+  <div class="phead lead-in">
+    <h1>거주 형태가<br>어떻게 되시나요?</h1>
+    <p class="sub">형태에 따라 확인하는 내용이 달라집니다.</p>
+  </div>
+
+  <div class="pick">
+    <button type="button" class="pick-btn" data-t="apt">아파트</button>
+    <button type="button" class="pick-btn" data-t="house">주택/상가</button>
+  </div>
+
+  <div class="foot">
+    방문이나 실측 없이 통화만으로 예상 견적 범위를 먼저 안내드립니다.<br>
+    급하시면 바로 연락 주세요 <a class="tel-inline" href="tel:1661-4830">1661-4830</a>
+  </div>
+
+</main>
+
+<script src="app.js"></script>
+<script>
+
+track('step1_type_view');
+
+document.querySelectorAll('.pick-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const t = b.dataset.t;
+    track('step1_type_select', {type:t});
+    /* 아파트는 단지 검색으로, 주택은 단지 자료가 없으므로 견적 요청으로 바로 넘깁니다 */
+    if(t === 'apt') goStep('search.html', {t:'apt'});
+    else goStep('region.html', {t:'house'});
+  });
+});
+
+</script>
+</body>
+</html>

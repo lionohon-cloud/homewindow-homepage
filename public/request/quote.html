@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>예상 견적 · 청암홈윈도우</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <img class="logo" src="lx-logo.svg" width="220" height="21" alt="LX Z:IN 공식대리점 청암홈윈도우">
+  </div>
+</header>
+
+<main class="main with-cta" id="main">
+
+  <div id="wrap-ok" class="hidden" style="display:flex;flex-direction:column;gap:16px">
+    <div class="phead">
+      <p class="phead-label">예상 견적</p>
+      <h1>연락처를 남겨주세요</h1>
+      <p class="sub"><b id="zone-note"></b>이 단지 시공 사례를 확인한 뒤 연락드립니다.</p>
+    </div>
+
+    <div class="cd locked rise">
+      <div class="lk-items">
+        <div class="lk-row"><span class="k">창호 자재비</span><i class="v a" aria-hidden="true"></i></div>
+        <div class="lk-row"><span class="k">시공비</span><i class="v b" aria-hidden="true"></i></div>
+        <div class="lk-row"><span class="k">기존 창 철거·폐기물 처리</span><i class="v c" aria-hidden="true"></i>
+          <div class="lk-key" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg></div>
+        </div>
+        <div class="lk-row"><span class="k">부자재·마감</span><i class="v b" aria-hidden="true"></i></div>
+        <div class="lk-row total"><span class="k">합계 <em>VAT 포함</em></span><i class="v d" aria-hidden="true"></i></div>
+      </div>
+
+      <div class="lk-msg">
+        <p id="lock-title">견적은 연락처 확인 후 안내드립니다</p>
+        <small>평형과 창 개수에 따라 금액이 달라집니다.<br>
+        방문이나 실측 없이 통화만으로 예상 견적 범위를 먼저 받아보실 수 있습니다.</small>
+      </div>
+    </div>
+
+    <div class="cd form rise rise-1">
+      <div class="field" id="f-tel">
+        <label for="i-tel">연락처 <span>*</span></label>
+        <div class="tel-row">
+          <input id="i-tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-0000-0000" maxlength="13">
+          <button type="button" class="btn-code" id="send-code" disabled>인증번호 받기</button>
+        </div>
+        <div class="err">연락처를 다시 확인해 주세요.</div>
+      </div>
+
+      <div class="field hidden" id="f-code">
+        <label for="i-code">인증번호 <span>*</span></label>
+        <div class="tel-row">
+          <input id="i-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6자리" maxlength="6">
+          <button type="button" class="btn-code" id="check-code">확인</button>
+        </div>
+        <p class="code-note" id="code-note"></p>
+        <div class="err">인증번호가 맞지 않습니다.</div>
+      </div>
+
+      <div class="field">
+        <label id="lb-pyeong">평형</label>
+        <div class="seg row4" id="i-pyeong" role="radiogroup" aria-labelledby="lb-pyeong">
+          <button type="button" data-v="20평대">20평대</button>
+          <button type="button" data-v="30평대">30평대</button>
+          <button type="button" data-v="40평대">40평대</button>
+          <button type="button" data-v="50평 이상">50평↑</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:0">
+        <label id="lb-scope">교체 범위</label>
+        <div class="seg grid2" id="i-scope" role="radiogroup" aria-labelledby="lb-scope">
+          <button type="button" data-v="거실 발코니 창">거실 발코니 창</button>
+          <button type="button" data-v="방 창문만">방 창문만</button>
+          <button type="button" data-v="집 전체">집 전체</button>
+          <button type="button" data-v="아직 모르겠음">아직 모르겠음</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="disclaim">
+      수집 항목은 연락처·상담 지역·상담분야입니다. 창호 교체 상담 및 견적 안내 목적으로만 이용하며,
+      상담 완료 후 3개월 이내 파기합니다.
+    </p>
+  </div>
+
+  <div id="wrap-err" class="err-box hidden">
+    단지 정보를 불러오지 못했습니다.<br><a href="index.html">처음부터 다시 찾기</a>
+  </div>
+
+</main>
+
+<div class="ctafix hidden" id="ctafix">
+  <div class="ctafix-in">
+    <p class="consent-mini">
+      버튼을 누르면 개인정보 수집·이용에 동의하는 것으로 봅니다.
+      <button type="button" id="open-policy">전문 보기</button>
+    </p>
+    <button type="button" class="btn-primary" id="send">견적 받기</button>
+    <button type="button" class="btn-text" id="back">단지 정보 다시 보기</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="policy" role="dialog" aria-modal="true" aria-labelledby="policy-h">
+  <div class="modal-box">
+    <div class="modal-top">
+      <h4 id="policy-h">개인정보처리방침</h4>
+      <button type="button" class="x" id="close-policy" aria-label="닫기">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>회사는 상담 서비스 제공을 위해 연락처(휴대전화번호)·상담 지역·상담분야를 수집합니다.
+      수집된 정보는 창호 교체 상담 및 견적 안내 목적으로만 이용되며, 상담 완료 후 3개월 이내 파기됩니다.
+      고객의 동의 없이 제3자에게 제공하지 않습니다.</p>
+      <p class="dates">공고일자 2024년 1월 1일 · 시행일자 2024년 1월 1일</p>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+
+const d = unpackDanji(qs('d'));
+if(!d){
+  $('wrap-err').classList.remove('hidden');
+  $('main').classList.remove('with-cta');
+}else{
+  $('wrap-ok').classList.remove('hidden');
+  $('ctafix').classList.remove('hidden');
+
+  const g = gen(d);
+  $('lock-title').innerHTML = '<em>'+esc(g.name)+'</em> 견적은<br>연락처 확인 후 안내드립니다';
+  $('zone-note').textContent = g.zone + ' 담당 매니저가 ';
+  track('step3_quote_view', {danji:g.name, zone:g.zone, grade:g.grade});
+
+  function initSeg(id){
+    const box=$(id);
+    box.querySelectorAll('button').forEach(b=>{
+      b.setAttribute('role','radio'); b.setAttribute('aria-checked','false');
+      b.addEventListener('click', ()=>{
+        const on = b.getAttribute('aria-checked')==='true';
+        box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked','false'));
+        b.setAttribute('aria-checked', on?'false':'true');
+      });
+    });
+  }
+  const segValue = id => { const b=$(id).querySelector('button[aria-checked="true"]'); return b?b.dataset.v:''; };
+  initSeg('i-pyeong'); initSeg('i-scope');
+
+  const V = initTelVerify();
+
+  $('i-tel').addEventListener('input', e=>{
+    let v=e.target.value.replace(/\D/g,'').slice(0,11);
+    if(v.length>7) v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7);
+    else if(v.length>3) v=v.slice(0,3)+'-'+v.slice(3);
+    e.target.value=v;
+  });
+
+  /* 입력 오류는 고정 버튼에 가리지 않게 스크롤해서 보여줍니다 */
+  function focusField(id){
+    const el=$(id);
+    window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-90, behavior:'smooth'});
+    setTimeout(()=>el.focus(), 380);
+  }
+
+  let submitting = false;
+  $('send').addEventListener('click', async ()=>{
+    if(submitting) return;
+    const tel=$('i-tel').value.replace(/\D/g,'');
+    const telOk = tel.length>=10 && tel.startsWith('01');
+    $('f-tel').classList.toggle('bad', !telOk);
+    if(!telOk){
+      track('step3_validation_fail');
+      focusField('i-tel');
+      return;
+    }
+    /* 문자 인증을 통과하지 않으면 접수하지 않습니다 */
+    if(!V.isVerified()){
+      track('step3_not_verified');
+      const f = V.pendingField();
+      window.scrollTo({top:$(f).getBoundingClientRect().top+window.scrollY-100, behavior:'smooth'});
+      if(f === 'f-tel') setTimeout(()=>V.promptSend(), 420);
+      else setTimeout(()=>$('i-code').focus(), 420);
+      return;
+    }
+
+    const dt=new Date();
+    const payload={
+      접수경로:'단지견적', 거주형태:'아파트', 경로:PATH,
+      상담권역:g.zone, 단지명:g.name, 법정동:g.dong,
+      준공연도:g.year, 연차:g.year?g.age:null, 세대수:g.hh, 동수:g.dongCnt, 최고층:g.floor,
+      복도유형:g.corr, 난방방식:g.heat, 시공사:g.builder,
+      창호세대:g.grade, 창호종류:g.era?g.era.type:'', 단열성능:g.era?g.era.uval:'',
+      연락처:$('i-tel').value, 인증토큰:V.token(),
+      평형:segValue('i-pyeong'), 교체범위:segValue('i-scope'),
+      헤드라인:qs('ab'), 방식:'2안(단계 분리)',
+      동의방식:'견적 받기 버튼 클릭', 동의문구버전:'2024-01-01',
+      접수시각:dt.toISOString()
+    };
+
+    submitting = true;
+    setSubmitState($('send'), true, '');
+    try{
+      const result = await submitLead(payload);
+      track('lead', {danji:g.name, zone:g.zone, headline:qs('ab')});
+      goStep('thanks.html', {no:result.receiptNo, dj:encodeURIComponent(g.name)});
+    }catch(e){
+      submitting = false;
+      setSubmitState($('send'), false, e && e.message ? e.message : '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      track('lead_submit_fail', {path:PATH});
+    }
+  });
+
+  $('back').onclick=()=>{ location.href='danji.html?d='+encodeURIComponent(qs('d'))+(qs('ab')?'&ab='+qs('ab'):''); };
+  bindModal('policy', 'open-policy', 'close-policy');
+}
+
+</script>
+</body>
+</html>

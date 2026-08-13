@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>접수 완료 · 청암홈윈도우</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <img class="logo" src="lx-logo.svg" width="220" height="21" alt="LX Z:IN 공식대리점 청암홈윈도우">
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="cd done rise">
+    <div class="ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12.5l5.5 5.5L20 7"/></svg></div>
+    <h2 id="done-h">견적 요청이 접수되었습니다</h2>
+    <p id="done-msg"></p>
+    <div class="no hidden" id="done-no"></div>
+  </div>
+
+  <div class="cd callbox rise rise-1">
+    <span class="t">급하시면 바로 연락 주세요</span>
+    <a href="tel:1661-4830">1661-4830</a>
+  </div>
+
+  <div class="goto rise rise-2">
+    <button type="button" class="btn-outline" id="go-now">청암홈윈도우 홈페이지 보기</button>
+    <p><b id="go-sec">3</b>초 후 자동으로 이동합니다</p>
+  </div>
+
+</main>
+
+<script src="app.js"></script>
+<script>
+
+const no = qs('no'), nm = decodeURIComponent(qs('n')||''),
+      dj = decodeURIComponent(qs('dj')||''), zn = decodeURIComponent(qs('z')||'');
+
+
+/* 아파트 경로는 단지명으로, 주택·단지없음 경로는 상담권역으로 안내합니다 */
+const IS_REGION = PATH !== 'apt';
+if(IS_REGION){
+  $('done-h').textContent = '상담 신청이 접수되었습니다';
+  $('done-msg').innerHTML = (nm?esc(nm)+'님, 상담 신청이 접수되었습니다.<br>':'상담 신청이 접수되었습니다.<br>')
+    + (zn ? '<b>'+esc(zn)+'</b> 담당 매니저가 영업일 기준 1일 이내에 연락드리겠습니다.'
+          : '담당 매니저가 통화로 지역을 확인한 뒤 예상 견적 범위를 안내해 드리겠습니다.');
+}else{
+  $('done-msg').innerHTML = (nm?esc(nm)+'님, ':'') + (dj?'<b>'+esc(dj)+'</b> ':'')
+    + '견적 요청이 접수되었습니다.<br>영업일 기준 1일 이내에 연락드려 예상 견적 범위를 안내해 드리겠습니다.';
+}
+if(no){
+  $('done-no').textContent = '접수번호 '+no;
+  $('done-no').classList.remove('hidden');
+}
+track('thanks_view', {no:no, path:PATH, danji:dj, zone:zn});
+finishFlow();
+
+const url = REDIRECT_URL + (REDIRECT_URL.includes('?')?'&':'?') + 'from=quote';
+let left = REDIRECT_SEC, goTimer=null;
+function tick(){
+  $('go-sec').textContent = left;
+  if(left<=0){ location.href=url; return; }
+  left--; goTimer=setTimeout(tick,1000);
+}
+if(REDIRECT_SEC<=0) location.href=url; else tick();
+$('go-now').onclick=()=>{ clearTimeout(goTimer); location.href=url; };
+
+</script>
+</body>
+</html>
