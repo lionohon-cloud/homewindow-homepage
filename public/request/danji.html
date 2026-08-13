@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>단지 정보 확인 · 청암홈윈도우</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <img class="logo" src="lx-logo.svg" width="220" height="21" alt="LX Z:IN 공식대리점 청암홈윈도우">
+  </div>
+</header>
+
+<main class="main with-cta" id="main">
+
+  <div id="wrap-ok" class="hidden" style="display:flex;flex-direction:column;gap:16px">
+    <div class="phead">
+      <p class="phead-label">단지 정보 확인</p>
+      <h1>이 단지가 맞나요?</h1>
+    </div>
+
+    <div class="cd rise" id="card"></div>
+    <section class="cd rise rise-1" id="win"></section>
+    <section class="cd cd-pad rise rise-2" id="notes"></section>
+    <p class="disclaim" id="disclaim"></p>
+  </div>
+
+  <div id="wrap-err" class="err-box hidden">
+    단지 정보를 불러오지 못했습니다.<br><a href="index.html">처음부터 다시 찾기</a>
+  </div>
+
+</main>
+
+<div class="ctafix hidden" id="ctafix">
+  <div class="ctafix-in">
+    <button type="button" class="btn-primary" id="next">예상 견적 확인하기</button>
+    <button type="button" class="btn-text" id="back">다른 단지 다시 찾기</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+
+const d = unpackDanji(qs('d'));
+if(!d){
+  $('wrap-err').classList.remove('hidden');
+  $('main').classList.remove('with-cta');
+}else{
+  $('wrap-ok').classList.remove('hidden');
+  $('ctafix').classList.remove('hidden');
+
+  const g = gen(d);
+  renderDanjiCard($('card'), g);
+  renderWindow($('win'), g);
+  renderNotes($('notes'), g);
+
+  $('disclaim').innerHTML = '단지 기본정보는 2026년 7월 기준입니다. '
+    + '창호 사양은 준공 시기 기준으로 추정한 내용이며, 세대별 리모델링 이력에 따라 다를 수 있습니다.';
+
+  track('step2_danji_view', {danji:g.name, zone:g.zone, grade:g.grade, age:g.age});
+
+  $('next').onclick = ()=>{
+    track('step2_next_click', {danji:g.name});
+    goStep('quote.html', {d:qs('d')});
+  };
+  $('back').onclick = ()=>{ location.href='index.html'; };
+}
+
+</script>
+</body>
+</html>

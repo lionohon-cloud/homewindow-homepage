@@ -6,6 +6,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "test:request": "node --experimental-strip-types --test functions/_shared/requestFunnel.test.ts",
+    "test:request-ui": "node scripts/validate-request-funnel-ui.mjs",
     "test:pages-routing": "node scripts/validate-pages-routing.mjs",
     "dev:cf": "wrangler pages dev --compatibility-date=2026-04-01 --port 8788 --proxy 5173 --env-file .env.local --kv REVIEW_RL -- npm run dev"
   },
