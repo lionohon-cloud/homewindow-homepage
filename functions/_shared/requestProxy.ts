@@ -1,11 +1,13 @@
 import type { AsEnv } from './env';
-import { corsHeaders, errorResponse, jsonResponse } from './cors';
+// 확장자를 명시한 것은 node --test 가 이 파일을 그대로 불러 회귀 테스트를 돌리기 위함이다
+// (requestProxy.test.ts). 번들 빌드는 확장자 유무와 무관하게 동작한다.
+import { corsHeaders, errorResponse, jsonResponse } from './cors.ts';
 import {
   RequestInputError,
   erpEndpoint,
   forwardErp,
   readLimitedJson,
-} from './requestFunnel';
+} from './requestFunnel.ts';
 
 type Normalizer = (input: unknown) => unknown;
 
