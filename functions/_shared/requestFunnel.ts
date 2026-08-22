@@ -1,3 +1,5 @@
+import type { LeadSheetRow } from './leadSheet';
+
 export const REQUEST_BODY_LIMIT = 32 * 1024;
 
 export class RequestInputError extends Error {
@@ -110,6 +112,12 @@ export function normalizeSmsVerify(input: unknown): SmsVerifyPayload {
   return { ...base, code };
 }
 
+/**
+ * ERP 에 저장되는 inflowChannel.label 이자, 유입고객 추적 시트 D열(유입채널)에 찍히는 값이다.
+ * 두 곳이 갈라지면 시트에서 랜딩퍼널 접수를 걸러낼 수 없으므로 한 상수에서 가져다 쓴다.
+ */
+export const REQUEST_FUNNEL_CHANNEL_LABEL = '홈페이지 견적 퍼널';
+
 export interface ErpLeadPayload {
   phone: string;
   intakeRequestId: string;
@@ -200,10 +208,57 @@ export function normalizeLead(input: unknown): ErpLeadPayload {
     intakeRequestId: flowId(body.flowId),
     phoneVerificationToken: token,
     address,
-    inflowChannel: { type: 'auto', code: 'WEB_FORM', label: '홈페이지 견적 퍼널' },
+    inflowChannel: { type: 'auto', code: 'WEB_FORM', label: REQUEST_FUNNEL_CHANNEL_LABEL },
     consultField: 'WINDOW_REPLACE',
     utm: normalizeUtm(body.utm),
     requestFunnelSnap: snapshot,
+  };
+}
+
+/**
+ * ERP 저장값 기준으로 전화번호를 대시 표준포맷으로 맞춘다.
+ * ERP 는 toStandardPhone() 으로 하이픈을 붙여 저장하므로, 시트 B열도 같은 표기로 넣어야
+ * 부사장님이 ERP 목록과 시트를 번호로 대조하실 때 어긋나지 않는다.
+ */
+function toDashedPhone(digits: string): string {
+  if (digits.length === 11) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return digits;
+}
+
+/**
+ * 유입고객 추적 시트에 넣을 한 행을 이번 요청의 원본 body 에서 만든다.
+ *
+ * ERP 에 저장된 문서를 되읽지 않고 원본 body 를 쓰는 이유가 있다. 재접수 고객은 ERP 가 기존
+ * 고객 문서에 병합하는데, 그때 utm 필드는 갱신되지 않아 과거 최초 유입의 값이 그대로 남는다.
+ * 저장값을 되읽으면 이번 광고가 아니라 예전 유입이 시트에 찍힌다.
+ *
+ * 값이 없는 항목도 키를 생략하지 않고 빈 문자열로 채운다(부사장님 요청 2026-08-22).
+ */
+export function buildLeadSheetRow(input: unknown): LeadSheetRow {
+  const body = record(input);
+  const utm = normalizeUtm(body.utm);
+  const pick = (key: string) => utm[key] ?? '';
+
+  return {
+    phone: toDashedPhone(phoneDigits(body['연락처'])),
+    channel_media: pick('inflowMedia'), // C열 — 랜딩퍼널은 대부분 공란이며 의도된 결과다.
+    entry_form: REQUEST_FUNNEL_CHANNEL_LABEL, // D열
+    utm_source: pick('utm_source'),
+    utm_medium: pick('utm_medium'),
+    utm_campaign: pick('utm_campaign'),
+    utm_content: pick('utm_content'),
+    utm_term: pick('utm_term'),
+    visit_id: pick('visit_id'),
+    landing_path: pick('landing_path'),
+    referrer: pick('referrer'),
+    region: '', // 시트 열 구성을 기존 홈페이지와 동일하게 유지하기 위한 자리다.
+    consult_field: '',
+    timestamp: submittedAt(body['접수시각']),
   };
 }
 
