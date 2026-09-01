@@ -26,6 +26,7 @@ export function BottomBar() {
   const detail = useConsultDetail();
 
   const phone2Ref = useRef<HTMLInputElement>(null);
+  const phone2PopupRef = useRef<HTMLInputElement>(null);
   const phone3Ref = useRef<HTMLInputElement>(null);
   const honeypotPcRef = useRef<HTMLInputElement>(null);
   const honeypotPopupRef = useRef<HTMLInputElement>(null);
@@ -121,9 +122,12 @@ export function BottomBar() {
                 value={phone1}
                 onChange={(e) => {
                   const v = e.target.value.replace(/[^0-9]/g, "");
-                  if (v.length <= 4) setPhone1(v);
+                  if (v.length <= 3) {
+                    setPhone1(v);
+                    if (v.length === 3) phone2Ref.current?.focus();
+                  }
                 }}
-                maxLength={4}
+                maxLength={3}
                 disabled={isSubmitting}
                 className={`w-[62px] ${pcInput}`}
               />
@@ -273,14 +277,18 @@ export function BottomBar() {
                     value={phone1}
                     onChange={(e) => {
                       const v = e.target.value.replace(/[^0-9]/g, "");
-                      if (v.length <= 4) setPhone1(v);
+                      if (v.length <= 3) {
+                        setPhone1(v);
+                        if (v.length === 3) phone2PopupRef.current?.focus();
+                      }
                     }}
-                    maxLength={4}
+                    maxLength={3}
                     disabled={isSubmitting}
                     className={`w-[62px] ${popupInput}`}
                   />
                   <span className="text-[#bbb] text-[18px] font-light">—</span>
                   <input
+                    ref={phone2PopupRef}
                     type="tel"
                     value={phone2}
                     onChange={(e) => {

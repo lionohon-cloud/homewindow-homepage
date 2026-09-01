@@ -165,6 +165,10 @@ const router = createBrowserRouter([
         path: 'admin/reviews/:id',
         lazy: lazyWithRetry(() => import('./pages/AdminReviewDetailPage')),
       },
+      {
+        path: 'tempered-glass',
+        lazy: lazyWithRetry(() => import('./pages/TemperedGlassPage')),
+      },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

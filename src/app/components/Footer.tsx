@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Link } from "react-router";
 import { FaPhone, FaYoutube, FaInstagram } from "react-icons/fa";
 import { SiNaver } from "react-icons/si";
-import logoImage from "figma:asset/771e2a28afe6f5e97ddf040de4e16d1715624cd8.png";
+import logoImage from "@/assets/logo-slogan-left.svg";
 // LX Z:IN 공식대리점 마크 — LX하우시스 제공 원본 SVG (부사장님 전달 260731). 색·자간 임의 변경 금지.
 import lxDealerMark from "../../assets/lx-zin-dealer-mark.svg";
 
@@ -113,7 +113,9 @@ export function Footer() {
               (flex 축소 — 320px 에서 가로비 9.88 → 6.29). 양쪽 다 shrink-0 로 원본 비율 고정. */}
           <div className="flex flex-wrap items-start gap-x-3 gap-y-2 mb-4">
             <div className="flex flex-col items-start gap-1.5 shrink-0">
-              <img src={logoImage} alt="청암홈윈도우 로고" className="h-5 w-auto" loading="lazy" decoding="async" />
+              {/* 슬로건 CI 는 두 줄 락업이라 예전 한 줄 로고(h-5)보다 키워야 아랫줄이 읽힌다.
+                  어두운 푸터라 brightness-0 invert 로 순백 처리 — 기존 로고도 순백 PNG 였다. */}
+              <img src={logoImage} alt="청암홈윈도우 로고" className="h-[30px] w-auto brightness-0 invert" loading="lazy" decoding="async" />
               <p className="text-[15px] text-[#dddddd] font-bold">주식회사 청암홈윈도우</p>
             </div>
             <img

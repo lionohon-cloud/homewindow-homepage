@@ -128,7 +128,12 @@ export function Component() {
                 <input
                   type="tel"
                   value={phone1}
-                  onChange={(e) => setPhone1(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
+                    setPhone1(v);
+                    if (v.length === 3) phone2Ref.current?.focus();
+                  }}
+                  maxLength={3}
                   disabled={submitting}
                   className={`${inputCls} w-[68px] text-center`}
                 />

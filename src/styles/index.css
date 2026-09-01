@@ -6,3 +6,34 @@
 :root {
   --hw-build: 20260706;
 }
+
+/* 260831: 단지 AI 검색창 — 테두리 그라데이션이 천천히 흐른다.
+   접힌 상태에서도 "분석해준다"는 인상을 주려고 넣었다. 이 검색창에서만 쓴다. */
+@keyframes hw-ai-flow {
+  to {
+    background-position: 300% 50%;
+  }
+}
+.hw-ai-ring {
+  background: linear-gradient(90deg, #d22727, #ff7a3d, #b06cf0, #d22727);
+  background-size: 300% 100%;
+  animation: hw-ai-flow 7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hw-ai-ring {
+    animation: none;
+  }
+}
+
+/* 260901: 방점(드러냄표) 강조 — 글자마다 위에 점을 찍는다.
+   브라우저가 글자 수에 맞춰 알아서 찍어 주므로 점을 직접 그리지 않는다.
+   PC 에서만 건다 (모바일은 줄 간격이 빠듯해 점이 윗줄과 부딪힌다).
+   사파리는 아직 -webkit- 접두사가 필요하다. */
+@media (min-width: 768px) {
+  .hw-emphasis-dot {
+    -webkit-text-emphasis: filled dot currentColor;
+    text-emphasis: filled dot currentColor;
+    -webkit-text-emphasis-position: over right;
+    text-emphasis-position: over right;
+  }
+}

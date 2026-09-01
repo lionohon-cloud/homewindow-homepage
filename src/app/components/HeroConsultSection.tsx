@@ -97,15 +97,18 @@ export function HeroConsultSection() {
             <div className="flex flex-col gap-2">
               {/* 전화번호 입력 행 */}
               <div className="flex items-center gap-1.5 md:gap-2">
-                {/* 010 — 편집 가능 */}
+                {/* 지역/통신사 국번 — 010/070/02 등, 최대 3자리 */}
                 <input
                   type="tel"
                   value={phone1}
                   onChange={(e) => {
                     const v = e.target.value.replace(/[^0-9]/g, "");
-                    if (v.length <= 4) setPhone1(v);
+                    if (v.length <= 3) {
+                      setPhone1(v);
+                      if (v.length === 3) phone2Ref.current?.focus();
+                    }
                   }}
-                  maxLength={4}
+                  maxLength={3}
                   disabled={isSubmitting}
                   className={`w-[56px] md:w-[64px] ${inputCls}`}
                 />

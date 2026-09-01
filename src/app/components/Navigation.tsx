@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useNavigate, useLocation } from "react-router";
 import { Phone, Handshake } from "lucide-react";
 import { ConsultationModal } from "./ConsultationModal";
-import logo from "figma:asset/4ae621bc1ae2b4dd2f88bf2d3c6c087ff22567bb.png";
+import logo from "@/assets/logo-slogan-center.svg";
 
 interface NavigationProps {
   onMenuClick?: () => void;
@@ -16,9 +16,10 @@ const sections = [
   { id: "insurance", label: "안심보증" },
   { id: "production", label: "자동화 제조 공장" },
   { id: "brands", label: "취급 브랜드" },
-  { id: "materials", label: "자재품질" },
+  { id: "tempered", label: "강화유리" },
   { id: "glass", label: "단열유리" },
   { id: "safety", label: "방충망" },
+  { id: "materials", label: "자재품질" },
   { id: "installation", label: "원데이 시공" },
   { id: "warranty", label: "업게 최장 15년 보증" },
   { id: "review", label: "시공 후기" },

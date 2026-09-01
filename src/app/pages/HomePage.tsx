@@ -1,7 +1,11 @@
+import { useEffect } from "react";
 import { Navigation } from "../components/Navigation";
 import { HeroSection } from "../components/HeroSection";
 import { HeroConsultSection } from "../components/HeroConsultSection";
-import { EventSection } from "../components/EventSection";
+// 260831: 9월 프로모션 배너로 교체. 원래 SUPER SALE 배너는 EventSection.tsx 에 그대로 있다 —
+// 되돌리려면 아래 import 와 <EventPromoBanner /> 를 EventSection 으로 되돌리면 된다.
+import { EventPromoBanner } from "../components/EventPromoBanner";
+import { TemperedGlassSection } from "../components/TemperedGlassSection";
 import { Event2Section } from "../components/Event2Section";
 import { AwardsSection } from "../components/AwardsSection";
 import { InsuranceSection } from "../components/InsuranceSection";
@@ -16,8 +20,16 @@ import { ReviewSection } from "../components/ReviewSection";
 import { CorporateValueSection } from "../components/CorporateValueSection";
 import { Footer } from "../components/Footer";
 import { BottomBar } from "../components/BottomBar";
+import { DanjiAiBanner } from "../components/DanjiAiBanner";
 
 export default function HomePage() {
+  // 탭 구분용 — 로컬 개발 서버(dev)에서만 "메인"으로 바뀐다.
+  // import.meta.env.DEV 는 프로덕션 빌드에서 항상 false 라 배포본은 자동으로
+  // index.html 의 기본 타이틀("청암홈윈도우")로 돌아간다 — 되돌릴 필요 없음.
+  useEffect(() => {
+    if (import.meta.env.DEV) document.title = "메인";
+  }, []);
+
   return (
     <div className="relative w-full min-h-screen pb-[100px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-hidden selection:bg-[#d22727] selection:text-white">
       <Navigation />
@@ -25,9 +37,10 @@ export default function HomePage() {
         <div id="hero">
           <HeroSection />
         </div>
+        <DanjiAiBanner />
         <HeroConsultSection />
         <div id="event">
-          <EventSection />
+          <EventPromoBanner />
         </div>
         <div id="event2">
           <Event2Section />
@@ -44,14 +57,18 @@ export default function HomePage() {
         <div id="brands">
           <BrandsSection />
         </div>
-        <div id="materials">
-          <MaterialsSection />
+        {/* 보강재와 단열유리 사이 — 유리 이야기가 여기서 시작된다 */}
+        <div id="tempered">
+          <TemperedGlassSection />
         </div>
         <div id="glass">
           <GlassTypeSection />
         </div>
         <div id="safety">
           <SafetyNetSection />
+        </div>
+        <div id="materials">
+          <MaterialsSection />
         </div>
         <div id="installation">
           <OneDayInstallationSection />
