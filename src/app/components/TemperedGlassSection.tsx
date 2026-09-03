@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Link } from "react-router";
+import { TemperedGlassLink } from "./TemperedGlassLink";
 import { ArrowRight } from "lucide-react";
 import { useDday } from "@/lib/dday";
 import { ShortsPlayer } from "./tempered/ShortsPlayer";
@@ -15,7 +15,8 @@ import { ShortsPlayer } from "./tempered/ShortsPlayer";
  *
  * 슬림본에서 또 바꾼 것
  *   · "9,900원" → "무상 업그레이드" (히어로·이벤트 배너와 맞춤)
- *   · CTA 목적지 — 원본의 /tempered-glass 라우트가 이 프로젝트엔 없다(Router.tsx).
+ *   · CTA 목적지 — /tempered-glass. 260902 에 상세페이지를 이 프로젝트로 옮기고
+ *     Router.tsx 에 라우트를 등록해서 지금은 정상 이동한다.
  *
  * D-day 는 src/lib/dday.ts 의 PROMO_END 를 따른다.
  */
@@ -26,9 +27,8 @@ const rise = {
   viewport: { once: true, amount: 0.2 },
 } as const;
 
-/* 드라이브에서 "링크가 있는 모든 사용자 — 뷰어" 로 공유돼 있어야 재생된다. */
-const SHORTS_SRC =
-  "https://drive.google.com/file/d/16WPncWS43B19XH8kVhhQXLqQdBrDVbRD/view?usp=drive_link";
+/* 유튜브 쇼츠. 드라이브 링크를 넣어도 동작한다(ShortsPlayer 가 알아서 판별). */
+const SHORTS_SRC = "https://www.youtube.com/shorts/30u-dW7YkNI";
 
 const CHECKS = [
   "일반 유리는 길고 날카로운 조각으로 쪼개집니다",
@@ -133,13 +133,12 @@ export function TemperedGlassSection() {
             {/* 상세페이지로 — 라우트는 Router.tsx 에 아직 없다.
                 디자인은 ReviewSection 의 "네이버 블로그에서 더 보기" 와 같은 아웃라인 알약.
                 폭은 영상과 맞춘다(w-full) — self-start 면 글자 길이만큼만 늘어난다. */}
-            <Link
-              to="/tempered-glass"
+            <TemperedGlassLink
               className="mt-8 md:mt-auto w-full inline-flex items-center justify-center gap-2 h-[52px] px-6 bg-white border-2 border-[#D22727] text-[#D22727] text-[14px] md:text-[15px] font-bold rounded-full no-underline hover:bg-[#D22727] hover:text-white transition-all"
             >
               강화유리 자세히 보기
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </TemperedGlassLink>
           </motion.div>
         </div>
 

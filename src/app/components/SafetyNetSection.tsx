@@ -1,7 +1,6 @@
 import { motion } from "motion/react";
 import { ArrowDown, MoveHorizontal } from "lucide-react";
 import { useState } from "react";
-import safetyNetImage from "figma:asset/f40b326fb6a471ce7547099fed79e08fd9d0894a.png";
 import normalNetImage from "figma:asset/4159d646b2a30533f2a364fc900f770ac476620e.png";
 import safetyNetCompareImage from "figma:asset/82cf8e9dee5ab3705f7f4c0d5b273aa39f4d363d.png";
 
@@ -227,15 +226,21 @@ export function SafetyNetSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-200px" }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="px-6 md:px-10 w-full max-w-[800px] mx-auto aspect-[16/9] md:aspect-[21/9] rounded-3xl overflow-hidden relative group mb-16 md:mb-24"
+          /* 영상은 16:9 라 md:aspect-[21/9] 를 쓰면 위아래가 잘린다 */
+          className="px-6 md:px-10 w-full max-w-[800px] mx-auto mb-16 md:mb-24"
         >
-          <img
-            src={safetyNetImage}
-            alt="안전방충망 설치 예시"
-            className="w-full h-full object-cover rounded-[10px]"
-            loading="lazy"
-            decoding="async"
-          />
+          {/* 260901: 강아지 이미지 → 방충망 강도 테스트 영상 (기존 이벤트2 섹션에 있던 것) */}
+          <div className="w-full aspect-video rounded-[10px] overflow-hidden bg-black">
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/iSPkpw11FJ0?si=lwKD75I8eQb3NcJI"
+              title="방충망 강도 충격 테스트"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
         </motion.div>
 
         {/* Copy Title */}

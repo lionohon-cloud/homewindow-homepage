@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Link } from "react-router";
+import { TemperedGlassLink } from "./TemperedGlassLink";
 import heroVideo from "../../assets/hero-tempered.mp4";
 import { ConsultationModal } from "./ConsultationModal";
 import { HandwriteSept } from "./HandwriteSept";
+import { SashTurntable } from "./SashTurntable";
+import tempedTag from "@/assets/handwrite-tempered.svg";
 import { useDday } from "@/lib/dday";
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -29,7 +31,6 @@ const rise = {
 export function HeroSection() {
   const [isConsultOpen, setIsConsultOpen] = useState(false);
   const dday = useDday(); // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리
-
 
   // 높이: 화면을 채우되 900px 를 넘지 않고(원본 규격), 내용이 더 길면 내용만큼 늘어난다.
   // min-h-fit 이 max-h 보다 우선하므로 짧은 화면에서 CTA 가 하단 고정바에 잘리지 않는다.
@@ -65,7 +66,7 @@ export function HeroSection() {
         <motion.div
           {...rise}
           transition={{ duration: 0.5 }}
-          className="inline-flex self-start items-center gap-2 mb-5"
+          className="inline-flex self-start items-center gap-2 mb-9"
         >
           {/* 배지 하나로 — 마감 문구와 남은 날을 굳이 나눌 이유가 없다 */}
           <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
@@ -81,29 +82,46 @@ export function HeroSection() {
         <motion.h1
           {...rise}
           transition={{ duration: 0.55, delay: 0.05 }}
-          className="flex flex-col items-start gap-1 mb-4"
+          className="flex flex-col items-start gap-1 mb-1.5"
         >
-          {/* 디자이너 벡터. 폭은 기울기가 원본에 들어가 폭이 늘었다 — 글자 높이를 이전과 같게 두고 폭만 새 비율로 잡은 값. */}
-          <HandwriteSept width={145} className="block text-white mb-4 md:mb-0" />
+          {/* 일반유리 대비 없이 강화유리 창짝 하나만 천천히 돌린다.
+              이전의 두 판 픽토그램은 GlassUpgradeIcon.tsx 에 그대로 있다 —
+              되돌리려면 <GlassUpgradeIcon width={311} className="block -ml-2.5 mb-1" /> */}
+          <div className="relative w-fit -ml-4 mb-5">
+            <SashTurntable height={188} />
+            {/* 손글씨 "강화유리" + 창짝을 가리키는 화살표. 창짝 오른쪽 아래에 걸친다.
+                크기·위치를 창짝 상자에 대한 %로 잡아서 창짝이 커지면 같이 커진다.
+                흰 선이라 밝은 배경에서 묻히므로 그림자를 두 겹 준다. */}
+            <img
+              src={tempedTag}
+              alt="강화유리"
+              className="absolute pointer-events-none select-none
+                         drop-shadow-[0_2px_8px_rgba(0,0,0,.55)]
+                         [filter:drop-shadow(0_2px_8px_rgba(0,0,0,.55))_drop-shadow(0_0_2px_rgba(0,0,0,.45))]"
+              /* 폭은 글씨 크기 기준으로 잡는다. 잉크 상자에서 글씨가 차지하는 비율이
+                 65.77/90.27 이라, 글씨를 104px 로 두려면 폭이 97% 여야 한다.
+                 left 는 화살표 머리 위치. 창짝 상자 기준으로 78% 가 유리 오른쪽 끝,
+                 94% 가 프레임 바깥 끝이므로 70% 면 머리가 유리면 위로 들어온다. */
+              style={{ left: "72%", top: "49%", width: "97%" }}
+            />
+          </div>
+          {/* 손글씨(HandwriteSept)는 잠시 뺐다. 되살리려면 이 span 을 아래로 바꾸면 된다.
+                <span className="flex items-center gap-2 …">
+                  <HandwriteSept width={78} className="shrink-0 text-white drop-shadow-[0_1px_6px_rgba(0,0,0,.6)]" />
+                  무상 업그레이드
+                </span>                                                            */}
           <span
-            className="text-[20.2px] font-normal text-white/80 leading-tight break-keep"
-            style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-          >
-            일반유리 <span className="text-white/40 mx-0.5">→</span>{" "}
-            <b className="font-extrabold text-[#ff6060]">강화유리</b>
-          </span>
-          <span
-            className="text-[32px] font-extrabold text-white leading-[1.1] -tracking-[.03em] break-keep"
+            className="text-[25.6px] font-extrabold text-white leading-[1.1] -tracking-[.03em] break-keep"
             style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
           >
-            무상 업그레이드
+            <span className="font-light">9월한정</span> 무상 업그레이드
           </span>
         </motion.h1>
 
         <motion.p
           {...rise}
           transition={{ duration: 0.55, delay: 0.1 }}
-          className="text-[15px] text-white/85 leading-[1.6] mb-1.5 break-keep"
+          className="text-[15px] text-white/85 leading-[1.6] mb-4 break-keep"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
         >
           오직 <b className="font-extrabold text-white">청암홈윈도우에서만</b> 가능한 혜택입니다.
@@ -131,21 +149,21 @@ export function HeroSection() {
           >
             무료 실측 상담 신청
           </button>
-          <Link
-            to="/tempered-glass"
+          {/* 같은 페이지의 단열유리 섹션(#glass)이 아니라 강화유리 상세페이지로 보낸다 */}
+          <TemperedGlassLink
             className="flex items-center justify-center h-[48px] bg-white/10 border border-white/25 text-white font-semibold text-[14.5px] rounded-xl no-underline backdrop-blur-sm"
           >
             자세히 보기
-          </Link>
+          </TemperedGlassLink>
         </motion.div>
       </div>
 
       {/* ── PC — 좌측 정렬, 세로 가운데. pt 는 고정 GNB(70px) 를 비우는 값 ── */}
-      <div className="hidden md:flex flex-col justify-center relative z-10 flex-1 max-w-screen-md mx-auto w-full px-10 pt-[88px] pb-[136px]">
+      <div className="hidden md:flex flex-col justify-center relative z-10 flex-1 max-w-screen-md mx-auto w-full px-10 pt-[112px] pb-[112px]">
         <motion.div
           {...rise}
           transition={{ duration: 0.5 }}
-          className="inline-flex self-start items-center gap-2 mb-5"
+          className="inline-flex self-start items-center gap-2 mb-9"
         >
           {/* 배지 하나로 — 마감 문구와 남은 날을 굳이 나눌 이유가 없다 */}
           <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
@@ -160,19 +178,30 @@ export function HeroSection() {
           transition={{ duration: 0.55, delay: 0.05 }}
           className="flex flex-col items-start gap-1.5 mb-5"
         >
-          <HandwriteSept width={193} className="block text-white" />
+          <div className="relative w-fit -ml-5 mb-5">
+            <SashTurntable height={238} />
+            {/* 손글씨 "강화유리" + 창짝을 가리키는 화살표. 창짝 오른쪽 아래에 걸친다.
+                크기·위치를 창짝 상자에 대한 %로 잡아서 창짝이 커지면 같이 커진다.
+                흰 선이라 밝은 배경에서 묻히므로 그림자를 두 겹 준다. */}
+            <img
+              src={tempedTag}
+              alt="강화유리"
+              className="absolute pointer-events-none select-none
+                         drop-shadow-[0_2px_8px_rgba(0,0,0,.55)]
+                         [filter:drop-shadow(0_2px_8px_rgba(0,0,0,.55))_drop-shadow(0_0_2px_rgba(0,0,0,.45))]"
+              /* 폭은 글씨 크기 기준으로 잡는다. 잉크 상자에서 글씨가 차지하는 비율이
+                 65.77/90.27 이라, 글씨를 104px 로 두려면 폭이 97% 여야 한다.
+                 left 는 화살표 머리 위치. 창짝 상자 기준으로 78% 가 유리 오른쪽 끝,
+                 94% 가 프레임 바깥 끝이므로 70% 면 머리가 유리면 위로 들어온다. */
+              style={{ left: "72.7%", top: "49%", width: "97%" }}
+            />
+          </div>
+          {/* 손글씨는 잠시 뺀 상태 — 모바일 쪽 주석에 되살리는 형태를 적어 뒀다 */}
           <span
-            className="text-[24.75px] font-normal text-white/80 leading-tight break-keep"
-            style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-          >
-            일반유리 <span className="text-white/40 mx-1">→</span>{" "}
-            <b className="font-extrabold text-[#ff6060]">강화유리</b>
-          </span>
-          <span
-            className="text-[40px] font-extrabold text-white leading-[1.05] -tracking-[.03em] break-keep"
+            className="text-[32px] font-extrabold text-white leading-[1.05] -tracking-[.03em] break-keep"
             style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
           >
-            무상 업그레이드
+            <span className="font-light">9월한정</span> 무상 업그레이드
           </span>
         </motion.h1>
 
@@ -207,12 +236,11 @@ export function HeroSection() {
           >
             무료 실측 상담 신청
           </button>
-          <Link
-            to="/tempered-glass"
+          <TemperedGlassLink
             className="flex items-center justify-center h-[52px] w-[160px] bg-white/10 border border-white/25 hover:bg-white/15 text-white font-semibold text-[14.5px] rounded-xl no-underline transition-colors backdrop-blur-sm"
           >
             자세히 보기
-          </Link>
+          </TemperedGlassLink>
         </motion.div>
       </div>
 

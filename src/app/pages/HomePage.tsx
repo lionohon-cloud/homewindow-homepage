@@ -6,7 +6,6 @@ import { HeroConsultSection } from "../components/HeroConsultSection";
 // 되돌리려면 아래 import 와 <EventPromoBanner /> 를 EventSection 으로 되돌리면 된다.
 import { EventPromoBanner } from "../components/EventPromoBanner";
 import { TemperedGlassSection } from "../components/TemperedGlassSection";
-import { Event2Section } from "../components/Event2Section";
 import { AwardsSection } from "../components/AwardsSection";
 import { InsuranceSection } from "../components/InsuranceSection";
 import { ProductionSection } from "../components/ProductionSection";
@@ -37,13 +36,11 @@ export default function HomePage() {
         <div id="hero">
           <HeroSection />
         </div>
-        <DanjiAiBanner />
+        {/* 번호 접수는 히어로 바로 아래 — 예상견적 띠배너보다 먼저 온다 */}
         <HeroConsultSection />
+        <DanjiAiBanner />
         <div id="event">
           <EventPromoBanner />
-        </div>
-        <div id="event2">
-          <Event2Section />
         </div>
         <div id="awards">
           <AwardsSection />
@@ -57,6 +54,9 @@ export default function HomePage() {
         <div id="brands">
           <BrandsSection />
         </div>
+        <div id="materials">
+          <MaterialsSection />
+        </div>
         {/* 보강재와 단열유리 사이 — 유리 이야기가 여기서 시작된다 */}
         <div id="tempered">
           <TemperedGlassSection />
@@ -66,9 +66,6 @@ export default function HomePage() {
         </div>
         <div id="safety">
           <SafetyNetSection />
-        </div>
-        <div id="materials">
-          <MaterialsSection />
         </div>
         <div id="installation">
           <OneDayInstallationSection />

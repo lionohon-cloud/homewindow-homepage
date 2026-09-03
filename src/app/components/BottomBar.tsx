@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router";
 import { EstimateModal } from "./EstimateModal";
 import { X, Phone, MessageSquare, Loader2 } from "lucide-react";
@@ -6,11 +6,21 @@ import { submitLead } from "@/lib/submitLead";
 import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
+import { useVisualViewport } from "@/lib/useVisualViewport";
 
 export function BottomBar() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMobilePopup, setShowMobilePopup] = useState(false);
+  /* 키패드가 가리지 않도록 실제 보이는 영역을 잡는다 */
+  const visible = useVisualViewport(showMobilePopup);
+
+  /* 팝업이 열리면 바로 연락처 칸에 커서를 둔다 — 칸을 한 번 더 누르는 동작이 준다.
+     국번(010)은 이미 차 있으므로 가운데 칸부터. */
+  useLayoutEffect(() => {
+    if (!showMobilePopup) return;
+    phone2PopupRef.current?.focus(); // 타이머로 미루면 키패드가 그만큼 늦게 올라온다
+  }, [showMobilePopup]);
 
   // 공유 폼 상태
   const [phone1, setPhone1] = useState("010");
@@ -82,11 +92,6 @@ export function BottomBar() {
   // 공통 입력 스타일 (팝업용: 더 큰 터치 타겟)
   const popupInput =
     "h-[52px] border-2 border-[#e0e0e0] rounded-xl text-center text-[16px] font-semibold text-[#2A2A2A] bg-white focus:border-[#D22727] outline-none transition-colors disabled:bg-[#f5f5f5]";
-
-  const phoneDisplay =
-    phone2 || phone3
-      ? `${phone1}-${phone2 || "____"}-${phone3 || "____"}`
-      : "번호를 입력해 상담신청";
 
   return (
     <>
@@ -190,7 +195,7 @@ export function BottomBar() {
                 <button
                   type="button"
                   onClick={() => setShowPrivacy(true)}
-                  className="text-[#D22727] underline hover:text-[#b02020] cursor-pointer font-medium"
+                  className="text-[length:inherit] text-[#D22727] underline hover:text-[#b02020] cursor-pointer font-medium"
                 >
                   [내용보기]
                 </button>
@@ -212,8 +217,13 @@ export function BottomBar() {
             <span className="text-white/75 text-[12px] font-semibold tracking-wide uppercase">
               무료 상담신청
             </span>
+            {/* 여기에 입력값을 비추면 안 된다.
+                phone1/2/3 은 PC 인라인 폼과 모바일 팝업이 같이 쓰는 상태인데,
+                이 버튼은 모바일 전용(md:hidden)이고 모바일에는 인라인 폼이 없다
+                (폼은 hidden md:flex). 그래서 여기 값을 물리면 팝업에 치는 글자가
+                뒤에 깔린 CTA 버튼에 그대로 나타난다. 라벨은 고정. */}
             <span className="text-white font-bold text-[15px] leading-tight">
-              {phoneDisplay}
+              번호를 입력해 상담신청
             </span>
           </div>
         </button>
@@ -234,9 +244,14 @@ export function BottomBar() {
       {/* ════ 모바일 팝업 입력창 ════ */}
       {showMobilePopup && (
         <div
-          className="md:hidden fixed inset-0 z-[100] bg-black/60"
+          className="md:hidden fixed left-0 right-0 z-[100] bg-black/60 flex items-start justify-center px-0 pb-6 overflow-y-auto"
+          /* 키패드가 뜨면 보이는 영역만큼만 차지해 카드가 그 안에서 가운데로 온다. */
+          style={
+            visible
+              ? { top: visible.top, height: visible.height, paddingTop: visible.height * 0.1 }
+              : { top: 0, bottom: 0, paddingTop: "10vh" }
+          }
           onClick={() => setShowMobilePopup(false)}
-          style={{ display: "flex", alignItems: "flex-start", paddingTop: "8%" }}
         >
           <div
             className="relative bg-white rounded-2xl shadow-2xl mx-auto w-[92%] max-w-sm overflow-hidden"
@@ -271,7 +286,8 @@ export function BottomBar() {
                 <p className="text-[11px] text-[#999] font-medium uppercase tracking-[0.05em] mb-1.5">
                   연락처
                 </p>
-                <div className="flex items-center gap-1.5">
+                {/* 칸 폭을 고정하지 않고 남는 폭을 나눠 갖게 한다 — 카드 좌우 여백선까지 꽉 찬다 */}
+                <div className="flex items-center gap-1.5 w-full">
                   <input
                     type="tel"
                     value={phone1}
@@ -284,7 +300,7 @@ export function BottomBar() {
                     }}
                     maxLength={3}
                     disabled={isSubmitting}
-                    className={`w-[62px] ${popupInput}`}
+                    className={`w-0 flex-1 min-w-0 ${popupInput}`}
                   />
                   <span className="text-[#bbb] text-[18px] font-light">—</span>
                   <input
@@ -301,7 +317,7 @@ export function BottomBar() {
                     placeholder="0000"
                     maxLength={4}
                     disabled={isSubmitting}
-                    className={`w-[72px] ${popupInput}`}
+                    className={`w-0 flex-1 min-w-0 ${popupInput}`}
                   />
                   <span className="text-[#bbb] text-[18px] font-light">—</span>
                   <input
@@ -315,7 +331,7 @@ export function BottomBar() {
                     placeholder="0000"
                     maxLength={4}
                     disabled={isSubmitting}
-                    className={`w-[72px] ${popupInput}`}
+                    className={`w-0 flex-1 min-w-0 ${popupInput}`}
                   />
                 </div>
               </div>
@@ -334,7 +350,7 @@ export function BottomBar() {
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setShowPrivacy(true); }}
-                    className="text-[#D22727] underline cursor-pointer font-medium"
+                    className="text-[length:inherit] text-[#D22727] underline cursor-pointer font-medium"
                   >
                     [내용보기]
                   </button>

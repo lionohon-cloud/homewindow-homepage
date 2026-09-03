@@ -86,6 +86,10 @@ function CountUp({ to }: { to: number }) {
   );
 }
 
+/* 거주형태를 고르면 넘어갈 광고 랜딩 퍼널 주소 (배포본과 동일) */
+const LANDING_APT = "https://homewindow.kr/request/search?t=apt";
+const LANDING_HOUSE = "https://homewindow.kr/request/region?t=house";
+
 export function DanjiAiBanner() {
   /* type = 거주 형태 고르기(퍼널 1단계), search = 단지 검색(2단계) */
   const [stage, setStage] = useState<"type" | "search">("type");
@@ -123,12 +127,17 @@ export function DanjiAiBanner() {
             </p>
 
             <div className="mt-3 md:mt-4 grid grid-cols-2 gap-2.5 md:gap-3 w-full max-w-[440px] mx-auto">
-              {/* 랜딩퍼널(request/)의 단지검색·지역선택 페이지로 바로 보낸다.
-                  아파트 = 단지검색, 주택·상가 = 지역선택(단지 자료가 없는 경로). */}
-              <a href="https://homewindow.kr/request/search?t=apt" className={`${pickBtn} no-underline`}>
+              {/* 배포본과 같은 동작 — 고르면 광고 랜딩 퍼널로 넘긴다.
+                  아파트는 단지 검색부터, 주택·상가는 자료가 없어 지역 선택부터 시작한다.
+
+                  아래 2단계(단지 검색 → AI 분석)를 이 페이지 안에서 그대로 쓰려면
+                  이 두 <a> 를 아래 주석의 <button> 으로 되돌리면 된다. 코드는 그대로 살아 있다.
+                    <button type="button" className={pickBtn} onClick={() => setStage("search")}>아파트</button>
+                    <button type="button" className={pickBtn} onClick={focusConsultPhone}>주택,상가</button> */}
+              <a href={LANDING_APT} className={`${pickBtn} no-underline`}>
                 아파트
               </a>
-              <a href="https://homewindow.kr/request/region?t=house" className={`${pickBtn} no-underline`}>
+              <a href={LANDING_HOUSE} className={`${pickBtn} no-underline`}>
                 주택,상가
               </a>
             </div>

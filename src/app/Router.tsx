@@ -85,6 +85,11 @@ const router = createBrowserRouter([
         path: 'thanks',
         lazy: lazyWithRetry(() => import('./pages/ThanksPage')),
       },
+      // 9월 강화유리 프로모션 상세페이지. 메인 강화유리 섹션의 "자세히 보기" 목적지.
+      {
+        path: 'tempered-glass',
+        lazy: lazyWithRetry(() => import('./pages/TemperedGlassPage')),
+      },
       {
         path: 'partners',
         lazy: lazyWithRetry(() => import('./pages/PartnersPage')),
@@ -164,10 +169,6 @@ const router = createBrowserRouter([
       {
         path: 'admin/reviews/:id',
         lazy: lazyWithRetry(() => import('./pages/AdminReviewDetailPage')),
-      },
-      {
-        path: 'tempered-glass',
-        lazy: lazyWithRetry(() => import('./pages/TemperedGlassPage')),
       },
       { path: '*', element: <Navigate to="/" replace /> },
     ],

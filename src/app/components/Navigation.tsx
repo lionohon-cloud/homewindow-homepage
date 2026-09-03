@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { useNavigate, useLocation } from "react-router";
 import { Phone, Handshake } from "lucide-react";
 import { ConsultationModal } from "./ConsultationModal";
-import logo from "@/assets/logo-slogan-center.svg";
+import { useDday } from "@/lib/dday";
+import logo from "@/assets/logo-gnb.svg";
 
 interface NavigationProps {
   onMenuClick?: () => void;
@@ -16,10 +17,10 @@ const sections = [
   { id: "insurance", label: "안심보증" },
   { id: "production", label: "자동화 제조 공장" },
   { id: "brands", label: "취급 브랜드" },
+  { id: "materials", label: "자재품질" },
   { id: "tempered", label: "강화유리" },
   { id: "glass", label: "단열유리" },
   { id: "safety", label: "방충망" },
-  { id: "materials", label: "자재품질" },
   { id: "installation", label: "원데이 시공" },
   { id: "warranty", label: "업게 최장 15년 보증" },
   { id: "review", label: "시공 후기" },
@@ -52,6 +53,7 @@ const desktopMenuItems: DesktopMenuItem[] = [
 
 export function Navigation({ onMenuClick }: NavigationProps) {
   const navigate = useNavigate();
+  const dday = useDday(); // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리
   const location = useLocation();
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -201,7 +203,9 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   onClick={() => scrollToSection("hero")}
                   className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  <img src={logo} alt="청암홈윈도우" className="h-[32px] w-auto" loading="lazy" decoding="async" />
+                  {/* 심볼 + 2줄 워드마크가 한 덩어리인 CI(비율 3.41).
+                      HOME 글자가 이전 CI 의 워드마크와 같은 크기로 보이는 높이다. */}
+                  <img src={logo} alt="청암홈윈도우" className="h-[34px] w-auto" loading="lazy" decoding="async" />
                 </button>
 
                 {/* 메뉴 항목 — 로고~버튼 사이 균등 간격 (260714) */}
@@ -355,9 +359,21 @@ export function Navigation({ onMenuClick }: NavigationProps) {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="min-[1550px]:hidden fixed right-0 top-0 bottom-0 w-[70%] max-w-[420px] bg-white z-[70] shadow-2xl overflow-y-auto overscroll-contain"
             >
-              {/* 메뉴 헤더 */}
-              <div className="sticky top-0 bg-white border-b border-[#eaeaea] px-6 py-4 z-10">
-                <h2 className="text-lg font-bold text-[#333]">메뉴</h2>
+              {/* 메뉴 헤더 — 제목 오른쪽 빈자리에 프로모션 배지 하나.
+                  패널이 좁아(70%, 375px 기준 263px) 문구와 D-day 를 한 알약에 담고
+                  글자를 11px 로 잡아야 "메뉴" 옆 한 줄에 들어간다.
+                  350px 미만(구형 소형기기)에서는 글자와 좌우 여백을 한 단계 줄여 맞춘다. */}
+              <div className="sticky top-0 bg-white border-b border-[#eaeaea] px-6 py-4 z-10 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-[#333] shrink-0">메뉴</h2>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("event")}
+                  className="ml-auto shrink-0 inline-flex items-center gap-1.5 bg-[#d22727] rounded-full px-2 min-[350px]:px-2.5 py-1 text-[10px] min-[350px]:text-[11px] font-bold text-white whitespace-nowrap cursor-pointer active:opacity-80 transition-opacity"
+                  aria-label="9월한정 이벤트 보기"
+                >
+                  9월한정 이벤트 진행중
+                  <span className="font-extrabold tabular-nums">{dday}</span>
+                </button>
               </div>
 
               {/* 메뉴 아이템 리스트 */}

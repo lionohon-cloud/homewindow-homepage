@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import pcBg from "../../assets/event/promo-2609-pc-bg.webp";
 import moBg from "../../assets/event/promo-2609-mo-bg.webp";
+import { ShortsPlayer } from "./tempered/ShortsPlayer";
 
 /**
  * 9월 강화유리 프로모션 배너.
@@ -54,190 +55,122 @@ function T({ cy, l, cx, size, cls = "", children }: Spot) {
   );
 }
 
-const BLUE = "text-[#1a6cf0]";
-const DARK = "text-[#333]";
-const GRAY = "text-[#8a8f98]";
 
-/* "일반유리 → 강화유리" 는 원본에서 색을 직접 뽑아 맞췄다.
-   일반유리·화살표 #434343 보통 굵기, 강화유리 #1b1b1b 에 잉크량이 1.8배(=훨씬 굵다).
-   화살표는 파랑이 아니라 앞 글자와 같은 회색이다. */
+/* ── PC (2716×908) ───────────────────────────────────────────
+   260903 개편. 모바일(mo-3)과 같은 구성의 가로형.
+   머리말("9월엔 유리만 강화한 게 아닙니다" / "유리도 강화하고…")은 배경에 구워져 있다 —
+   글자로 얹는 건 아래 다섯 덩어리와 영상뿐이다.
 
-/* ── PC (2716×908) ───────────────────────────────────────── */
+   좌표 잡은 방법
+     글자 있는 원본이 없어 픽셀 차이를 못 쓴다. 대신 배경 안의 도형(회색·파란 알약,
+     노란 태그, 파란 띠, 흰 카드)을 색으로 찾아 그 상자의 중심·왼끝에 글자를 앉혔다.
+     아래 %는 배경 2716×908 에 대한 실측치다. */
+
+/** 배경에서 색으로 찾아낸 영상 자리 (2716×908 기준 %) */
+const PC_VIDEO_BOX = { left: 49.19, top: 29.19, width: 20.29, height: 43.17 };
+
 function PcText() {
   return (
     <>
-      {/* 왼쪽 카드 — 9월한정 특별가 */}
-      <T cx={38.29} cy={41.19} size={1.26} cls="font-bold text-white">
-        9월한정 특별가
+      {/* 유리 비교 카드 위의 라벨 두 개 */}
+      <T cx={33.12} cy={35.08} size={0.61} cls="font-bold text-black">
+        일반유리
       </T>
-      <T cx={38.00} cy={49.12} size={1.41} cls="font-medium text-[#434343]">
-        일반유리 <span className="font-bold">→</span>{" "}
-        <span className="font-extrabold text-[#1b1b1b]">강화유리</span>
-      </T>
-      <T cx={37.96} cy={56.72} size={2.60} cls={`font-extrabold ${BLUE}`}>
-        무상 업그레이드
-      </T>
-      <T l={28.87} cy={75.22} size={1.81} cls={`font-extrabold ${DARK}`}>
-        계약금액
-      </T>
-      <T l={36.45} cy={74.34} size={3.92} cls={`font-extrabold ${BLUE}`}>
-        10
-        <span className="ml-[0.25cqw]" style={{ fontSize: "1.79cqw" }}>
-          %
-        </span>
-        <span className={`ml-[0.58cqw] font-extrabold ${DARK}`} style={{ fontSize: "1.79cqw" }}>
-          할인
-        </span>
+      <T cx={44.57} cy={35.08} size={0.61} cls="font-bold text-white">
+        강화유리
       </T>
 
-      {/* 오른쪽 카드 — 추가 혜택 3종 */}
-      <T cx={62.55} cy={10.68} size={1.25} cls="font-bold text-white">
-        추가 혜택 3종
+      {/* 카드 하단 파란 알약 */}
+      <T cx={39.95} cy={65.75} size={1.04} cls="font-extrabold text-white">
+        강화유리 무상 업그레이드
       </T>
 
-      <T l={58.03} cy={20.70} size={1.15} cls={`font-bold ${DARK}`}>
-        선금보증보험 적용
+      {/* 노란 말풍선 태그 */}
+      <T cx={40.85} cy={76.32} size={0.72} cls="font-extrabold text-[#014ec5]">
+        선착순 EVENT
       </T>
-      <T l={58.03} cy={26.43} size={0.85} cls={GRAY}>
-        계약금은 안전하게,
-      </T>
-      <T l={58.03} cy={30.18} size={0.85} cls={GRAY}>
-        할인은 확실하게
-      </T>
-      <T l={68.34} cy={25.66} size={2.05} cls={`font-extrabold ${BLUE}`}>
-        10
-        <span className="ml-[0.12cqw]" style={{ fontSize: "0.97cqw" }}>
-          %
+
+      {/* 파란 띠 — 쿠폰 아이콘 오른쪽부터. 노란 태그와 왼끝을 맞춘다.
+          "200세대 한정 | 계약금" 은 흰색, "10% 추가 할인" 은 옅은 노랑(#fffbbd). */}
+      <T l={38.14} cy={81.06} size={1.66} cls="font-extrabold text-white">
+        200세대 한정
+        <span className="mx-[1.1cqw] font-normal opacity-60" style={{ fontSize: "1.3cqw" }}>
+          |
+        </span>
+        계약금{" "}
+        <span className="text-[#fffbbd]">
+          <span style={{ fontSize: "2.15cqw" }}>10</span>
+          <span className="ml-[0.12cqw]" style={{ fontSize: "1.3cqw" }}>
+            %
+          </span>{" "}
+          추가 할인
         </span>
       </T>
 
-      <T l={58.03} cy={44.05} size={1.15} cls={`font-bold ${DARK}`}>
-        방문 당일계약
-      </T>
-      <T l={58.03} cy={49.45} size={0.85} cls={GRAY}>
-        방문 상담
-      </T>
-      <T l={58.10} cy={53.19} size={0.85} cls={GRAY}>
-        당일 계약 확정 시
-      </T>
-      <T l={68.34} cy={47.91} size={2.05} cls={`font-extrabold ${BLUE}`}>
-        10
-        <span className="ml-[0.12cqw]" style={{ fontSize: "0.97cqw" }}>
-          %
-        </span>
-      </T>
-
-      <T l={58.03} cy={67.18} size={1.15} cls={`font-bold ${DARK}`}>
-        시공 후기 작성
-      </T>
-      <T l={58.03} cy={72.69} size={0.85} cls={GRAY}>
-        시공 완료 후
-      </T>
-      <T l={58.03} cy={76.43} size={0.85} cls={GRAY}>
-        후기를 남겨주시면
-      </T>
-      <T l={68.56} cy={71.48} size={2.05} cls={`font-extrabold ${BLUE}`}>
-        5
-        <span className="ml-[0.12cqw]" style={{ fontSize: "0.97cqw" }}>
-          %
-        </span>
-      </T>
-
-      {/* 하단 안내 */}
-      <T l={39.84} cy={89.76} size={0.85} cls={GRAY}>
-        본 이벤트는 2026년 9월 30일 까지 계약 후 10월 중 시공 완료 고객에
-      </T>
-      <T l={39.84} cy={93.28} size={0.85} cls={GRAY}>
-        한하여 적용됩니다.
+      {/* 하단 안내 — 띠(y 695~777) 아래. 모바일처럼 띠 기준 가운데 정렬이고,
+          띠와의 간격은 모바일과 같은 비율(높이의 3.7% ≈ 34px)로 띄웠다.
+          띠 중심 x = (828+1884)/2 = 1356 → 49.93% */}
+      <T cx={49.93} cy={90.6} size={0.85} cls="text-[#434343]">
+        본 이벤트는 2026년 9월 30일 까지 계약 후 10월 중 시공 완료 고객에 한하여 적용됩니다.
       </T>
     </>
   );
 }
 
-/* ── 모바일 (1020×1532) ──────────────────────────────────── */
+/* ── 모바일 (896×1200) ────────────────────────────────────────
+   260902 개편. 혜택 3종 나열 대신 "유리 → 강화유리 / 영상 / 선착순 할인" 3단.
+   흰 카드 자리에는 배경에 아무것도 없고 영상 플레이어를 덮어 놓는다. */
+
+/** 배너 안 영상. 유튜브·드라이브 링크를 그대로 넣으면 된다(ShortsPlayer 가 판별). */
+const PROMO_VIDEO = "https://www.youtube.com/watch?v=tuxuvYdPZaY";
+
+/** 영상이 들어갈 흰 카드 자리 — 배경(896×1200)에서 실측한 값 */
+const MO_VIDEO_BOX = { left: 6.03, top: 52.17, width: 88.06, height: 30.83 };
+
+/* 글자 크기는 "글자 있는 원본"과 "배경"을 픽셀로 뺀 뒤, 잉크 가로폭이
+   원본과 같은 비율(예: 하단 안내문 = 배너 폭의 85.6%)이 되게 맞춘 값이다.
+   글자 높이로 역산하면 폰트가 달라 10~30% 씩 커진다. */
 function MoText() {
   return (
     <>
-      <T cx={49.31} cy={23.30} size={3.72} cls="font-bold text-white">
-        9월한정 특별가
+      {/* 유리 비교 카드 위의 라벨 두 개 */}
+      <T cx={17.35} cy={26.88} size={2.5} cls="font-bold text-black">
+        일반유리
       </T>
-      <T cx={50.0} cy={28.59} size={4.16} cls="font-medium text-[#434343]">
-        일반유리 <span className="font-bold">→</span>{" "}
-        <span className="font-extrabold text-[#1b1b1b]">강화유리</span>
+      <T cx={61.61} cy={26.88} size={2.5} cls="font-bold text-white">
+        강화유리
       </T>
-      <T cx={50.0} cy={33.55} size={7.69} cls={`font-extrabold ${BLUE}`}>
-        무상 업그레이드
+
+      {/* 카드 하단 파란 알약 */}
+      <T cx={50.06} cy={46.83} size={3.72} cls="font-extrabold text-white">
+        강화유리 무상 업그레이드
       </T>
-      <T cx={50.0} cy={45.56} size={11.83} cls={`font-extrabold ${BLUE}`}>
-        <span className={`mr-[2cqw] font-extrabold ${DARK}`} style={{ fontSize: "5.17cqw" }}>
-          계약금액
+
+      {/* 노란 말풍선 태그 */}
+      <T l={21.54} cy={85.88} size={2.18} cls="font-extrabold text-[#014ec5]">
+        선착순 EVENT
+      </T>
+
+      {/* 파란 띠 — "200세대 한정 | 계약금" 은 흰색, "10% 추가 할인" 은 옅은 노랑.
+          색은 원본 이미지에서 직접 뽑았다(#ffffff / #fffbbd). "10" 만 크다. */}
+      <T l={21.54} cy={89.5} size={4.15} cls="font-extrabold text-white">
+        200세대 한정
+        <span className="mx-[2.8cqw] font-normal opacity-60" style={{ fontSize: "3.25cqw" }}>
+          |
         </span>
-        10
-        <span className="ml-[0.4cqw]" style={{ fontSize: "6.59cqw" }}>
-          %
-        </span>
-        <span className={`ml-[1.6cqw] font-extrabold ${DARK}`} style={{ fontSize: "6.59cqw" }}>
-          할인
+        계약금{" "}
+        <span className="text-[#fffbbd]">
+          <span style={{ fontSize: "5.38cqw" }}>10</span>
+          <span className="ml-[0.3cqw]" style={{ fontSize: "3.25cqw" }}>
+            %
+          </span>{" "}
+          추가 할인
         </span>
       </T>
 
-      <T cx={49.90} cy={54.37} size={3.72} cls="font-bold text-white">
-        추가 혜택 3종
-      </T>
-
-      <T l={34.90} cy={59.73} size={3.34} cls={`font-bold ${DARK}`}>
-        선금보증보험 적용
-      </T>
-      <T l={35.29} cy={62.79} size={2.37} cls={GRAY}>
-        계약금은 안전하게,
-      </T>
-      <T l={35.29} cy={65.01} size={2.37} cls={GRAY}>
-        할인은 확실하게
-      </T>
-      <T l={69.41} cy={61.95} size={6.50} cls={`font-extrabold ${BLUE}`}>
-        10
-        <span className="ml-[0.4cqw]" style={{ fontSize: "3.09cqw" }}>
-          %
-        </span>
-      </T>
-
-      <T l={35.29} cy={71.47} size={3.34} cls={`font-bold ${DARK}`}>
-        방문 당일계약
-      </T>
-      <T l={35.69} cy={74.54} size={2.37} cls={GRAY}>
-        방문 상담
-      </T>
-      <T l={35.69} cy={76.76} size={2.37} cls={GRAY}>
-        당일 계약 확정 시
-      </T>
-      <T l={69.61} cy={73.89} size={6.50} cls={`font-extrabold ${BLUE}`}>
-        10
-        <span className="ml-[0.4cqw]" style={{ fontSize: "3.09cqw" }}>
-          %
-        </span>
-      </T>
-
-      <T l={35.10} cy={83.49} size={3.34} cls={`font-bold ${DARK}`}>
-        시공 후기 작성
-      </T>
-      <T l={35.69} cy={86.55} size={2.37} cls={GRAY}>
-        시공 완료 후
-      </T>
-      <T l={35.49} cy={88.77} size={2.37} cls={GRAY}>
-        후기를 남겨주시면
-      </T>
-      <T l={70.39} cy={85.83} size={6.50} cls={`font-extrabold ${BLUE}`}>
-        5
-        <span className="ml-[0.4cqw]" style={{ fontSize: "3.09cqw" }}>
-          %
-        </span>
-      </T>
-
-      <T l={25.29} cy={94.58} size={2.16} cls={GRAY}>
-        본 이벤트는 2026년 9월 30일 까지 계약 후 10월 중 시공 완료 고객에
-      </T>
-      <T l={25.29} cy={96.67} size={2.16} cls={GRAY}>
-        한하여 적용됩니다.
+      {/* 하단 안내 */}
+      <T cx={49.94} cy={96.0} size={2.45} cls="text-[#434343]">
+        본 이벤트는 2026년 9월 30일 까지 계약 후 10월 중 시공 완료 고객에 한하여 적용됩니다.
       </T>
     </>
   );
@@ -263,6 +196,25 @@ export function EventPromoBanner() {
           decoding="async"
         />
         <PcText />
+        {/* 배경의 빈 흰 카드 자리에 영상을 덮는다. 카드는 1.41:1, 영상은 16:9 라
+            위아래에 검은 레터박스가 생긴다 — 잘라내지 않고 온전히 보여 주는 쪽. */}
+        <div
+          className="absolute"
+          style={{
+            left: `${PC_VIDEO_BOX.left}%`,
+            top: `${PC_VIDEO_BOX.top}%`,
+            width: `${PC_VIDEO_BOX.width}%`,
+            height: `${PC_VIDEO_BOX.height}%`,
+          }}
+        >
+          <ShortsPlayer
+            src={PROMO_VIDEO}
+            aspect="auto"
+            loop
+            title="강화유리 이벤트 영상"
+            className="h-full rounded-xl shadow-none !bg-black"
+          />
+        </div>
       </motion.div>
 
       {/* 모바일 — 세로형 */}
@@ -271,13 +223,35 @@ export function EventPromoBanner() {
           src={moBg}
           alt=""
           aria-hidden="true"
-          width={1020}
-          height={1532}
+          width={896}
+          height={1200}
           className="block w-full h-auto"
           loading="lazy"
           decoding="async"
         />
         <MoText />
+        {/* 배경의 빈 흰 카드 자리에 영상을 덮는다.
+            aspect="auto" 라야 상자 비율을 강제하지 않고 이 칸을 그대로 채운다. */}
+        <div
+          className="absolute"
+          style={{
+            left: `${MO_VIDEO_BOX.left}%`,
+            top: `${MO_VIDEO_BOX.top}%`,
+            width: `${MO_VIDEO_BOX.width}%`,
+            height: `${MO_VIDEO_BOX.height}%`,
+          }}
+        >
+          <ShortsPlayer
+            src={PROMO_VIDEO}
+            aspect="auto"
+            loop
+            title="강화유리 이벤트 영상"
+            /* 카드는 2.13:1, 영상은 16:9 라 좌우에 레터박스가 생긴다.
+               유튜브 플레이어가 만드는 검은 띠와 같은 색이어야 이음매가 안 보여서
+               상자 배경을 기본 #111 이 아니라 순검정으로 둔다. */
+            className="h-full rounded-xl shadow-none !bg-black"
+          />
+        </div>
       </motion.div>
     </section>
   );
