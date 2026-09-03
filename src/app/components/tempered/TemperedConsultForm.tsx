@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { submitLead } from '@/lib/submitLead';
 import { useConsultDetail } from '@/lib/useConsultDetail';
 import { HoneypotField } from '@/lib/HoneypotField';
+import { ENTRY_WHERE, temperedEntryForm } from '@/lib/entryForm';
 import { ConsultRegionFieldModal } from '../ConsultRegionFieldModal';
 
 /**
@@ -45,11 +46,10 @@ export function TemperedConsultForm() {
     setIsSubmitting(true);
 
     const phone = `${phone1}-${phone2}-${phone3}`;
-    const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     try {
       const { ok, docId } = await submitLead({
         phone,
-        entryForm: `홈페이지 ${device} 강화유리`,
+        entryForm: temperedEntryForm(ENTRY_WHERE.form),
         honeypot: honeypotRef.current?.value,
       });
       if (!ok) throw new Error();

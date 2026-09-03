@@ -1,98 +1,117 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { Play } from 'lucide-react';
 
 /**
- * 구글 드라이브 세로 영상(쇼츠) 플레이어.
+ * 세로 영상(쇼츠) 플레이어. 유튜브와 구글 드라이브를 모두 받는다.
  *
- * · src 에 공유 링크를 통째로 넣어도 되고 파일 ID 만 넣어도 된다.
- * · iframe 은 플레이어가 화면에 들어올 때 붙인다.
+ * · src 에 공유 링크를 통째로 넣어도 되고 ID 만 넣어도 된다.
+ *   - 유튜브: youtube.com/shorts/ID · youtu.be/ID · youtube.com/watch?v=ID
+ *   - 드라이브: drive.google.com/file/d/ID/view
+ * · 처음에는 포스터 + 재생 버튼만 그리고, 누를 때 iframe 을 붙인다.
+ *   (iframe 은 무겁고 스크롤만 해도 로드돼 초기 진입이 느려진다)
  *
- * 예전에는 포스터 + 재생 버튼을 그려 두고 "누를 때" iframe 을 붙였다.
- * 드라이브 iframe 이 무거워 초기 진입을 늦추기 때문이었는데, 그러면 재생까지
- * 두 번을 눌러야 했다(우리 버튼 → 드라이브 플레이어의 재생 버튼).
- * 화면에 들어올 때 붙이면 초기 로딩 부담은 그대로 피하면서 클릭이 한 번 준다.
- *
- * 클릭을 0 으로 만들지는 못한다 — 드라이브 preview 임베드는 자동재생 파라미터가
- * 없고, 브라우저도 소리 있는 자동재생을 막는다. 드라이브 플레이어 안의 재생
- * 버튼 한 번은 남는다.
- *
- * 준비물: 드라이브에서 해당 파일을 "링크가 있는 모든 사용자 — 뷰어" 로 공유해야
- *        외부에서 재생된다. 비공개면 로그인 화면이 뜬다.
+ * 드라이브를 쓸 때는 해당 파일을 "링크가 있는 모든 사용자 — 뷰어" 로 공유해야
+ * 외부에서 재생된다. 비공개면 로그인 화면이 뜬다.
+ * 유튜브는 "일부 공개(Unlisted)" 이상이면 재생된다.
  */
 
-/** 공유 링크 / 미리보기 링크 / 순수 ID 를 모두 받아 파일 ID 만 뽑는다. */
-export function driveFileId(input: string): string {
-  const m =
-    input.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ?? input.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : input.trim();
+type Source =
+  | { kind: 'youtube'; id: string }
+  | { kind: 'drive'; id: string }
+  | { kind: 'unset' };
+
+/** 유튜브 ID 는 11자, 드라이브 ID 는 그보다 길다 — 순수 ID 만 들어와도 구분된다. */
+export function parseShortsSrc(input: string): Source {
+  const s = input.trim();
+  if (!s) return { kind: 'unset' };
+
+  const yt =
+    s.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/) ??
+    s.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) ??
+    s.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/) ??
+    s.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (yt) return { kind: 'youtube', id: yt[1] };
+
+  const drive = s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ?? s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (drive) return { kind: 'drive', id: drive[1] };
+
+  // 링크 없이 ID 만 넣은 경우
+  if (/^[a-zA-Z0-9_-]{11}$/.test(s)) return { kind: 'youtube', id: s };
+  if (/^[a-zA-Z0-9_-]{12,}$/.test(s)) return { kind: 'drive', id: s };
+  return { kind: 'unset' };
+}
+
+function embedUrl(src: Source): string {
+  if (src.kind === 'youtube') {
+    // nocookie 도메인 — 라이브 CSP(public/_headers)의 frame-src 에 이미 들어 있다.
+    // 쇼츠는 대개 짧아서 반복 재생을 건다(loop 는 playlist 를 같이 줘야 먹는다).
+    return `https://www.youtube-nocookie.com/embed/${src.id}?autoplay=1&rel=0&playsinline=1&loop=1&playlist=${src.id}`;
+  }
+  if (src.kind === 'drive') return `https://drive.google.com/file/d/${src.id}/preview`;
+  return '';
 }
 
 interface Props {
-  /** 드라이브 공유 링크 또는 파일 ID */
+  /** 유튜브 / 구글 드라이브 공유 링크, 또는 ID */
   src: string;
+  /** 재생 전에 보여줄 포스터 이미지 (없으면 어두운 배경 + 재생 버튼만) */
+  poster?: string;
   title?: string;
   className?: string;
 }
 
-export function ShortsPlayer({ src, title = '강화유리 영상', className = '' }: Props) {
-  const boxRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-  const id = driveFileId(src);
-  const ready = id.length > 10; // 자리표시자면 안내 문구를 띄운다
-
-  useEffect(() => {
-    if (!ready || mounted) return;
-    const el = boxRef.current;
-    if (!el) return;
-
-    // 관찰자를 못 쓰는 환경이면 그냥 바로 붙인다 — 안 보이는 것보다 낫다
-    if (typeof IntersectionObserver !== 'function') {
-      setMounted(true);
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        io.disconnect();
-        setMounted(true);
-      },
-      // 화면에 닿기 조금 전에 붙여 두면 스크롤이 멈췄을 때 이미 준비돼 있다
-      { rootMargin: '300px 0px' },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [ready, mounted]);
+export function ShortsPlayer({ src, poster, title = '강화유리 영상', className = '' }: Props) {
+  const [playing, setPlaying] = useState(false);
+  const parsed = parseShortsSrc(src);
 
   return (
     <div
-      ref={boxRef}
       className={`relative w-full overflow-hidden rounded-2xl bg-[#111] shadow-[0_12px_32px_rgba(0,0,0,.18)] ${className}`}
       style={{ aspectRatio: '9 / 16' }}
     >
-      {!ready ? (
+      {parsed.kind === 'unset' ? (
         /* 링크를 아직 안 넣은 상태 — 배포 전에 눈에 띄도록 */
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center">
           <span className="text-[13px] font-bold text-white/70">영상 링크 미설정</span>
           <span className="text-[11.5px] leading-[1.6] text-white/40 break-keep">
-            호출부의 SHORTS_SRC 에<br />
-            구글 드라이브 공유 링크를 넣어 주세요
+            TemperedGlassPage.tsx 의 SHORTS_SRC 에<br />
+            유튜브 또는 구글 드라이브 링크를 넣어 주세요
           </span>
         </div>
-      ) : mounted ? (
+      ) : playing ? (
         <iframe
           className="absolute inset-0 w-full h-full border-0"
-          src={`https://drive.google.com/file/d/${id}/preview`}
+          src={embedUrl(parsed)}
           title={title}
-          allow="autoplay; encrypted-media; fullscreen"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
         />
       ) : (
-        /* 붙기 전 자리 — 크기가 같아서 뜰 때 화면이 밀리지 않는다 */
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(160deg,#2b2b2f,#141416)' }}
-        />
+        <button
+          type="button"
+          onClick={() => setPlaying(true)}
+          aria-label={`${title} 재생`}
+          className="group absolute inset-0 w-full h-full cursor-pointer"
+        >
+          {poster ? (
+            <img
+              src={poster}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <span
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(160deg,#2b2b2f,#141416)' }}
+            />
+          )}
+          <span className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/15" />
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-16 h-16 md:w-[72px] md:h-[72px] rounded-full bg-white/95 shadow-[0_6px_20px_rgba(0,0,0,.35)] transition-transform group-hover:scale-105">
+            <Play size={26} className="text-[#d22727] ml-1" fill="#d22727" />
+          </span>
+        </button>
       )}
     </div>
   );

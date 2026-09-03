@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router";
 import { X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -6,15 +6,67 @@ import { submitLead } from "@/lib/submitLead";
 import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
+import { useVisualViewport } from "@/lib/useVisualViewport";
 
 interface ConsultationModalProps {
   isOpen: boolean;
   onClose: () => void;
   variant?: "top" | "bottom";
+  /** 접수 출처. 시트 D열(유입채널)의 "<출처> <기기> <위치>" 중 출처·위치.
+      기본값 둘 다 메인 히어로가 쓰던 값 그대로라 메인 동작은 바뀌지 않는다. */
+  entrySource?: string;
+  entryLabel?: string;
 }
 
-export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: ConsultationModalProps) {
+export function ConsultationModal({
+  isOpen,
+  onClose,
+  variant = "bottom",
+  entrySource = "홈페이지",
+  entryLabel = "상담모달",
+}: ConsultationModalProps) {
   const navigate = useNavigate();
+
+  /* 위에서 내려오는 접수 바는 GNB 와 같이 움직여야 한다.
+     GNB 는 아래로 스크롤하면 숨고 위로 올리면 다시 나오는데, 이 바만 그대로
+     붙어 있으면 화면을 계속 가린다. GNB 와 같은 규칙(아래로 + 100px 이상)을 쓴다. */
+  /* 키패드가 가리지 않도록 실제 보이는 영역을 잡는다 */
+  const visible = useVisualViewport(isOpen);
+
+  /* 열리자마자 연락처 칸에 커서를 둔다 — 칸을 한 번 더 누르는 동작이 준다.
+     PC 바와 모바일 카드가 둘 다 DOM 에 있으므로 화면에 보이는 쪽을 골라야 한다.
+     iOS 사파리는 사용자 제스처 밖의 focus() 로는 키패드를 안 올려 줄 수 있다
+     (그 경우 커서만 놓이고 키패드는 탭해야 뜬다). 안드로이드는 대체로 올라온다. */
+  /* 그려지기 직전(useLayoutEffect)에 포커스한다. 타이머로 미루면 그만큼
+     키패드가 늦게 올라와 한 박자 느리게 느껴진다. 모바일 카드는 등장
+     애니메이션이 없어 기다릴 이유도 없다. */
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const els = document.querySelectorAll<HTMLInputElement>("[data-consult-phone2]");
+    const shown = [...els].find((el) => el.offsetParent !== null);
+    shown?.focus();
+  }, [isOpen]);
+
+  const [scrolledAway, setScrolledAway] = useState(false);
+  useEffect(() => {
+    if (!isOpen || variant !== "top") return;
+    setScrolledAway(false); // 열 때는 항상 보이게
+    let lastY = window.scrollY;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setScrolledAway(y > lastY && y > 100);
+        lastY = y;
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isOpen, variant]);
+
   const [phone1] = useState("010");
   const [phone2, setPhone2] = useState("");
   const [phone3, setPhone3] = useState("");
@@ -54,7 +106,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
     try {
       const { ok, docId } = await submitLead({
         phone: phoneNumber,
-        entryForm: `홈페이지 ${device} 상담모달`,
+        entryForm: `${entrySource} ${device} ${entryLabel}`,
         honeypot: honeypotRef.current?.value,
       });
 
@@ -85,19 +137,26 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
     setShowPrivacy(true);
   };
 
+  /* BottomBar 모바일 팝업과 같은 입력칸 스타일 */
+  const popupInput =
+    "h-[52px] border-2 border-[#e0e0e0] rounded-xl text-center text-[16px] font-semibold text-[#2A2A2A] bg-white focus:border-[#D22727] outline-none transition-colors disabled:bg-[#f5f5f5]";
+
   return (
     <>
-      {/* Consultation Bar */}
+      {/* Consultation Bar (PC) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ y: variant === "top" ? "-100%" : "100%" }}
-            animate={{ y: 0 }}
+            animate={{ y: variant === "top" && scrolledAway ? "-100%" : 0 }}
             exit={{ y: variant === "top" ? "-100%" : "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className={`fixed left-0 right-0 bg-white shadow-lg z-40 ${
+            /* 위에서 내려오는 바는 PC 전용. 모바일은 아래의 카드 팝업으로 뜬다. */
+            className={`hidden md:block fixed left-0 right-0 bg-white shadow-lg z-40 ${
               variant === "top"
-                ? "top-[120px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+                /* GNB 바로 아래에 붙인다. 고정값 120px 이던 것을 실제 GNB 높이로 맞췄다 —
+                   61px(기본) / 71px(1550px↑). 안 맞으면 그 차이만큼 히어로가 비쳐 보인다. */
+                ? "top-[61px] min-[1550px]:top-[71px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
                 : "bottom-[70px] md:bottom-[80px] shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
             }`}
           >
@@ -139,6 +198,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                           />
                           <span className="text-[#999] text-[14px] md:text-[16px]">-</span>
                           <input
+                            data-consult-phone2
                             type="tel"
                             value={phone2}
                             onChange={(e) => {
@@ -199,7 +259,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
                           <button
                             type="button"
                             onClick={handleViewPrivacy}
-                            className="text-[#D22727] underline hover:text-[#b02020] transition-colors cursor-pointer font-medium"
+                            className="text-[length:inherit] text-[#D22727] underline hover:text-[#b02020] transition-colors cursor-pointer font-medium"
                           >
                             [내용보기]
                           </button>
@@ -213,6 +273,126 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom" }: Consu
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ════ 모바일 팝업 — 하단 CTA 버튼 눌렀을 때와 같은 카드 형태 ════
+          위에서 내려오는 바는 좁은 화면에서 화면을 가로로 다 먹어 읽기 나쁘다.
+          BottomBar 의 모바일 팝업과 같은 마크업을 쓴다. */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed left-0 right-0 z-[100] bg-black/60 flex items-start justify-center px-0 pb-6 overflow-y-auto"
+          /* 키패드가 뜨면 보이는 영역만큼만 차지해 카드가 그 안에서 가운데로 온다.
+             visualViewport 를 못 쓰는 환경에서는 예전처럼 화면 전체를 덮는다. */
+          style={
+            visible
+              ? { top: visible.top, height: visible.height, paddingTop: visible.height * 0.1 }
+              : { top: 0, bottom: 0, paddingTop: "10vh" }
+          }
+          onClick={onClose}
+        >
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl mx-auto w-[92%] max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between px-5 pt-5 pb-3">
+              <div>
+                <p className="text-[17px] font-extrabold text-[#2A2A2A] leading-snug">
+                  창호교체 비용이 궁금하신가요?
+                </p>
+                <p className="text-[12px] text-[#888] mt-0.5">
+                  무료견적상담, 지금 연락처만 남겨주세요!
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 bg-[#f5f5f5] rounded-full flex items-center justify-center shrink-0 ml-2 mt-0.5 cursor-pointer"
+                aria-label="닫기"
+              >
+                <X size={15} className="text-[#666]" />
+              </button>
+            </div>
+
+            <div className="h-px bg-[#f0f0f0] mx-5" />
+
+            <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3">
+              <HoneypotField ref={honeypotRef} />
+              <div>
+                <p className="text-[11px] text-[#999] font-medium uppercase tracking-[0.05em] mb-1.5">
+                  연락처
+                </p>
+                {/* 칸 폭을 고정하지 않고 남는 폭을 나눠 갖게 한다 — 카드 좌우 여백선까지 꽉 찬다 */}
+                <div className="flex items-center gap-1.5 w-full">
+                  {/* 국번은 이 폼에서 010 고정이다(기존 동작 유지) */}
+                  <input type="text" value={phone1} readOnly className={`w-0 flex-1 min-w-0 ${popupInput}`} />
+                  <span className="text-[#bbb] text-[18px] font-light">—</span>
+                  <input
+                    data-consult-phone2
+                    type="tel"
+                    value={phone2}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^0-9]/g, "");
+                      if (v.length <= 4) {
+                        setPhone2(v);
+                        if (v.length === 4) phone3Ref.current?.focus();
+                      }
+                    }}
+                    placeholder="0000"
+                    maxLength={4}
+                    disabled={isSubmitting}
+                    className={`w-0 flex-1 min-w-0 ${popupInput}`}
+                  />
+                  <span className="text-[#bbb] text-[18px] font-light">—</span>
+                  <input
+                    ref={phone3Ref}
+                    type="tel"
+                    value={phone3}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^0-9]/g, "");
+                      if (v.length <= 4) setPhone3(v);
+                    }}
+                    placeholder="0000"
+                    maxLength={4}
+                    disabled={isSubmitting}
+                    className={`w-0 flex-1 min-w-0 ${popupInput}`}
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  disabled={isSubmitting}
+                  className="w-4 h-4 cursor-pointer accent-[#D22727] mt-0.5 shrink-0"
+                />
+                <span className="text-[12px] text-[#666] leading-relaxed">
+                  상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleViewPrivacy(); }}
+                    className="text-[length:inherit] text-[#D22727] underline cursor-pointer font-medium"
+                  >
+                    [내용보기]
+                  </button>
+                </span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-[52px] bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[15px] rounded-xl transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>전송 중...</span>
+                  </span>
+                ) : "무료 상담 신청하기"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Privacy Policy Modal */}
       <AnimatePresence>

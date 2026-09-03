@@ -2,8 +2,11 @@ import { motion, AnimatePresence } from "motion/react"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router"
 import { ChevronLeft } from "lucide-react"
-import heroVideo from "@/assets/Sequence 21.mp4"
+import heroVideo from "@/assets/hero-glass-closeup.mp4"
 import { Navigation } from "../components/Navigation"
+import { ConsultationModal } from "../components/ConsultationModal"
+import { ENTRY_WHERE, TEMPERED_SOURCE } from "@/lib/entryForm"
+import { useDday } from "@/lib/dday"
 import { Footer } from "../components/Footer"
 import { BottomBar } from "../components/BottomBar"
 import { ForgeMotion } from "../components/tempered/ForgeMotion"
@@ -11,7 +14,6 @@ import { GlassBreakSlider } from "../components/tempered/GlassBreakSlider"
 import { TestFilm } from "../components/tempered/TestFilm"
 import { TemperedConsultForm } from "../components/tempered/TemperedConsultForm"
 import { ShortsPlayer } from "../components/tempered/ShortsPlayer"
-import { HandwriteTag } from "../components/tempered/HandwriteTag"
 import imgHighrise from "@/assets/where-highrise.webp"
 import imgFamily from "@/assets/where-family.webp"
 import imgLowfloor from "@/assets/where-lowfloor.webp"
@@ -45,11 +47,11 @@ const COMPARE: {
 ]
 
 /* ── 영상 섹션 ────────────────────────────────────────────
-   구글 드라이브 공유 링크를 그대로 붙여넣으면 된다(파일 ID 만 넣어도 동작).
-   드라이브에서 "링크가 있는 모든 사용자 — 뷰어" 로 공유돼 있어야 재생된다.
-   예) https://drive.google.com/file/d/1AbCdEfGhIjKlMnOp/view?usp=sharing        */
-const SHORTS_SRC =
-  "https://drive.google.com/file/d/16WPncWS43B19XH8kVhhQXLqQdBrDVbRD/view?usp=drive_link"
+   유튜브 / 구글 드라이브 링크를 그대로 붙여넣으면 된다(ID 만 넣어도 동작).
+   공개 범위: 유튜브는 "일부 공개" 이상, 드라이브는 "링크가 있는 모든 사용자 — 뷰어".
+   예) https://www.youtube.com/shorts/xxxxxxxxxxx
+       https://drive.google.com/file/d/1AbCdEfGhIjKlMnOp/view?usp=sharing        */
+const SHORTS_SRC = "https://www.youtube.com/shorts/30u-dW7YkNI"
 
 const WHERE = [
   {
@@ -83,9 +85,9 @@ const WHERE = [
 const JUMP = [
   { id: "video", label: "실제 영상" },
   { id: "compare", label: "한눈 비교" },
+  { id: "test", label: "시험 기준" },
   { id: "why", label: "왜 강한가" },
   { id: "break", label: "깨질 때" },
-  { id: "test", label: "시험 기준" },
   { id: "where", label: "적용 부위" },
   { id: "apply", label: "상담 신청" },
 ]
@@ -273,23 +275,6 @@ function SectionLabel({ step, title }: { step: string; title: string }) {
   )
 }
 
-function useDday(targetDate: string): string {
-  const diff = Math.ceil(
-    (new Date(targetDate).setHours(23, 59, 59, 999) - Date.now()) / 86400000,
-  )
-  if (diff > 0) return `D-${diff}`
-  if (diff === 0) return "D-DAY"
-  return "종료"
-}
-
-// href="#id" 를 그대로 쓰면 안 된다. 이 앱은 <ScrollRestoration /> 을 쓰는데, 네이티브
-// 앵커 클릭이 만드는 해시 변경도 라우터가 새 내비게이션으로 감지해 스크롤을 맨 위로
-// 되돌려 버린다(첫 클릭은 씹히고 두 번째부터 먹는 이유). URL 을 건드리지 않는 수동
-// 스크롤로 우회한다 — Section 의 scroll-mt 를 그대로 타도록 scrollIntoView 를 쓴다.
-function scrollToId(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
-}
-
 export function Component() {
   // 탭 구분용 — 로컬 개발 서버(dev)에서만 "강화유리"로 바뀐다.
   // import.meta.env.DEV 는 프로덕션 빌드에서 항상 false 라 배포본은 자동으로
@@ -298,8 +283,10 @@ export function Component() {
     if (import.meta.env.DEV) document.title = "강화유리"
   }, [])
 
-  // 프로모션 종료일 — 매년 갱신 필요. 지난 날짜면 배지가 "종료"로 바뀐다.
-  const dday = useDday("2026-09-30")
+  // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리 (GNB 사이드메뉴 배지와 공유)
+  const dday = useDday()
+  // 히어로 CTA — 메인 히어로와 같은 상담 모달을 연다(variant="top")
+  const [isConsultOpen, setIsConsultOpen] = useState(false)
   return (
     // 상단 pt: 고정 GNB(모바일 60px / 1550px↑ 70px)
     // 하단 pb: 고정 BottomBar(100px / md 110px) — 두 값 모두 하우스 원본 규격
@@ -307,8 +294,16 @@ export function Component() {
       <Navigation />
 
       <main className="w-full flex flex-col">
-        {/* ── Hero ──────────────────────────────────────── */}
-        <section className="relative w-full overflow-hidden">
+        {/* ── Hero ──────────────────────────────────────────
+            높이는 메인 히어로와 같은 규칙: 화면을 채우되 900px 를 넘지 않고,
+            내용이 더 길면 내용만큼 늘어난다. min-h-fit 이 max-h 보다 우선하므로
+            짧은 화면에서 CTA 가 하단 고정바에 잘리지 않는다.
+
+            -mt 는 바깥 래퍼의 pt(고정 GNB 자리)를 상쇄하는 값이다. 메인은 히어로가
+            페이지 최상단이라 영상이 GNB 뒤까지 꽉 차는데, 여기는 래퍼가 이미 GNB 만큼
+            밀어 놔서 그대로 두면 영상이 GNB 아래에서 시작해 프레이밍이 달라진다.
+            대신 GNB 를 비우는 여백은 아래 본문 블록의 pt 로 옮겼다. */}
+        <section className="relative w-full h-[100svh] min-h-fit max-h-[900px] -mt-[60px] min-[1550px]:-mt-[70px] bg-black overflow-hidden flex flex-col">
           {/* 배경 영상 */}
           <video
             src={heroVideo}
@@ -333,13 +328,16 @@ export function Component() {
             }}
           />
 
-          {/* 메인으로 돌아가기 — 모바일 전용.
+          {/* 메인으로 돌아가기 — 모바일 전용, 히어로 좌상단.
               PC 는 GNB 로고와 브레드크럼(홈 › 강화유리)이 이미 같은 역할을 해서
               버튼까지 두면 복귀 동선이 셋으로 겹친다. 모바일은 GNB 가 로고+햄버거뿐이고
               브레드크럼도 없으므로 이 버튼이 유일한 복귀 수단이다.
-              위치는 히어로 본문과 같은 열(px-6)에 맞춘다. */}
-          <div className="md:hidden absolute inset-x-0 top-4 z-20 pointer-events-none">
-            <div className="max-w-screen-md mx-auto px-6 md:px-10">
+
+              top 76px = 고정 GNB(60) + 16. 히어로가 -mt 로 GNB 뒤까지 올라와 있어서
+              top-4 로 두면 버튼이 GNB 에 가려진다.
+              좌우는 히어로 본문과 같은 열(px-6)에 맞춘다. */}
+          <div className="md:hidden absolute inset-x-0 top-[76px] z-20 pointer-events-none">
+            <div className="max-w-screen-md mx-auto px-6">
               <Link
                 to="/"
                 aria-label="메인으로 돌아가기"
@@ -352,22 +350,16 @@ export function Component() {
           </div>
 
           {/* MO — 전체 높이, 텍스트 하단 */}
-          <div
-            className="flex md:hidden flex-col justify-end relative z-10 px-6 pb-14"
-            style={{ minHeight: "70svh" }}
-          >
+          <div className="flex md:hidden flex-col justify-end relative z-10 flex-1 max-w-screen-md mx-auto w-full px-6 pt-[70px] pb-[140px]">
             <motion.div
               {...rise}
               transition={{ duration: 0.5 }}
               className="inline-flex self-start items-center gap-2 mb-5"
             >
+              {/* 메인 히어로와 같은 형태 — 프로모션명과 남은 날을 한 알약에 */}
               <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[11.5px] font-bold text-white">
-                  9월 한정 프로모션
-                </span>
-              </div>
-              <div className="flex items-center bg-white/15 border border-white/30 backdrop-blur-sm rounded-full px-3 py-1.5">
+                <span className="text-[11.5px] font-bold text-white">이벤트 마감</span>
                 <span className="text-[11.5px] font-extrabold text-white tabular-nums">
                   {dday}
                 </span>
@@ -377,59 +369,34 @@ export function Component() {
             <motion.h1
               {...rise}
               transition={{ duration: 0.55, delay: 0.05 }}
-              className="text-[30px] font-extrabold text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
+              className="text-[30px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
               style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
             >
-              열과 충격에 강한
+              {/* 빼낸 "9월 한정 / 무상 업그레이드" 의 굵기 대비를 그대로 가져왔다 */}
+              <span className="font-light">열과 충격에 강한</span>
               <br />
-              <span className="text-[#ff6060]">강화유리</span>
+              <span className="font-extrabold">강화유리</span>
             </motion.h1>
 
             <motion.p
               {...rise}
               transition={{ duration: 0.55, delay: 0.1 }}
-              className="text-[15px] text-white/80 leading-[1.7] mb-6 break-keep"
+              className="text-[15px] text-white/80 leading-[1.7] mb-8 break-keep"
               style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
             >
               같은 두께라도 충격과 열에 훨씬 강합니다. 9월 안에 계약하시면
-              LX 창호 선택 시 강화유리로 업그레이드 해드립니다.{" "}
+              LX 창호 선택 시 <b className="font-extrabold text-white">무상 업그레이드</b> 해드립니다.{" "}
             </motion.p>
 
             <motion.div
               {...rise}
-              transition={{ duration: 0.55, delay: 0.15 }}
-              className="flex flex-col items-start gap-1 mb-7"
-            >
-              <span
-                className="text-[15px] font-semibold text-white/80 leading-tight break-keep"
-                style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-              >
-                일반유리 <span className="text-white/40 mx-0.5">→</span>{" "}
-                <b className="font-extrabold text-[#ff6060]">강화유리</b>
-              </span>
-              <span
-                className="text-[32px] font-extrabold text-white leading-[1.1] -tracking-[.03em] break-keep"
-                style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
-              >
-                <HandwriteTag size={42} className="inline-block align-baseline mr-2 translate-y-[12px] text-white">9월 한정</HandwriteTag>무상 업그레이드
-              </span>
-              <span
-                className="text-[13px] text-white/60 leading-tight break-keep"
-                style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-              >
-                LX 창호 선택 시
-              </span>
-            </motion.div>
-
-            <motion.div
-              {...rise}
               transition={{ duration: 0.55, delay: 0.2 }}
-              className="flex flex-col gap-3"
+              className="flex flex-col"
               style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
             >
               <button
                 type="button"
-                onClick={() => scrollToId("apply")}
+                onClick={() => setIsConsultOpen(true)}
                 className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl transition-colors cursor-pointer"
               >
                 무료 실측 상담 신청
@@ -437,12 +404,8 @@ export function Component() {
             </motion.div>
           </div>
 
-          {/* PC — 기존 레이아웃
-              min-h 30.8vw : 배경영상(16:9)이 과하게 잘리지 않도록 높이를 가로폭에 비례시킨다.
-              내용 높이(≈590px)가 더 클 때는 무시되므로 FHD(1920) 미만에서는 지금과 동일하고,
-              그 이상에서만 폭이 넓어진 만큼 높이도 함께 커져 잘리는 비율이 고정된다.
-              1920 / 3.25 ≈ 590 → 3.25 를 유지하는 값이 30.8vw. */}
-          <div className="hidden md:flex flex-col justify-center relative z-10 max-w-screen-md mx-auto px-10 pt-14 pb-20 min-h-[30.8vw]">
+          {/* PC — 좌측 정렬, 세로 가운데 (메인 히어로와 동일) */}
+          <div className="hidden md:flex flex-col justify-center relative z-10 flex-1 max-w-screen-md mx-auto w-full px-10 pt-[88px] pb-[136px]">
             <nav className="text-[12px] text-white/40 mb-6 flex items-center gap-1.5">
               <Link
                 to="/"
@@ -451,7 +414,10 @@ export function Component() {
                 홈
               </Link>
               <span className="text-white/20">›</span>
-              <span className="text-white/40">강화유리</span>
+              {/* 지금 보고 있는 페이지 — 브레드크럼에서 현재 위치가 가장 진해야 한다 */}
+              <span aria-current="page" className="text-white font-semibold">
+                강화유리
+              </span>
             </nav>
 
             <motion.div
@@ -459,13 +425,10 @@ export function Component() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 mb-5"
             >
+              {/* 메인 히어로와 같은 형태 — 프로모션명과 남은 날을 한 알약에 */}
               <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[12.5px] font-bold text-white">
-                  9월 한정 프로모션
-                </span>
-              </div>
-              <div className="flex items-center bg-white/15 border border-white/30 backdrop-blur-sm rounded-full px-3 py-1.5">
+                <span className="text-[12.5px] font-bold text-white">이벤트 마감</span>
                 <span className="text-[12.5px] font-extrabold text-white tabular-nums">
                   {dday}
                 </span>
@@ -475,12 +438,13 @@ export function Component() {
             <motion.h1
               {...rise}
               transition={{ duration: 0.55, delay: 0.05 }}
-              className="text-[40px] font-extrabold text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
+              className="text-[40px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
               style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
             >
-              열과 충격에 강한
+              {/* 빼낸 "9월 한정 / 무상 업그레이드" 의 굵기 대비를 그대로 가져왔다 */}
+              <span className="font-light">열과 충격에 강한</span>
               <br />
-              <span className="text-[#ff6060]">강화유리</span>
+              <span className="font-extrabold">강화유리</span>
             </motion.h1>
 
             <motion.p
@@ -490,53 +454,33 @@ export function Component() {
               style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
             >
               같은 두께라도 충격과 열에 훨씬 강합니다. 9월 안에 계약하시면
-              LX 창호 선택 시 강화유리로 업그레이드 해드립니다.{" "}
+              LX 창호 선택 시 <b className="font-extrabold text-white">무상 업그레이드</b> 해드립니다.{" "}
               <span className="text-white font-bold">추가 비용은 없습니다.</span>
             </motion.p>
 
             <motion.div
               {...rise}
-              transition={{ duration: 0.55, delay: 0.15 }}
-              /* 우측 설명이 2줄이라 items-baseline 이면 첫 줄에 맞춰져 둘째 줄이 흘러내린다.
-                 items-end 로 두 블록의 아랫변을 맞추고, 큰 숫자의 디센더만큼만 내려 시각 정렬. */
-              className="flex flex-col items-start gap-1.5 mb-8"
-            >
-              <span
-                className="text-[17px] font-semibold text-white/80 leading-tight break-keep"
-                style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-              >
-                일반유리 <span className="text-white/40 mx-1">→</span>{" "}
-                <b className="font-extrabold text-[#ff6060]">강화유리</b>
-              </span>
-              <span
-                className="text-[40px] font-extrabold text-white leading-[1.05] -tracking-[.03em] break-keep"
-                style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
-              >
-                <HandwriteTag size={52} className="inline-block align-baseline mr-2 translate-y-[12px] text-white">9월 한정</HandwriteTag>무상 업그레이드
-              </span>
-              <span
-                className="text-[14px] text-white/60 leading-tight break-keep"
-                style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-              >
-                LX 창호 선택 시
-              </span>
-            </motion.div>
-
-            <motion.div
-              {...rise}
               transition={{ duration: 0.55, delay: 0.2 }}
-              className="flex flex-row gap-3"
+              className="flex flex-row"
               style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
             >
               <button
                 type="button"
-                onClick={() => scrollToId("apply")}
+                onClick={() => setIsConsultOpen(true)}
                 className="flex items-center justify-center h-[52px] w-[220px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl transition-colors cursor-pointer"
               >
                 무료 실측 상담 신청
               </button>
             </motion.div>
           </div>
+
+          <ConsultationModal
+            isOpen={isConsultOpen}
+            onClose={() => setIsConsultOpen(false)}
+            variant="top"
+            entrySource={TEMPERED_SOURCE}
+            entryLabel={ENTRY_WHERE.heroModal}
+          />
         </section>
 
         {/* ── 01. 영상으로 보는 강화유리 ────────────────
@@ -618,120 +562,160 @@ export function Component() {
             같은 두께, 같은 자리에 들어가지만 성질이 다릅니다.
           </motion.p>
 
-          {/* 비교 테이블 — 이미지 참고 레이아웃 */}
+          {/* 비교 테이블 — 강화유리 쪽이 "들려 있는 카드".
+              구조는 회색 블록(일반) | 구분 | 흰 카드(강화) 세 덩어리다. 표 전체를 감싸는
+              테두리는 없다 — 있으면 카드가 표 안에 갇혀 보인다.
+
+              카드가 표보다 위(20px)·아래(16px)로 나오는데, 그 자리를 빈 채로 두면 통만
+              커 보인다. 위는 사진을 -mt 로 끌어올려 꽉 채우고, 아래는 마지막 칸의 패딩을
+              늘려 카드 여백처럼 만든다. 그림자·흰 바탕은 셀 뒤에, 빨간 테두리는 셀 위에
+              따로 깐다(한 요소로 하면 사진이 테두리를 덮는다).
+
+              열 폭을 바꿀 때는 grid-cols 의 fr 과 아래 RIGHT_W 를 같이 고쳐야 한다.
+              RIGHT_W = (100% - 가운데칸 64px) x 1.16/(0.84+1.16) = 58%. */}
           <motion.div
             {...rise}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="relative rounded-2xl overflow-hidden border border-[#e0e0e0]"
+            className="relative pt-5 pb-4"
           >
-            {/* 강화유리 열 포인트 테두리 오버레이 */}
+            {/* 카드 바탕 — 흰 배경 + 그림자. 셀들 뒤에 깔린다.
+                구분 칸은 배경이 없어 그림자가 라벨 뒤로 살짝 비친다 */}
             <div
-              className="absolute top-0 right-0 bottom-0 pointer-events-none rounded-r-2xl"
-              style={{
-                width: "calc((100% - 56px) / 2)",
-                border: "2.5px solid #d22727",
-                borderRadius: "0 16px 16px 0",
-              }}
+              aria-hidden
+              className="absolute top-0 right-0 bottom-0 rounded-2xl bg-white shadow-[0_18px_40px_-12px_rgba(210,39,39,.32),0_6px_16px_rgba(0,0,0,.10)]"
+              style={{ width: "calc((100% - 64px) * 0.58)" }}
             />
-            {/* 상단 이미지 + VS */}
-            <div className="grid grid-cols-[1fr_56px_1fr]">
-              {/* 한 장의 좌우 비교 사진을 두 칸에 절반씩 나눠 담는다.
-                  img 를 칸의 2배 폭으로 깔고 오른쪽 칸만 -100% 밀면 정확히 반씩 잘린다.
-                  (object-position 만으로는 칸 비율에 따라 절반이 안 맞는다) */}
-              <div className="h-[120px] md:h-[150px] overflow-hidden relative">
+            <div className="relative grid grid-cols-[0.84fr_64px_1.16fr]">
+              {/* ── 사진 행 ── 한 장을 좌우 반씩 나눠 담는다.
+                  img 를 칸의 2배 폭으로 깔고 오른쪽 칸만 -100% 밀면 정확히 반씩 잘린다. */}
+              {/* 행 높이는 오른쪽 사진(-mt 제외분)이 정하고, 왼쪽은 그 높이를 그대로 채운다.
+                  위에 회색 띠를 남기면 비어 보인다. */}
+              <div className="relative self-stretch overflow-hidden rounded-tl-2xl bg-[#eeeef0]">
                 <img
                   src={imgCompare}
                   alt="교체 전 — 일반 유리"
                   className="absolute inset-y-0 left-0 h-full w-[200%] max-w-none object-cover"
                 />
               </div>
-              {/* VS */}
-              <div className="flex items-center justify-center bg-white border-x border-[#e0e0e0]">
+              <div className="self-stretch flex items-center justify-center border-x border-t border-[#ececec]">
                 <span className="text-[13px] font-extrabold text-[#1a1a1a] tracking-widest whitespace-nowrap">
                   VS
                 </span>
               </div>
-              <div className="h-[120px] md:h-[150px] overflow-hidden relative">
+              {/* -mt-5 : 카드 상단(바깥 pt-5)까지 사진이 올라가 빈틈 없이 채운다 */}
+              <div className="relative h-[150px] md:h-[190px] -mt-5 rounded-t-2xl overflow-hidden">
                 <img
                   src={imgCompare}
                   alt="교체 후 — 강화유리"
                   className="absolute inset-y-0 left-[-100%] h-full w-[200%] max-w-none object-cover"
                 />
               </div>
-            </div>
 
-            {/* 컬러 헤더 */}
-            <div className="grid grid-cols-[1fr_56px_1fr]">
-              <div className="py-3 flex items-center justify-center bg-[#555]">
-                <span className="text-[13px] font-extrabold text-white tracking-wide">
-                  일반 유리
-                </span>
+              {/* ── 헤더 행 ── */}
+              <div className="py-3 flex items-center justify-center bg-[#8a8a8e]">
+                <span className="text-[12.5px] font-bold text-white tracking-wide">일반 유리</span>
               </div>
-              <div className="py-3 flex items-center justify-center bg-white border-x border-[#e0e0e0]">
+              <div className="py-3 flex items-center justify-center border-x border-[#ececec]">
                 <span className="text-[12px] md:text-[13.5px] font-bold text-[#555555] whitespace-nowrap">
                   구분
                 </span>
               </div>
-              <div className="py-3 flex items-center justify-center bg-[#d22727]">
-                <span className="text-[13px] font-extrabold text-white tracking-wide">
+              <div className="py-3.5 flex items-center justify-center bg-[#d22727]">
+                <span className="text-[14px] md:text-[15px] font-extrabold text-white tracking-wide">
                   강화유리
                 </span>
               </div>
-            </div>
 
-            {/* 행 */}
-            {COMPARE.map((r, i) => (
-              <motion.div
-                key={r.k}
-                {...rise}
-                transition={{ duration: 0.4, delay: 0.06 * i }}
-                className={`grid grid-cols-[1fr_56px_1fr] ${
-                  i < COMPARE.length - 1 ? "border-b border-[#f0f0f0]" : ""
-                }`}
-              >
-                {/* 일반 유리 값 */}
-                <div className="px-3 md:px-4 py-4 flex flex-col items-center justify-center gap-1 text-center border-r border-[#f0f0f0] bg-white">
-                  <span className="text-[13px] md:text-[13.5px] font-semibold leading-[1.4] break-keep text-[#777]">
-                    {r.a}
-                  </span>
-                </div>
-
-                {/* 구분 라벨 */}
-                <div className="px-1 py-4 flex items-center justify-center bg-[#fafafa] border-x border-[#f0f0f0]">
-                  <span className="text-[12px] md:text-[13.5px] font-bold text-[#555555] leading-[1.4] whitespace-pre-line text-center">
-                    {r.k}
-                  </span>
-                </div>
-
-                {/* 강화유리 값 */}
-                <div className="px-3 md:px-4 py-4 flex flex-col items-center justify-center gap-1 text-center bg-[rgba(210,39,39,.025)]">
-                  <span className="text-[13px] md:text-[13.5px] font-extrabold text-[#d22727] leading-[1.4] break-keep">
-                    {r.b}
-                  </span>
-                  {r.bSub && (
-                    <span
-                      className={`text-[10.5px] font-semibold rounded-md px-2 py-0.5 ${
-                        r.aBad
-                          ? "text-[#1a7f4b] bg-[#e8f7ef]"
-                          : "text-[#999] bg-[#f3f3f3]"
+              {/* ── 값 행 ── */}
+              {COMPARE.map((r, i) => {
+                const last = i === COMPARE.length - 1
+                return (
+                  <React.Fragment key={r.k}>
+                    <div
+                      className={`px-3 md:px-4 py-4 flex flex-col items-center justify-center text-center bg-[#f7f7f8] ${
+                        last ? "rounded-bl-2xl" : "border-b border-[#e8e8ea]"
                       }`}
                     >
-                      {r.bSub}
-                    </span>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+                      <span className="text-[12.5px] md:text-[13px] font-medium leading-[1.4] break-keep text-[#9a9a9e]">
+                        {r.a}
+                      </span>
+                    </div>
+                    <div
+                      className="px-1 py-4 flex items-center justify-center border-x border-b border-[#ececec]"
+                    >
+                      <span className="text-[12px] md:text-[13.5px] font-bold text-[#555555] leading-[1.4] whitespace-pre-line text-center">
+                        {r.k}
+                      </span>
+                    </div>
+                    {/* 마지막 칸: -mb-4 로 카드 하단까지 내려가고, 늘어난 만큼 pb 를 더해
+                        값은 제자리에 두고 아래만 카드 여백이 되게 한다 */}
+                    <div
+                      className={`px-3 md:px-5 flex flex-col items-center justify-center gap-1.5 text-center bg-[rgba(210,39,39,.035)] ${
+                        last
+                          ? "pt-5 pb-9 -mb-4 rounded-b-2xl"
+                          : "py-5 border-b border-[rgba(210,39,39,.09)]"
+                      }`}
+                    >
+                      <span className="text-[15px] md:text-[16.5px] font-extrabold text-[#d22727] leading-[1.35] break-keep">
+                        {r.b}
+                      </span>
+                      {r.bSub && (
+                        <span
+                          className={`text-[10.5px] font-semibold rounded-md px-2 py-0.5 ${
+                            r.aBad ? "text-[#1a7f4b] bg-[#e8f7ef]" : "text-[#999] bg-[#f3f3f3]"
+                          }`}
+                        >
+                          {r.bSub}
+                        </span>
+                      )}
+                    </div>
+                  </React.Fragment>
+                )
+              })}
+            </div>
+
+            {/* 카드 테두리 — 셀 위에 그린다. 바탕과 크기·위치가 같아야 한다 */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-0 right-0 bottom-0 rounded-2xl border-[2.5px] border-[#d22727]"
+              style={{ width: "calc((100% - 64px) * 0.58)" }}
+            />
           </motion.div>
 
-          <p className="text-[11.5px] text-[#bbb] mt-4 break-keep leading-[1.6]">
+          <p className="text-[11.5px] text-[#bbb] mt-7 break-keep leading-[1.6]">
             ※ 위 수치는 강화유리라는 소재에 대해 동일 두께 기준으로 일반적으로 알려진
             비교값입니다. 특정 제품의 시험 결과가 아니며, 제품 규격·두께·시공 조건에 따라
             달라질 수 있습니다.
           </p>
         </Section>
 
-        {/* ── 03. 왜 강한가 ─────────────────────────────── */}
+        {/* ── 03. 시험 기준 ─────────────────────────────── */}
+        <Section id="test" className="py-16 md:py-24 border-t border-[#f3f3f3]">
+          <motion.h2
+            {...rise}
+            transition={{ duration: 0.5 }}
+            className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] mb-3 break-keep -tracking-[.02em]"
+          >
+            강화유리에는{" "}
+            <span className="text-[#d22727]">따로 정해진 시험</span>이 있습니다
+          </motion.h2>
+          <motion.p
+            {...rise}
+            transition={{ duration: 0.5, delay: 0.07 }}
+            className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep"
+          >
+            국가표준{" "}
+            <b className="font-semibold text-[#555]">KS L 2002(강화 유리)</b>는
+            낙구 충격, 파쇄 시험, 사람이 부딪히는 상황을 본뜬 쇼트백 충격을
+            규정하고 있습니다.
+          </motion.p>
+          <motion.div {...rise} transition={{ duration: 0.5, delay: 0.1 }}>
+            <TestFilm />
+          </motion.div>
+        </Section>
+
+
+        {/* ── 04. 왜 강한가 ─────────────────────────────── */}
         <Section id="why" className="py-16 md:py-24 border-t border-[#f3f3f3]">
           <motion.h2
             {...rise}
@@ -759,7 +743,7 @@ export function Component() {
           <PriceReasonAccordion />
         </Section>
 
-        {/* ── 04. 깨질 때 차이 ──────────────────────────── */}
+        {/* ── 05. 깨질 때 차이 ──────────────────────────── */}
         <Section
           id="break"
           className="py-16 md:py-24 border-t border-[#f3f3f3]"
@@ -789,32 +773,6 @@ export function Component() {
           </motion.div>
         </Section>
 
-        {/* ── 05. 시험 기준 ─────────────────────────────── */}
-        <Section id="test" className="py-16 md:py-24 border-t border-[#f3f3f3]">
-          <motion.h2
-            {...rise}
-            transition={{ duration: 0.5 }}
-            className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] mb-3 break-keep -tracking-[.02em]"
-          >
-            강화유리에는{" "}
-            <span className="text-[#d22727]">따로 정해진 시험</span>이 있습니다
-          </motion.h2>
-          <motion.p
-            {...rise}
-            transition={{ duration: 0.5, delay: 0.07 }}
-            className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep"
-          >
-            국가표준{" "}
-            <b className="font-semibold text-[#555]">KS L 2002(강화 유리)</b>는
-            낙구 충격, 파쇄 시험, 사람이 부딪히는 상황을 본뜬 쇼트백 충격을
-            규정하고 있습니다.
-          </motion.p>
-          <motion.div {...rise} transition={{ duration: 0.5, delay: 0.1 }}>
-            <TestFilm />
-          </motion.div>
-        </Section>
-
-
         {/* ── 06. 어디에 쓰이나 ────────────────────────── */}
         <Section
           id="where"
@@ -841,7 +799,7 @@ export function Component() {
           </motion.div>
         </Section>
 
-        {/* ── 06. 상담 신청 ─────────────────────────────── */}
+        {/* ── 07. 상담 신청 ─────────────────────────────── */}
         <Section
           id="apply"
           className="py-16 md:py-24 border-t border-[#f3f3f3]"
