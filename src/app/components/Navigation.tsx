@@ -3,15 +3,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { useNavigate, useLocation } from "react-router";
 import { Phone, Handshake } from "lucide-react";
 import { ConsultationModal } from "./ConsultationModal";
+import {
+  closeConsultBar,
+  openConsultBar,
+  useConsultBarEntry,
+  useConsultBarOpen,
+} from "@/lib/consultBar";
 import { useDday } from "@/lib/dday";
 import logo from "@/assets/logo-gnb.svg";
 
 interface NavigationProps {
   onMenuClick?: () => void;
-  /** 접수 출처. 시트 D열(유입채널)의 "<출처> <기기> <위치>" 중 출처·위치.
-      기본값 둘 다 메인이 쓰던 값 그대로라 메인 동작은 바뀌지 않는다. */
+  /** 접수 출처 접두. 시트 D열의 "<출처> <기기> <위치>" 중 출처.
+      기본값이 원본과 같아 메인 동작은 그대로다. */
   entrySource?: string;
-  entryLabel?: string;
 }
 
 const sections = [
@@ -55,11 +60,7 @@ const desktopMenuItems: DesktopMenuItem[] = [
   { type: "route", href: "/as", label: "AS접수" },
 ];
 
-export function Navigation({
-  onMenuClick,
-  entrySource = "홈페이지",
-  entryLabel = "상담모달",
-}: NavigationProps) {
+export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
   const navigate = useNavigate();
   const dday = useDday(); // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리
   const location = useLocation();
@@ -69,12 +70,15 @@ export function Navigation({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isConsultationOpen, setIsConsultationOpen] = useState(false);
+  /* 접수 바는 화면에 하나뿐이다 — 히어로 버튼으로도 같은 바가 열린다.
+     상태는 lib/consultBar.ts 에 있고, 그리는 건 여기(GNB)가 맡는다. */
+  const isConsultationOpen = useConsultBarOpen();
+  const consultEntry = useConsultBarEntry();
 
   // GNB가 숨겨지면 상담 모달도 닫기
   useEffect(() => {
     if (!showNav) {
-      setIsConsultationOpen(false);
+      closeConsultBar();
     }
   }, [showNav]);
 
@@ -268,7 +272,15 @@ export function Navigation({
 
                 {/* 무료상담 전화번호 (단독 우측 CTA) — 재클릭 시 닫힘 (토글) */}
                 <button
-                  onClick={() => setIsConsultationOpen((prev) => !prev)}
+                  /* 토글이되, "GNB 가 연 바"에 대해서만이다.
+                     바는 하나뿐이라 그냥 토글로 두면 히어로가 띄운 폼을 GNB 버튼이
+                     닫아 버린다. 서로 다른 버튼이니 남이 연 건 건드리지 않는다.
+                     (열려 있을 때 openConsultBar 는 아무 일도 안 한다 → 그대로 유지) */
+                  onClick={() =>
+                    isConsultationOpen && consultEntry === "GNB"
+                      ? closeConsultBar()
+                      : openConsultBar("GNB")
+                  }
                   className="flex items-center gap-2 bg-[#d22727] text-white px-5 py-2.5 rounded-full hover:bg-[#b81f1f] transition-colors cursor-pointer"
                 >
                   <Phone className="w-5 h-5" />
@@ -285,10 +297,10 @@ export function Navigation({
       {/* 데스크톱 상담 모달 */}
       <ConsultationModal
         isOpen={showNav && isConsultationOpen}
-        onClose={() => setIsConsultationOpen(false)}
+        onClose={closeConsultBar}
         variant="top"
+        entry={consultEntry}
         entrySource={entrySource}
-        entryLabel={entryLabel}
       />
 
       {/* 모바일 네비게이션 */}

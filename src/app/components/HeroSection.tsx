@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { TemperedGlassLink } from "./TemperedGlassLink";
 import heroVideo from "../../assets/hero-tempered.mp4";
-import { ConsultationModal } from "./ConsultationModal";
+import { openConsultBar } from "@/lib/consultBar";
 import { HandwriteSept } from "./HandwriteSept";
 import { SashTurntable } from "./SashTurntable";
 import tempedTag from "@/assets/handwrite-tempered.svg";
@@ -29,7 +29,8 @@ const rise = {
 } as const;
 
 export function HeroSection() {
-  const [isConsultOpen, setIsConsultOpen] = useState(false);
+  /* 접수 바는 GNB 가 하나만 그린다(lib/consultBar.ts).
+     여기서 따로 <ConsultationModal> 을 두면 GNB 것과 두 겹으로 열린다. */
   const dday = useDday(); // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리
 
   // 높이: 화면을 채우되 900px 를 넘지 않고(원본 규격), 내용이 더 길면 내용만큼 늘어난다.
@@ -144,7 +145,7 @@ export function HeroSection() {
         >
           <button
             type="button"
-            onClick={() => setIsConsultOpen(true)}
+            onClick={() => openConsultBar("히어로")}
             className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl transition-colors cursor-pointer"
           >
             무료 실측 상담 신청
@@ -231,7 +232,7 @@ export function HeroSection() {
         >
           <button
             type="button"
-            onClick={() => setIsConsultOpen(true)}
+            onClick={() => openConsultBar("히어로")}
             className="flex items-center justify-center h-[52px] w-[220px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl transition-colors cursor-pointer"
           >
             무료 실측 상담 신청
@@ -244,11 +245,6 @@ export function HeroSection() {
         </motion.div>
       </div>
 
-      <ConsultationModal
-        isOpen={isConsultOpen}
-        onClose={() => setIsConsultOpen(false)}
-        variant="top"
-      />
     </section>
   );
 }

@@ -4,7 +4,7 @@ import { Link } from "react-router"
 import { ChevronLeft } from "lucide-react"
 import heroVideo from "@/assets/hero-glass-closeup.mp4"
 import { Navigation } from "../components/Navigation"
-import { ConsultationModal } from "../components/ConsultationModal"
+import { openConsultBar } from "@/lib/consultBar"
 import { ENTRY_WHERE, TEMPERED_SOURCE } from "@/lib/entryForm"
 import { useDday } from "@/lib/dday"
 import { Footer } from "../components/Footer"
@@ -285,13 +285,13 @@ export function Component() {
 
   // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리 (GNB 사이드메뉴 배지와 공유)
   const dday = useDday()
-  // 히어로 CTA — 메인 히어로와 같은 상담 모달을 연다(variant="top")
-  const [isConsultOpen, setIsConsultOpen] = useState(false)
+  /* 접수 바는 GNB 가 하나만 그린다(lib/consultBar.ts).
+     여기서 따로 <ConsultationModal> 을 두면 GNB 것과 두 겹으로 열린다. */
   return (
     // 상단 pt: 고정 GNB(모바일 60px / 1550px↑ 70px)
     // 하단 pb: 고정 BottomBar(100px / md 110px) — 두 값 모두 하우스 원본 규격
     <div className="relative w-full min-h-screen pt-[60px] min-[1550px]:pt-[70px] pb-[100px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-hidden selection:bg-[#d22727] selection:text-white">
-      <Navigation entrySource={TEMPERED_SOURCE} entryLabel={ENTRY_WHERE.heroModal} />
+      <Navigation entrySource={TEMPERED_SOURCE} />
 
       <main className="w-full flex flex-col">
         {/* ── Hero ──────────────────────────────────────────
@@ -396,7 +396,7 @@ export function Component() {
             >
               <button
                 type="button"
-                onClick={() => setIsConsultOpen(true)}
+                onClick={() => openConsultBar("히어로")}
                 className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl transition-colors cursor-pointer"
               >
                 무료 실측 상담 신청
@@ -466,21 +466,13 @@ export function Component() {
             >
               <button
                 type="button"
-                onClick={() => setIsConsultOpen(true)}
+                onClick={() => openConsultBar("히어로")}
                 className="flex items-center justify-center h-[52px] w-[220px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl transition-colors cursor-pointer"
               >
                 무료 실측 상담 신청
               </button>
             </motion.div>
           </div>
-
-          <ConsultationModal
-            isOpen={isConsultOpen}
-            onClose={() => setIsConsultOpen(false)}
-            variant="top"
-            entrySource={TEMPERED_SOURCE}
-            entryLabel={ENTRY_WHERE.heroModal}
-          />
         </section>
 
         {/* ── 01. 영상으로 보는 강화유리 ────────────────

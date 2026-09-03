@@ -8,6 +8,19 @@ import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 import { useVisualViewport } from "@/lib/useVisualViewport";
 
+/**
+ * 화면에 보이는 입력칸에 포커스한다.
+ *
+ * PC 바와 모바일 팝업이 같은 파일에 둘 다 마운트돼 있고, 화면 크기로만 한쪽을 숨긴다
+ * (hidden md:block / md:hidden). 그래서 ref 하나를 둘이 공유하면 나중에 마운트된
+ * 쪽이 ref 를 차지하고, 반대쪽에서 focus() 를 불러도 display:none 인 칸으로 가
+ * 아무 일도 일어나지 않는다. 셀렉터로 찾아 offsetParent 로 보이는 쪽을 고른다.
+ */
+function focusVisible(selector: string) {
+  const els = document.querySelectorAll<HTMLInputElement>(selector);
+  [...els].find((el) => el.offsetParent !== null)?.focus();
+}
+
 interface BottomBarProps {
   /** 접수 출처. 시트 D열(유입채널)의 "<출처> <기기> <위치>" 중 출처·위치.
       기본값 둘 다 메인이 쓰던 값 그대로라 메인 동작은 바뀌지 않는다. */
@@ -152,7 +165,7 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
                   const v = e.target.value.replace(/[^0-9]/g, "");
                   if (v.length <= 4) {
                     setPhone2(v);
-                    if (v.length === 4) phone3Ref.current?.focus();
+                    if (v.length === 4) focusVisible("[data-bar-phone3]");
                   }
                 }}
                 placeholder="0000"
@@ -163,6 +176,7 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
               <span className="text-[#aaa] text-[16px] font-light select-none">—</span>
               <input
                 ref={phone3Ref}
+                data-bar-phone3
                 type="tel"
                 value={phone3}
                 onChange={(e) => {
@@ -318,7 +332,7 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
                       const v = e.target.value.replace(/[^0-9]/g, "");
                       if (v.length <= 4) {
                         setPhone2(v);
-                        if (v.length === 4) phone3Ref.current?.focus();
+                        if (v.length === 4) focusVisible("[data-bar-phone3]");
                       }
                     }}
                     placeholder="0000"
@@ -329,6 +343,7 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
                   <span className="text-[#bbb] text-[18px] font-light">—</span>
                   <input
                     ref={phone3Ref}
+                    data-bar-phone3
                     type="tel"
                     value={phone3}
                     onChange={(e) => {

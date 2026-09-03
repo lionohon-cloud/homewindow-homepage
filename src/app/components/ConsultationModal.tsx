@@ -12,18 +12,32 @@ interface ConsultationModalProps {
   isOpen: boolean;
   onClose: () => void;
   variant?: "top" | "bottom";
-  /** 접수 출처. 시트 D열(유입채널)의 "<출처> <기기> <위치>" 중 출처·위치.
-      기본값 둘 다 메인 히어로가 쓰던 값 그대로라 메인 동작은 바뀌지 않는다. */
+  /** 어느 버튼으로 열었는지 — ERP entryForm 에 붙어 유입 경로가 구분된다 */
+  entry?: string;
+  /** 접수 출처 접두. 시트 D열의 "<출처> <기기> <위치>" 중 출처.
+      기본값이 원본과 같아 메인 동작은 그대로다. */
   entrySource?: string;
-  entryLabel?: string;
+}
+
+/**
+ * 화면에 보이는 입력칸에 포커스한다.
+ *
+ * PC 바와 모바일 팝업이 같은 파일에 둘 다 마운트돼 있고, 화면 크기로만 한쪽을 숨긴다
+ * (hidden md:block / md:hidden). 그래서 ref 하나를 둘이 공유하면 나중에 마운트된
+ * 쪽이 ref 를 차지하고, 반대쪽에서 focus() 를 불러도 display:none 인 칸으로 가
+ * 아무 일도 일어나지 않는다. 셀렉터로 찾아 offsetParent 로 보이는 쪽을 고른다.
+ */
+function focusVisible(selector: string) {
+  const els = document.querySelectorAll<HTMLInputElement>(selector);
+  [...els].find((el) => el.offsetParent !== null)?.focus();
 }
 
 export function ConsultationModal({
   isOpen,
   onClose,
   variant = "bottom",
+  entry,
   entrySource = "홈페이지",
-  entryLabel = "상담모달",
 }: ConsultationModalProps) {
   const navigate = useNavigate();
 
@@ -106,7 +120,7 @@ export function ConsultationModal({
     try {
       const { ok, docId } = await submitLead({
         phone: phoneNumber,
-        entryForm: `${entrySource} ${device} ${entryLabel}`,
+        entryForm: `${entrySource} ${device} 상담모달${entry ? `-${entry}` : ""}`,
         honeypot: honeypotRef.current?.value,
       });
 
@@ -151,16 +165,26 @@ export function ConsultationModal({
             animate={{ y: variant === "top" && scrolledAway ? "-100%" : 0 }}
             exit={{ y: variant === "top" ? "-100%" : "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            /* 위에서 내려오는 바는 PC 전용. 모바일은 아래의 카드 팝업으로 뜬다. */
-            className={`hidden md:block fixed left-0 right-0 bg-white shadow-lg z-40 ${
+            /* 위에서 내려오는 바는 PC 전용. 모바일은 아래의 카드 팝업으로 뜬다.
+
+               top 변형은 상자를 top-0 에 두고 GNB 높이만큼 padding 으로 밀어 내린다.
+               예전처럼 top-[61px] 로 내려놓으면 숨길 때 y:-100% 가 "자기 높이"만큼만
+               올려서 그 61px 이 화면에 그대로 남는다(실측 확인). 패딩까지 상자 높이에
+               포함시키면 한 번에 다 빠져나간다.
+               패딩 영역은 GNB 자리라 비어 있어야 하므로 배경·클릭은 안쪽에만 준다. */
+            className={`hidden md:block fixed left-0 right-0 z-40 ${
               variant === "top"
-                /* GNB 바로 아래에 붙인다. 고정값 120px 이던 것을 실제 GNB 높이로 맞췄다 —
-                   61px(기본) / 71px(1550px↑). 안 맞으면 그 차이만큼 히어로가 비쳐 보인다. */
-                ? "top-[61px] min-[1550px]:top-[71px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
-                : "bottom-[70px] md:bottom-[80px] shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
+                ? "top-0 pt-[61px] min-[1550px]:pt-[71px] pointer-events-none"
+                : "bottom-[70px] md:bottom-[80px] bg-white shadow-lg shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
             }`}
           >
-            <div className="relative w-full">
+            <div
+              className={`relative w-full ${
+                variant === "top"
+                  ? "pointer-events-auto bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+                  : ""
+              }`}
+            >
               {/* Close Button */}
               <button
                 onClick={onClose}
@@ -206,7 +230,7 @@ export function ConsultationModal({
                               if (value.length <= 4) {
                                 setPhone2(value);
                                 if (value.length === 4) {
-                                  phone3Ref.current?.focus();
+                                  focusVisible("[data-consult-phone3]");
                                 }
                               }
                             }}
@@ -218,6 +242,7 @@ export function ConsultationModal({
                           <span className="text-[#999] text-[14px] md:text-[16px]">-</span>
                           <input
                             ref={phone3Ref}
+                            data-consult-phone3
                             type="tel"
                             value={phone3}
                             onChange={(e) => {
@@ -332,7 +357,7 @@ export function ConsultationModal({
                       const v = e.target.value.replace(/[^0-9]/g, "");
                       if (v.length <= 4) {
                         setPhone2(v);
-                        if (v.length === 4) phone3Ref.current?.focus();
+                        if (v.length === 4) focusVisible("[data-consult-phone3]");
                       }
                     }}
                     placeholder="0000"
@@ -343,6 +368,7 @@ export function ConsultationModal({
                   <span className="text-[#bbb] text-[18px] font-light">—</span>
                   <input
                     ref={phone3Ref}
+                    data-consult-phone3
                     type="tel"
                     value={phone3}
                     onChange={(e) => {
