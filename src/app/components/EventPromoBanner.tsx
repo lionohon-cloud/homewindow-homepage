@@ -211,6 +211,7 @@ export function EventPromoBanner() {
             src={PROMO_VIDEO}
             aspect="auto"
             loop
+            eager
             title="강화유리 이벤트 영상"
             className="h-full rounded-xl shadow-none !bg-black"
           />
@@ -245,6 +246,7 @@ export function EventPromoBanner() {
             src={PROMO_VIDEO}
             aspect="auto"
             loop
+            eager
             title="강화유리 이벤트 영상"
             /* 카드는 2.13:1, 영상은 16:9 라 좌우에 레터박스가 생긴다.
                유튜브 플레이어가 만드는 검은 띠와 같은 색이어야 이음매가 안 보여서

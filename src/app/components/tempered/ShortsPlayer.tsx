@@ -74,6 +74,12 @@ interface Props {
    * "auto" 를 주면 비율을 강제하지 않고 부모 상자를 그대로 채운다.
    */
   aspect?: string;
+  /**
+   * true 면 화면에 들어오는 걸 기다리지 않고 마운트 즉시 붙인다(스크롤 트리거 없음).
+   * 배너처럼 "무조건 위에서부터 돌고 있어야" 하는 자리에서만 켠다 — 기본은 false 라
+   * 대부분의 자리는 여전히 화면에 40% 들어와야 재생이 시작된다(대역폭 절약).
+   */
+  eager?: boolean;
 }
 
 export function ShortsPlayer({
@@ -83,6 +89,7 @@ export function ShortsPlayer({
   autoplay = true,
   loop = false,
   aspect = '9 / 16',
+  eager = false,
 }: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -91,6 +98,13 @@ export function ShortsPlayer({
 
   useEffect(() => {
     if (!ready || mounted) return;
+
+    // eager 는 화면 진입을 기다리지 않는다 — 관찰자를 아예 안 건다
+    if (eager) {
+      setMounted(true);
+      return;
+    }
+
     const el = boxRef.current;
     if (!el) return;
 
@@ -112,7 +126,7 @@ export function ShortsPlayer({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [ready, mounted]);
+  }, [ready, mounted, eager]);
 
   return (
     <div
