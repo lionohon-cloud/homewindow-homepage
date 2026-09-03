@@ -8,6 +8,10 @@ import logo from "@/assets/logo-gnb.svg";
 
 interface NavigationProps {
   onMenuClick?: () => void;
+  /** 접수 출처. 시트 D열(유입채널)의 "<출처> <기기> <위치>" 중 출처·위치.
+      기본값 둘 다 메인이 쓰던 값 그대로라 메인 동작은 바뀌지 않는다. */
+  entrySource?: string;
+  entryLabel?: string;
 }
 
 const sections = [
@@ -51,7 +55,11 @@ const desktopMenuItems: DesktopMenuItem[] = [
   { type: "route", href: "/as", label: "AS접수" },
 ];
 
-export function Navigation({ onMenuClick }: NavigationProps) {
+export function Navigation({
+  onMenuClick,
+  entrySource = "홈페이지",
+  entryLabel = "상담모달",
+}: NavigationProps) {
   const navigate = useNavigate();
   const dday = useDday(); // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리
   const location = useLocation();
@@ -279,6 +287,8 @@ export function Navigation({ onMenuClick }: NavigationProps) {
         isOpen={showNav && isConsultationOpen}
         onClose={() => setIsConsultationOpen(false)}
         variant="top"
+        entrySource={entrySource}
+        entryLabel={entryLabel}
       />
 
       {/* 모바일 네비게이션 */}

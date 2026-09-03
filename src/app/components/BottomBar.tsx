@@ -8,7 +8,14 @@ import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 import { useVisualViewport } from "@/lib/useVisualViewport";
 
-export function BottomBar() {
+interface BottomBarProps {
+  /** 접수 출처. 시트 D열(유입채널)의 "<출처> <기기> <위치>" 중 출처·위치.
+      기본값 둘 다 메인이 쓰던 값 그대로라 메인 동작은 바뀌지 않는다. */
+  entrySource?: string;
+  entryLabel?: string;
+}
+
+export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단바" }: BottomBarProps = {}) {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMobilePopup, setShowMobilePopup] = useState(false);
@@ -61,7 +68,7 @@ export function BottomBar() {
       const honeypot = honeypotPopupRef.current?.value || honeypotPcRef.current?.value;
       const { ok, docId } = await submitLead({
         phone,
-        entryForm: `홈페이지 ${device} 하단바`,
+        entryForm: `${entrySource} ${device} ${entryLabel}`,
         honeypot,
       });
       if (ok) {

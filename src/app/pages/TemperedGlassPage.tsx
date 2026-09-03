@@ -291,7 +291,7 @@ export function Component() {
     // 상단 pt: 고정 GNB(모바일 60px / 1550px↑ 70px)
     // 하단 pb: 고정 BottomBar(100px / md 110px) — 두 값 모두 하우스 원본 규격
     <div className="relative w-full min-h-screen pt-[60px] min-[1550px]:pt-[70px] pb-[100px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-hidden selection:bg-[#d22727] selection:text-white">
-      <Navigation />
+      <Navigation entrySource={TEMPERED_SOURCE} entryLabel={ENTRY_WHERE.heroModal} />
 
       <main className="w-full flex flex-col">
         {/* ── Hero ──────────────────────────────────────────
@@ -811,7 +811,7 @@ export function Component() {
       </main>
 
       <Footer />
-      <BottomBar />
+      <BottomBar entrySource={TEMPERED_SOURCE} entryLabel={ENTRY_WHERE.bottomBar} />
     </div>
   )
 }
