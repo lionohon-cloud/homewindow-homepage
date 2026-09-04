@@ -69,8 +69,8 @@ export function TemperedConsultForm() {
     <>
       <div className="border border-[#e5e5e5] rounded-2xl p-5 md:p-8 bg-[#fafbfc]">
         <h2 className="text-[20px] md:text-[24px] font-extrabold text-[#333] leading-[1.35] mb-2 break-keep">
-          창을 새로 바꿀 때가 <span className="text-[#d22727]">추가 비용 없이</span> 강화유리로
-          교체할 수 있는 때입니다
+          창을 새로 바꿀 때가 <span className="text-[#d22727]">강화유리</span>로
+          바꾸기 가장 좋은 때입니다
         </h2>
         <p className="text-[14px] md:text-[16px] text-[#999] leading-[22px] md:leading-[26px] mb-5 break-keep">
           연락처만 남겨 주시면 실측 일정과 적용 범위를 안내해 드립니다.
@@ -80,8 +80,7 @@ export function TemperedConsultForm() {
           {[
             <>실측·견적 <b className="font-extrabold text-[#333]">무료</b></>,
             <>
-              LX 창호 선택 시 강화유리 <b className="font-extrabold text-[#333]">무상 업그레이드</b>{' '}
-              <i className="not-italic text-[#d22727] font-bold text-[12px]">(9월 한정)</i>
+              <b className="font-extrabold text-[#333]">강화유리</b> 시공 상담 가능
             </>,
             <>상담 후 결정하셔도 됩니다</>,
           ].map((item, i) => (

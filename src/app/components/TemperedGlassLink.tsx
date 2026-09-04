@@ -4,13 +4,11 @@ import { Link } from "react-router";
 /**
  * 강화유리 상세페이지로 가는 링크. 히어로(모바일·PC)와 강화유리 섹션이 같이 쓴다.
  *
- * 목적지를 아래 한 줄로만 관리한다. 지금은 **사내망 초안 페이지**를 가리키는데,
- * 이 주소는 같은 네트워크 안에서만 열린다.
+ * 목적지를 아래 한 줄로만 관리한다.
  *
- *   배포 전에는 반드시 프로젝트 안 라우트로 되돌릴 것:
- *     const TEMPERED_GLASS_URL = "/tempered-glass";
- *
- * 그 라우트는 이미 살아 있다(Router.tsx + pages/TemperedGlassPage.tsx).
+ * 260904 상시버전: 프로젝트 안 라우트를 본다(Router.tsx + pages/TemperedGlassPage.tsx).
+ * 그 페이지는 행사 문구를 걷어낸 상시버전이다. 사내망 초안(4190)은 행사 문구가
+ * 그대로 살아 있는 이관 전 원본이라, 여기서 그쪽을 가리키면 안 된다.
  */
 const TEMPERED_GLASS_URL = "/tempered-glass";
 

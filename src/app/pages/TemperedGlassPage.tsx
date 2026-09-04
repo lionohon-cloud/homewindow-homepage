@@ -6,7 +6,6 @@ import heroVideo from "@/assets/hero-glass-closeup.mp4"
 import { Navigation } from "../components/Navigation"
 import { openConsultBar } from "@/lib/consultBar"
 import { ENTRY_WHERE, TEMPERED_SOURCE } from "@/lib/entryForm"
-import { useDday } from "@/lib/dday"
 import { Footer } from "../components/Footer"
 import { BottomBar } from "../components/BottomBar"
 import { ForgeMotion } from "../components/tempered/ForgeMotion"
@@ -247,11 +246,11 @@ function PriceReasonAccordion(): React.ReactElement {
                 위 화면의 열처리 설비를{" "}
                 <b className="font-semibold text-[#444]">강화로</b>라고 합니다.
                 저희 공장에 강화로를 들이면서 유리를 직접 만들 수 있게 됐습니다.
-                빠진 외주 가공비를{" "}
+                외주 가공 단계가 빠지면서{" "}
                 <b className="font-semibold text-[#444]">
-                  설비 증설 기념으로 돌려드리는 것
+                  품질과 납기를 저희가 직접 관리
                 </b>
-                이 이번 무상 업그레이드입니다.
+                할 수 있게 됐습니다.
               </p>
             </div>
           </motion.div>
@@ -283,10 +282,6 @@ export function Component() {
     if (import.meta.env.DEV) document.title = "강화유리"
   }, [])
 
-  // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리 (GNB 사이드메뉴 배지와 공유)
-  const dday = useDday()
-  /* 접수 바는 GNB 가 하나만 그린다(lib/consultBar.ts).
-     여기서 따로 <ConsultationModal> 을 두면 GNB 것과 두 겹으로 열린다. */
   return (
     // 상단 pt: 고정 GNB(모바일 60px / 1550px↑ 70px)
     // 하단 pb: 고정 BottomBar(100px / md 110px) — 두 값 모두 하우스 원본 규격
@@ -356,13 +351,11 @@ export function Component() {
               transition={{ duration: 0.5 }}
               className="inline-flex self-start items-center gap-2 mb-5"
             >
-              {/* 메인 히어로와 같은 형태 — 프로모션명과 남은 날을 한 알약에 */}
+              {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
+                  이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
               <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[11.5px] font-bold text-white">이벤트 마감</span>
-                <span className="text-[11.5px] font-extrabold text-white tabular-nums">
-                  {dday}
-                </span>
+                <span className="text-[11.5px] font-bold text-white">강화유리 설비 도입</span>
               </div>
             </motion.div>
 
@@ -372,7 +365,7 @@ export function Component() {
               className="text-[30px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
               style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
             >
-              {/* 빼낸 "9월 한정 / 무상 업그레이드" 의 굵기 대비를 그대로 가져왔다 */}
+              {/* 굵기 대비로 두 줄을 나눈다 */}
               <span className="font-light">열과 충격에 강한</span>
               <br />
               <span className="font-extrabold">강화유리</span>
@@ -384,8 +377,8 @@ export function Component() {
               className="text-[15px] text-white/80 leading-[1.7] mb-8 break-keep"
               style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
             >
-              같은 두께라도 충격과 열에 훨씬 강합니다. 9월 안에 계약하시면
-              LX 창호 선택 시 <b className="font-extrabold text-white">무상 업그레이드</b> 해드립니다.{" "}
+              같은 두께라도 충격과 열에 훨씬 강합니다.
+              청암홈윈도우는 <b className="font-extrabold text-white">강화유리 생산 설비</b>를 직접 갖췄습니다.
             </motion.p>
 
             <motion.div
@@ -425,13 +418,11 @@ export function Component() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 mb-5"
             >
-              {/* 메인 히어로와 같은 형태 — 프로모션명과 남은 날을 한 알약에 */}
+              {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
+                  이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
               <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[12.5px] font-bold text-white">이벤트 마감</span>
-                <span className="text-[12.5px] font-extrabold text-white tabular-nums">
-                  {dday}
-                </span>
+                <span className="text-[12.5px] font-bold text-white">강화유리 설비 도입</span>
               </div>
             </motion.div>
 
@@ -441,7 +432,7 @@ export function Component() {
               className="text-[40px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
               style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
             >
-              {/* 빼낸 "9월 한정 / 무상 업그레이드" 의 굵기 대비를 그대로 가져왔다 */}
+              {/* 굵기 대비로 두 줄을 나눈다 */}
               <span className="font-light">열과 충격에 강한</span>
               <br />
               <span className="font-extrabold">강화유리</span>
@@ -453,9 +444,8 @@ export function Component() {
               className="text-[17px] text-white/80 leading-[1.7] mb-8 break-keep max-w-[480px]"
               style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
             >
-              같은 두께라도 충격과 열에 훨씬 강합니다. 9월 안에 계약하시면
-              LX 창호 선택 시 <b className="font-extrabold text-white">무상 업그레이드</b> 해드립니다.{" "}
-              <span className="text-white font-bold">추가 비용은 없습니다.</span>
+              같은 두께라도 충격과 열에 훨씬 강합니다.
+              청암홈윈도우는 <b className="font-extrabold text-white">강화유리 생산 설비</b>를 직접 갖췄습니다.
             </motion.p>
 
             <motion.div

@@ -1,7 +1,6 @@
 import { motion } from "motion/react";
 import { TemperedGlassLink } from "./TemperedGlassLink";
 import { ArrowRight } from "lucide-react";
-import { useDday } from "@/lib/dday";
 import { ShortsPlayer } from "./tempered/ShortsPlayer";
 
 /**
@@ -14,11 +13,10 @@ import { ShortsPlayer } from "./tempered/ShortsPlayer";
  * 그대로 겹쳐서 같은 화면이 두 번 나온다.
  *
  * 슬림본에서 또 바꾼 것
- *   · "9,900원" → "무상 업그레이드" (히어로·이벤트 배너와 맞춤)
  *   · CTA 목적지 — /tempered-glass. 260902 에 상세페이지를 이 프로젝트로 옮기고
  *     Router.tsx 에 라우트를 등록해서 지금은 정상 이동한다.
  *
- * D-day 는 src/lib/dday.ts 의 PROMO_END 를 따른다.
+ * 260904 상시버전: 행사 문구를 걷어내고 "설비 도입 · 취급" 으로 바꿨다.
  */
 
 const rise = {
@@ -37,20 +35,17 @@ const CHECKS = [
 ];
 
 export function TemperedGlassSection() {
-  const dday = useDday();
 
   return (
     <section className="w-full bg-white py-16 md:py-24 border-t border-[#f3f3f3]">
       <div className="max-w-screen-md mx-auto px-6 md:px-10">
         {/* ── 머리말 ─────────────────────────────── */}
         <motion.div {...rise} transition={{ duration: 0.5 }} className="mb-12 md:mb-16">
-          {/* 배지 — 빨간 알약에 문구, 옆에 남은 날. 흰 배경이라 두 번째 칩은 테두리로 뺀다. */}
+          {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
+              이벤트판에서는 여기에 "9월 한정 무상업그레이드 진행중" + D-day 가 들어간다. */}
           <div className="flex flex-wrap items-center gap-1.5 mb-4">
             <span className="inline-flex items-center bg-[#d22727] rounded-full px-3 py-1.5 text-[11.5px] md:text-[12.5px] font-bold text-white">
-              9월 한정 무상업그레이드 진행중
-            </span>
-            <span className="inline-flex items-center border border-[#f0cfcf] bg-[#fdf3f3] rounded-full px-2.5 py-1.5 text-[11.5px] md:text-[12.5px] font-extrabold text-[#d22727] tabular-nums">
-              {dday}
+              강화유리 설비 도입
             </span>
           </div>
           <h2 className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.25] break-keep -tracking-[.025em]">
@@ -84,12 +79,12 @@ export function TemperedGlassSection() {
           >
             일반 유리와 강화유리에 똑같은 충격을 준 실제 촬영 영상입니다. 두 유리가
             어떻게 다른지 직접 확인해 보세요.
-            {/* 영상 설명과 프로모션 안내는 다른 이야기라 줄을 나눈다.
+            {/* 영상 설명과 취급 안내는 다른 이야기라 줄을 나눈다.
                 PC 는 자리가 넉넉해서 한 줄 더 비운다. */}
             <br />
             <br className="hidden md:block" />
-            9월 안에 계약하시면 LX 창호 선택 시 강화유리로{" "}
-            <b className="font-bold text-[#666]">무상 업그레이드</b> 해 드립니다.
+            청암홈윈도우는 <b className="font-bold text-[#666]">강화유리 생산 설비</b>를
+            직접 갖추고 있습니다.
           </motion.p>
 
           <motion.div

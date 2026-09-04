@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { TemperedGlassLink } from "./TemperedGlassLink";
+/* 히어로 배경 영상 — 창가에서 뛰노는 아이.
+   260903: 유리 클로즈업 영상(hero-glass-closeup.mp4)으로 바꿨다가 되돌렸다.
+   그 영상은 지우지 않고 남겨 뒀으니 다시 쓰려면 이 줄만 바꾸면 된다. */
 import heroVideo from "../../assets/hero-tempered.mp4";
-import { openConsultBar } from "@/lib/consultBar";
 import { HandwriteSept } from "./HandwriteSept";
 import { SashTurntable } from "./SashTurntable";
 import tempedTag from "@/assets/handwrite-tempered.svg";
-import { useDday } from "@/lib/dday";
 
 /* ══════════════════════════════════════════════════════════════════════
    260831 — 9월 강화유리 프로모션 기간 한정 히어로.
@@ -31,7 +32,6 @@ const rise = {
 export function HeroSection() {
   /* 접수 바는 GNB 가 하나만 그린다(lib/consultBar.ts).
      여기서 따로 <ConsultationModal> 을 두면 GNB 것과 두 겹으로 열린다. */
-  const dday = useDday(); // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리
 
   // 높이: 화면을 채우되 900px 를 넘지 않고(원본 규격), 내용이 더 길면 내용만큼 늘어난다.
   // min-h-fit 이 max-h 보다 우선하므로 짧은 화면에서 CTA 가 하단 고정바에 잘리지 않는다.
@@ -69,15 +69,15 @@ export function HeroSection() {
           transition={{ duration: 0.5 }}
           className="inline-flex self-start items-center gap-2 mb-9"
         >
-          {/* 배지 하나로 — 마감 문구와 남은 날을 굳이 나눌 이유가 없다 */}
+          {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
+              이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
           <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            <span className="text-[11.5px] font-bold text-white">이벤트 마감</span>
-            <span className="text-[11.5px] font-extrabold text-white tabular-nums">{dday}</span>
+            <span className="text-[11.5px] font-bold text-white">강화유리 자체 생산</span>
           </div>
         </motion.div>
 
-        {/* 핵심 한 덩어리 — 일반유리→강화유리 무상 업그레이드.
+        {/* 핵심 한 덩어리 — 강화유리 취급 시작.
             상세페이지 히어로에 있던 "열과 충격에 강한 강화유리" 헤드라인과
             설명 문단은 뺐다. 메인 히어로에서는 혜택이 먼저 읽혀야 한다. */}
         <motion.h1
@@ -106,35 +106,21 @@ export function HeroSection() {
               style={{ left: "72%", top: "49%", width: "97%" }}
             />
           </div>
-          {/* 손글씨(HandwriteSept)는 잠시 뺐다. 되살리려면 이 span 을 아래로 바꾸면 된다.
-                <span className="flex items-center gap-2 …">
-                  <HandwriteSept width={78} className="shrink-0 text-white drop-shadow-[0_1px_6px_rgba(0,0,0,.6)]" />
-                  무상 업그레이드
-                </span>                                                            */}
           <span
             className="text-[25.6px] font-extrabold text-white leading-[1.1] -tracking-[.03em] break-keep"
             style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
           >
-            <span className="font-light">9월한정</span> 무상 업그레이드
+            <span className="font-light">샷시교체,</span> 이제는 강화유리가 기본
           </span>
         </motion.h1>
 
         <motion.p
           {...rise}
           transition={{ duration: 0.55, delay: 0.1 }}
-          className="text-[15px] text-white/85 leading-[1.6] mb-4 break-keep"
+          className="text-[15px] text-white/85 leading-[1.6] mb-7 break-keep"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
         >
-          오직 <b className="font-extrabold text-white">청암홈윈도우에서만</b> 가능한 혜택입니다.
-        </motion.p>
-
-        <motion.p
-          {...rise}
-          transition={{ duration: 0.55, delay: 0.15 }}
-          className="text-[13px] font-light text-white/55 leading-tight mb-7 break-keep"
-          style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-        >
-          LX 제품군 한정
+          <b className="font-extrabold text-white">60억원 규모</b>의 자동화 생산라인에서 직접 만듭니다.
         </motion.p>
 
         <motion.div
@@ -143,18 +129,13 @@ export function HeroSection() {
           className="flex flex-col gap-3"
           style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
         >
-          <button
-            type="button"
-            onClick={() => openConsultBar("히어로")}
-            className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl transition-colors cursor-pointer"
-          >
-            무료 실측 상담 신청
-          </button>
-          {/* 같은 페이지의 단열유리 섹션(#glass)이 아니라 강화유리 상세페이지로 보낸다 */}
+          {/* 260904 상시버전: 접수 버튼과 자세히 보기를 하나로 합쳤다.
+              히어로에서는 행사를 걸지 않으므로 곧바로 상세페이지로 보낸다.
+              접수는 바로 아래 번호 입력 섹션과 하단 고정바가 받는다. */}
           <TemperedGlassLink
-            className="flex items-center justify-center h-[48px] bg-white/10 border border-white/25 text-white font-semibold text-[14.5px] rounded-xl no-underline backdrop-blur-sm"
+            className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl no-underline transition-colors"
           >
-            자세히 보기
+            강화유리 자세히 보기
           </TemperedGlassLink>
         </motion.div>
       </div>
@@ -166,11 +147,11 @@ export function HeroSection() {
           transition={{ duration: 0.5 }}
           className="inline-flex self-start items-center gap-2 mb-9"
         >
-          {/* 배지 하나로 — 마감 문구와 남은 날을 굳이 나눌 이유가 없다 */}
+          {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
+              이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
           <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            <span className="text-[12.5px] font-bold text-white">이벤트 마감</span>
-            <span className="text-[12.5px] font-extrabold text-white tabular-nums">{dday}</span>
+            <span className="text-[12.5px] font-bold text-white">강화유리 자체 생산</span>
           </div>
         </motion.div>
 
@@ -202,26 +183,17 @@ export function HeroSection() {
             className="text-[32px] font-extrabold text-white leading-[1.05] -tracking-[.03em] break-keep"
             style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
           >
-            <span className="font-light">9월한정</span> 무상 업그레이드
+            <span className="font-light">샷시교체,</span> 이제는 강화유리가 기본
           </span>
         </motion.h1>
 
         <motion.p
           {...rise}
           transition={{ duration: 0.55, delay: 0.1 }}
-          className="text-[19px] text-white/85 leading-[1.6] mb-2 break-keep"
+          className="text-[19px] text-white/85 leading-[1.6] mb-8 break-keep"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
         >
-          오직 <b className="font-extrabold text-white">청암홈윈도우에서만</b> 가능한 혜택입니다.
-        </motion.p>
-
-        <motion.p
-          {...rise}
-          transition={{ duration: 0.55, delay: 0.15 }}
-          className="text-[14px] font-light text-white/55 leading-tight mb-8 break-keep"
-          style={{ textShadow: "0 1px 6px rgba(0,0,0,.5)" }}
-        >
-          LX 제품군 한정
+          <b className="font-extrabold text-white">60억원 규모</b>의 자동화 생산라인에서 직접 만듭니다.
         </motion.p>
 
         <motion.div
@@ -230,17 +202,10 @@ export function HeroSection() {
           className="flex flex-row gap-3"
           style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
         >
-          <button
-            type="button"
-            onClick={() => openConsultBar("히어로")}
-            className="flex items-center justify-center h-[52px] w-[220px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl transition-colors cursor-pointer"
-          >
-            무료 실측 상담 신청
-          </button>
           <TemperedGlassLink
-            className="flex items-center justify-center h-[52px] w-[160px] bg-white/10 border border-white/25 hover:bg-white/15 text-white font-semibold text-[14.5px] rounded-xl no-underline transition-colors backdrop-blur-sm"
+            className="flex items-center justify-center h-[52px] w-[260px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl no-underline transition-colors"
           >
-            자세히 보기
+            강화유리 자세히 보기
           </TemperedGlassLink>
         </motion.div>
       </div>

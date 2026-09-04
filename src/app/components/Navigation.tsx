@@ -391,9 +391,9 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
                   type="button"
                   onClick={() => scrollToSection("event")}
                   className="ml-auto shrink-0 inline-flex items-center gap-1.5 bg-[#d22727] rounded-full px-2 min-[350px]:px-2.5 py-1 text-[10px] min-[350px]:text-[11px] font-bold text-white whitespace-nowrap cursor-pointer active:opacity-80 transition-opacity"
-                  aria-label="9월한정 이벤트 보기"
+                  aria-label="추석맞이 할인 보기"
                 >
-                  9월한정 이벤트 진행중
+                  추석맞이 할인 진행중
                   <span className="font-extrabold tabular-nums">{dday}</span>
                 </button>
               </div>
