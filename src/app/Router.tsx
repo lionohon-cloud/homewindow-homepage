@@ -85,11 +85,8 @@ const router = createBrowserRouter([
         path: 'thanks',
         lazy: lazyWithRetry(() => import('./pages/ThanksPage')),
       },
-      // 9월 강화유리 프로모션 상세페이지. 메인 강화유리 섹션의 "자세히 보기" 목적지.
-      {
-        path: 'tempered-glass',
-        lazy: lazyWithRetry(() => import('./pages/TemperedGlassPage')),
-      },
+      /* 260907 통합버전 — 강화유리 상세페이지 라우트를 뺐다.
+         그 본문은 메인(HomePage)의 <TemperedSections /> 로 들어가 있다. */
       {
         path: 'partners',
         lazy: lazyWithRetry(() => import('./pages/PartnersPage')),

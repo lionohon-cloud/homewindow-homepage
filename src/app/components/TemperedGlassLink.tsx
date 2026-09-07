@@ -1,16 +1,19 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 
 /**
- * 강화유리 상세페이지로 가는 링크. 히어로(모바일·PC)와 강화유리 섹션이 같이 쓴다.
+ * 강화유리 본문(#video)으로 이동하는 버튼. 현재는 쓰는 곳이 없지만(히어로는
+ * 이제 상담 모달을 직접 연다), TemperedGlassSection.tsx 가 되살아나면 다시 쓴다.
  *
- * 목적지를 아래 한 줄로만 관리한다.
+ * 260907 통합버전: 상세페이지가 없다. 본문이 메인 히어로 바로 아래(#video)에
+ * 들어가 있어 페이지를 옮기지 않고 같은 화면 안에서 그 자리로 내려간다.
  *
- * 260904 상시버전: 프로젝트 안 라우트를 본다(Router.tsx + pages/TemperedGlassPage.tsx).
- * 그 페이지는 행사 문구를 걷어낸 상시버전이다. 사내망 초안(4190)은 행사 문구가
- * 그대로 살아 있는 이관 전 원본이라, 여기서 그쪽을 가리키면 안 된다.
+ * <a href="#video"> 를 그대로 쓰면 AppLayout 의 <ScrollRestoration/> 이 이걸
+ * "새 이동(PUSH)"으로 보고 최상단으로 스크롤해 버린다 — 예전에 겪은 것과 같은
+ * 버그다. 그래서 버튼 + 수동 스크롤로 처리한다. 다른 페이지에 있을 때는
+ * 메인으로 이동한 뒤 스크롤한다 — Navigation.tsx 의 scrollToSection 과 같은 방식.
  */
-const TEMPERED_GLASS_URL = "/tempered-glass";
+const TEMPERED_SECTION_ID = "video";
 
 interface Props {
   className?: string;
@@ -18,18 +21,21 @@ interface Props {
 }
 
 export function TemperedGlassLink({ className, children }: Props) {
-  /* 다른 출처(호스트·포트가 다름)면 react-router 의 <Link> 로는 못 간다 —
-     <Link to> 는 값을 앱 안의 경로로 해석하기 때문이다. 그때만 <a> 를 쓴다. */
-  if (/^https?:\/\//.test(TEMPERED_GLASS_URL)) {
-    return (
-      <a href={TEMPERED_GLASS_URL} className={className}>
-        {children}
-      </a>
-    );
-  }
+  const navigate = useNavigate();
+
+  const go = () => {
+    if (window.location.pathname !== "/") {
+      sessionStorage.setItem("hw_scroll_to", TEMPERED_SECTION_ID);
+      navigate("/");
+      return;
+    }
+    const el = document.getElementById(TEMPERED_SECTION_ID);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <Link to={TEMPERED_GLASS_URL} className={className}>
+    <button type="button" onClick={go} className={className}>
       {children}
-    </Link>
+    </button>
   );
 }

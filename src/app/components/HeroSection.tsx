@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { TemperedGlassLink } from "./TemperedGlassLink";
+import { openConsultBar } from "@/lib/consultBar";
 /* 히어로 배경 영상 — 유리 클로즈업(CF 스타일). PC 와 모바일이 서로 다른 파일이다.
 
    260907 시안 비교(/video-lab) 끝에 B 안으로 정하면서, 새 영상이 720×1280 세로라
@@ -131,14 +131,17 @@ export function HeroSection({ videoSrc }: { videoSrc?: string } = {}) {
           className="flex flex-col gap-3"
           style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
         >
-          {/* 260904 상시버전: 접수 버튼과 자세히 보기를 하나로 합쳤다.
-              히어로에서는 행사를 걸지 않으므로 곧바로 상세페이지로 보낸다.
-              접수는 바로 아래 번호 입력 섹션과 하단 고정바가 받는다. */}
-          <TemperedGlassLink
-            className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl no-underline transition-colors"
+          {/* 260907 통합버전: 상세페이지가 없으니 "자세히 보기" 로 보낼 곳이 없다.
+              대신 상세 히어로가 쓰던 접수 모달을 그대로 연다.
+              모달은 GNB(Navigation)가 하나만 그린다 — lib/consultBar.ts 참고.
+              여기서 <ConsultationModal> 을 또 두면 두 겹으로 열린다. */}
+          <button
+            type="button"
+            onClick={() => openConsultBar("히어로")}
+            className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl cursor-pointer transition-colors"
           >
-            강화유리 자세히 보기
-          </TemperedGlassLink>
+            무료 상담 신청하기
+          </button>
         </motion.div>
       </div>
 
@@ -186,11 +189,13 @@ export function HeroSection({ videoSrc }: { videoSrc?: string } = {}) {
           className="flex flex-row gap-3"
           style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
         >
-          <TemperedGlassLink
-            className="flex items-center justify-center h-[52px] w-[260px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl no-underline transition-colors"
+          <button
+            type="button"
+            onClick={() => openConsultBar("히어로")}
+            className="flex items-center justify-center h-[52px] w-[260px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl cursor-pointer transition-colors"
           >
-            강화유리 자세히 보기
-          </TemperedGlassLink>
+            무료 상담 신청하기
+          </button>
         </motion.div>
       </div>
 

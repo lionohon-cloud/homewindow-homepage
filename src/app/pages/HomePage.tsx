@@ -5,7 +5,7 @@ import { HeroConsultSection } from "../components/HeroConsultSection";
 // 260831: 9월 프로모션 배너로 교체. 원래 SUPER SALE 배너는 EventSection.tsx 에 그대로 있다 —
 // 되돌리려면 아래 import 와 <EventPromoBanner /> 를 EventSection 으로 되돌리면 된다.
 import { EventPromoBanner } from "../components/EventPromoBanner";
-import { TemperedGlassSection } from "../components/TemperedGlassSection";
+import { TemperedSections } from "../components/tempered/TemperedSections";
 import { AwardsSection } from "../components/AwardsSection";
 import { InsuranceSection } from "../components/InsuranceSection";
 import { ProductionSection } from "../components/ProductionSection";
@@ -36,7 +36,16 @@ export default function HomePage() {
         <div id="hero">
           <HeroSection />
         </div>
-        {/* 번호 접수는 히어로 바로 아래 — 예상견적 띠배너보다 먼저 온다 */}
+        {/* 260907 통합버전 — 상세페이지가 없는 대신 그 본문(01 영상 ~ 06 어디에 쓰이나)이
+            히어로 바로 다음에 통째로 들어간다. 히어로의 "강화유리 자세히 보기" 도
+            여기(#video)로 내려온다.
+            id="tempered" — GNB "강화유리" 메뉴가 이 id 로 스크롤한다(Navigation.tsx
+            sections 배열). 이 태그 없이 <TemperedGlassSection> 만 빠지면 그 메뉴가
+            아무 데도 못 간다. */}
+        <div id="tempered">
+          <TemperedSections />
+        </div>
+        {/* 번호 접수 — 강화유리 이야기를 다 읽은 다음에 받는다 */}
         <HeroConsultSection />
         <DanjiAiBanner />
         <div id="event">
@@ -57,10 +66,10 @@ export default function HomePage() {
         <div id="materials">
           <MaterialsSection />
         </div>
-        {/* 보강재와 단열유리 사이 — 유리 이야기가 여기서 시작된다 */}
-        <div id="tempered">
-          <TemperedGlassSection />
-        </div>
+        {/* 260907 통합버전 — 여기 있던 강화유리 티저 섹션(TemperedGlassSection)은 뺐다.
+            본문 전체가 이미 위에 들어가 있어 같은 얘기를 두 번 하게 되고,
+            티저의 "자세히 보기" 목적지(상세페이지)도 이 버전에는 없다.
+            되살리려면 import 와 함께 이 자리에 <TemperedGlassSection /> 를 넣으면 된다. */}
         <div id="glass">
           <GlassTypeSection />
         </div>

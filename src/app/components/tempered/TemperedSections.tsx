@@ -1,18 +1,9 @@
 import { motion, AnimatePresence } from "motion/react"
 import React, { useEffect, useState } from "react"
-import { Link } from "react-router"
-import { ChevronLeft } from "lucide-react"
-import heroVideo from "@/assets/hero-glass-closeup.mp4"
-import { Navigation } from "../components/Navigation"
-import { openConsultBar } from "@/lib/consultBar"
-import { ENTRY_WHERE, TEMPERED_SOURCE } from "@/lib/entryForm"
-import { Footer } from "../components/Footer"
-import { BottomBar } from "../components/BottomBar"
-import { ForgeMotion } from "../components/tempered/ForgeMotion"
-import { GlassBreakSlider } from "../components/tempered/GlassBreakSlider"
-import { TestFilm } from "../components/tempered/TestFilm"
-import { TemperedConsultForm } from "../components/tempered/TemperedConsultForm"
-import { ShortsPlayer } from "../components/tempered/ShortsPlayer"
+import { ForgeMotion } from "./ForgeMotion"
+import { GlassBreakSlider } from "./GlassBreakSlider"
+import { TestFilm } from "./TestFilm"
+import { ShortsPlayer } from "./ShortsPlayer"
 import imgHighrise from "@/assets/where-highrise.webp"
 import imgFamily from "@/assets/where-family.webp"
 import imgLowfloor from "@/assets/where-lowfloor.webp"
@@ -109,25 +100,46 @@ function Section({
   )
 }
 
+/** 자동 전환 간격. 전환 자체는 아래 duration-500 크로스페이드가 맡는다. */
+const WHERE_AUTO_MS = 1200
+
 function WhereSlider(): React.ReactElement {
   const [current, setCurrent] = useState(0)
   const total = WHERE.length
 
-  const prev = () => setCurrent((i) => (i - 1 + total) % total)
-  const next = () => setCurrent((i) => (i + 1) % total)
+  /* 마우스를 올린 동안에는 멈춘다 — 읽는 중에 넘어가면 곤란하다. */
+  const [paused, setPaused] = useState(false)
+  /* 사용자가 직접 넘겼을 때 타이머를 처음부터 다시 센다.
+     이 값이 없으면 직접 넘긴 직후 남은 시간만큼만 있다가 또 넘어간다. */
+  const [restart, setRestart] = useState(0)
 
-  // 4초마다 자동으로 다음 장. 화살표·점을 눌러 current 가 바뀌면 그 시점부터 다시 4초.
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((i) => (i + 1) % total)
-    }, 4000)
-    return () => clearInterval(timer)
-  }, [current, total])
+    if (paused) return
+    const id = setInterval(() => setCurrent((i) => (i + 1) % total), WHERE_AUTO_MS)
+    return () => clearInterval(id)
+  }, [paused, restart, total])
+
+  const prev = () => {
+    setCurrent((i) => (i - 1 + total) % total)
+    setRestart((n) => n + 1)
+  }
+  const next = () => {
+    setCurrent((i) => (i + 1) % total)
+    setRestart((n) => n + 1)
+  }
+  const goTo = (i: number) => {
+    setCurrent(i)
+    setRestart((n) => n + 1)
+  }
 
   return (
     /* 모바일 230px 유지, PC 는 230 → 276(+20%) → 317(+15%) 로 키웠다.
        인라인 style 로 두면 브레이크포인트를 못 타므로 클래스로 옮겼다. */
-    <div className="relative w-full rounded-2xl overflow-hidden h-[230px] md:h-[317px]">
+    <div
+      className="relative w-full rounded-2xl overflow-hidden h-[230px] md:h-[317px]"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       {WHERE.map((w, i) => (
         <div
           key={i}
@@ -165,7 +177,7 @@ function WhereSlider(): React.ReactElement {
       {/* 이전/다음 버튼 */}
       <button
         onClick={prev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
+        className="cursor-pointer absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path
@@ -179,7 +191,7 @@ function WhereSlider(): React.ReactElement {
       </button>
       <button
         onClick={next}
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
+        className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path
@@ -197,8 +209,8 @@ function WhereSlider(): React.ReactElement {
         {WHERE.map((_, i) => (
           <button
             key={i}
-            onClick={() => setCurrent(i)}
-            className="transition-all duration-300 rounded-full"
+            onClick={() => goTo(i)}
+            className="transition-all duration-300 rounded-full cursor-pointer"
             style={{
               width: i === current ? 20 : 6,
               height: 6,
@@ -282,199 +294,25 @@ function SectionLabel({ step, title }: { step: string; title: string }) {
   )
 }
 
-export function Component() {
-  // 탭 구분용 — 로컬 개발 서버(dev)에서만 "강화유리"로 바뀐다.
-  // import.meta.env.DEV 는 프로덕션 빌드에서 항상 false 라 배포본은 자동으로
-  // index.html 의 기본 타이틀("청암홈윈도우")로 돌아간다 — 되돌릴 필요 없음.
-  useEffect(() => {
-    if (import.meta.env.DEV) document.title = "강화유리"
-  }, [])
 
+/* ══════════════════════════════════════════════════════════════════════
+   강화유리 본문 섹션 01~06 — 상세페이지에 있던 것을 메인에 그대로 끼워 넣는다.
+
+   260907 통합버전: 이 버전에는 강화유리 상세페이지(/tempered-glass)가 없다.
+   대신 메인 히어로와 번호 접수 섹션 사이에 이 블록이 통째로 들어간다.
+
+   상세페이지에 있던 것 중 여기 없는 것
+     · 히어로(배경 영상 + 카피)  — 메인 히어로가 그 자리를 대신한다
+     · 07 상담 신청 폼           — 바로 아래 번호 접수 섹션과 겹쳐서 뺐다.
+                                   되살리려면 07 블록을 이 파일 끝에 붙이면 된다
+     · GNB · Footer · 하단 고정바 — 메인 것을 그대로 쓴다
+
+   섹션 id(video·compare·test·why·break·where)는 그대로 뒀다.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export function TemperedSections() {
   return (
-    // 상단 pt: 고정 GNB(모바일 60px / 1550px↑ 70px)
-    // 하단 pb: 고정 BottomBar(100px / md 110px) — 두 값 모두 하우스 원본 규격
-    <div className="relative w-full min-h-screen pt-[60px] min-[1550px]:pt-[70px] pb-[100px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-hidden selection:bg-[#d22727] selection:text-white">
-      <Navigation entrySource={TEMPERED_SOURCE} />
-
-      <main className="w-full flex flex-col">
-        {/* ── Hero ──────────────────────────────────────────
-            높이는 메인 히어로와 같은 규칙: 화면을 채우되 900px 를 넘지 않고,
-            내용이 더 길면 내용만큼 늘어난다. min-h-fit 이 max-h 보다 우선하므로
-            짧은 화면에서 CTA 가 하단 고정바에 잘리지 않는다.
-
-            -mt 는 바깥 래퍼의 pt(고정 GNB 자리)를 상쇄하는 값이다. 메인은 히어로가
-            페이지 최상단이라 영상이 GNB 뒤까지 꽉 차는데, 여기는 래퍼가 이미 GNB 만큼
-            밀어 놔서 그대로 두면 영상이 GNB 아래에서 시작해 프레이밍이 달라진다.
-            대신 GNB 를 비우는 여백은 아래 본문 블록의 pt 로 옮겼다. */}
-        <section className="relative w-full h-[100svh] min-h-fit max-h-[900px] -mt-[60px] min-[1550px]:-mt-[70px] bg-black overflow-hidden flex flex-col">
-          {/* 배경 영상 */}
-          <video
-            src={heroVideo}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-          <div
-            className="hidden md:block absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to right, rgba(14,10,6,.84) 0%, rgba(14,10,6,.62) 38%, rgba(14,10,6,.2) 65%, rgba(14,10,6,.06) 100%)",
-            }}
-          />
-          <div
-            className="block md:hidden absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to top, rgba(12,8,4,.93) 0%, rgba(12,8,4,.6) 42%, rgba(12,8,4,.12) 72%, transparent 100%)",
-            }}
-          />
-
-          {/* 메인으로 돌아가기 — 모바일 전용, 히어로 좌상단.
-              PC 는 GNB 로고와 브레드크럼(홈 › 강화유리)이 이미 같은 역할을 해서
-              버튼까지 두면 복귀 동선이 셋으로 겹친다. 모바일은 GNB 가 로고+햄버거뿐이고
-              브레드크럼도 없으므로 이 버튼이 유일한 복귀 수단이다.
-
-              top 76px = 고정 GNB(60) + 16. 히어로가 -mt 로 GNB 뒤까지 올라와 있어서
-              top-4 로 두면 버튼이 GNB 에 가려진다.
-              좌우는 히어로 본문과 같은 열(px-6)에 맞춘다. */}
-          <div className="md:hidden absolute inset-x-0 top-[76px] z-20 pointer-events-none">
-            <div className="max-w-screen-md mx-auto px-6">
-              <Link
-                to="/"
-                aria-label="메인으로 돌아가기"
-                className="pointer-events-auto inline-flex items-center gap-1.5 h-9 pl-2.5 pr-3.5 rounded-full bg-black/35 hover:bg-black/55 border border-white/25 backdrop-blur-sm text-white no-underline transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" strokeWidth={2.4} />
-                <span className="text-[13px] font-semibold whitespace-nowrap">메인으로</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* MO — 전체 높이, 텍스트 하단 */}
-          <div className="flex md:hidden flex-col justify-end relative z-10 flex-1 max-w-screen-md mx-auto w-full px-6 pt-[70px] pb-[140px]">
-            <motion.div
-              {...rise}
-              transition={{ duration: 0.5 }}
-              className="inline-flex self-start items-center gap-2 mb-5"
-            >
-              {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
-                  이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
-              <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[11.5px] font-bold text-white">강화유리 설비 도입</span>
-              </div>
-            </motion.div>
-
-            <motion.h1
-              {...rise}
-              transition={{ duration: 0.55, delay: 0.05 }}
-              className="text-[30px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
-              style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
-            >
-              {/* 굵기 대비로 두 줄을 나눈다 */}
-              <span className="font-light">열과 충격에 강한</span>
-              <br />
-              <span className="font-extrabold">강화유리</span>
-            </motion.h1>
-
-            <motion.p
-              {...rise}
-              transition={{ duration: 0.55, delay: 0.1 }}
-              className="text-[15px] text-white/80 leading-[1.7] mb-8 break-keep"
-              style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
-            >
-              같은 두께라도 충격과 열에 훨씬 강합니다.
-              청암홈윈도우는 <b className="font-extrabold text-white">강화유리 생산 설비</b>를 직접 갖췄습니다.
-            </motion.p>
-
-            <motion.div
-              {...rise}
-              transition={{ duration: 0.55, delay: 0.2 }}
-              className="flex flex-col"
-              style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
-            >
-              <button
-                type="button"
-                onClick={() => openConsultBar("히어로")}
-                className="flex items-center justify-center h-[52px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] rounded-xl transition-colors cursor-pointer"
-              >
-                무료 실측 상담 신청
-              </button>
-            </motion.div>
-          </div>
-
-          {/* PC — 좌측 정렬, 세로 가운데 (메인 히어로와 동일) */}
-          <div className="hidden md:flex flex-col justify-center relative z-10 flex-1 max-w-screen-md mx-auto w-full px-10 pt-[88px] pb-[136px]">
-            <nav className="text-[12px] text-white/40 mb-6 flex items-center gap-1.5">
-              <Link
-                to="/"
-                className="text-white/50 no-underline hover:text-white transition-colors"
-              >
-                홈
-              </Link>
-              <span className="text-white/20">›</span>
-              {/* 지금 보고 있는 페이지 — 브레드크럼에서 현재 위치가 가장 진해야 한다 */}
-              <span aria-current="page" className="text-white font-semibold">
-                강화유리
-              </span>
-            </nav>
-
-            <motion.div
-              {...rise}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 mb-5"
-            >
-              {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
-                  이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
-              <div className="flex items-center gap-2 bg-[#d22727] rounded-full px-3 py-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[12.5px] font-bold text-white">강화유리 설비 도입</span>
-              </div>
-            </motion.div>
-
-            <motion.h1
-              {...rise}
-              transition={{ duration: 0.55, delay: 0.05 }}
-              className="text-[40px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
-              style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
-            >
-              {/* 굵기 대비로 두 줄을 나눈다 */}
-              <span className="font-light">열과 충격에 강한</span>
-              <br />
-              <span className="font-extrabold">강화유리</span>
-            </motion.h1>
-
-            <motion.p
-              {...rise}
-              transition={{ duration: 0.55, delay: 0.1 }}
-              className="text-[17px] text-white/80 leading-[1.7] mb-8 break-keep max-w-[480px]"
-              style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
-            >
-              {/* 그냥 두면 "강화유리 생산 / 설비" 로 갈라진다. 문장 단위로 끊는다. */}
-              같은 두께라도 충격과 열에 훨씬 강합니다.
-              <br />
-              청암홈윈도우는 <b className="font-extrabold text-white">강화유리 생산 설비</b>를 직접 갖췄습니다.
-            </motion.p>
-
-            <motion.div
-              {...rise}
-              transition={{ duration: 0.55, delay: 0.2 }}
-              className="flex flex-row"
-              style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
-            >
-              <button
-                type="button"
-                onClick={() => openConsultBar("히어로")}
-                className="flex items-center justify-center h-[52px] w-[220px] bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[16.5px] rounded-xl transition-colors cursor-pointer"
-              >
-                무료 실측 상담 신청
-              </button>
-            </motion.div>
-          </div>
-        </section>
-
+    <>
         {/* ── 01. 영상으로 보는 강화유리 ────────────────
             히어로 직후. 설명보다 먼저 실물을 보여주고, 아래 섹션들이 그 근거를 잇는다.
             세로(9:16) 쇼츠 1편.
@@ -487,7 +325,7 @@ export function Component() {
             <motion.h2
               {...rise}
               transition={{ duration: 0.5 }}
-              className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] break-keep -tracking-[.02em] md:col-start-1 md:row-start-1 md:self-end"
+              className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] break-keep md:col-start-1 md:row-start-1 md:self-end"
             >
               백 마디 설명보다<br />
               <span className="text-[#d22727]">30초면 충분</span>합니다
@@ -496,7 +334,7 @@ export function Component() {
             <motion.p
               {...rise}
               transition={{ duration: 0.5, delay: 0.07 }}
-              className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] break-keep md:col-start-1 md:row-start-2"
+              className="text-[#999] text-[16px] md:text-[18px] leading-[26px] break-keep md:col-start-1 md:row-start-2"
             >
               일반 유리와 강화유리에 똑같은 충격을 준 실제 촬영 영상입니다.
               깨지는 순간의 차이를 먼저 확인해 보세요.
@@ -542,14 +380,14 @@ export function Component() {
           <motion.h2
             {...rise}
             transition={{ duration: 0.5 }}
-            className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] mb-3 break-keep -tracking-[.02em]"
+            className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep"
           >
             일반 유리 vs <span className="text-[#d22727]">강화유리</span>
           </motion.h2>
           <motion.p
             {...rise}
             transition={{ duration: 0.5, delay: 0.07 }}
-            className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-8 break-keep"
+            className="text-[#999] text-[16px] md:text-[18px] leading-[26px] mb-8 break-keep"
           >
             같은 두께, 같은 자리에 들어가지만 성질이 다릅니다.
           </motion.p>
@@ -686,7 +524,7 @@ export function Component() {
           <motion.h2
             {...rise}
             transition={{ duration: 0.5 }}
-            className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] mb-3 break-keep -tracking-[.02em]"
+            className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep"
           >
             강화유리에는{" "}
             <span className="text-[#d22727]">따로 정해진 시험</span>이 있습니다
@@ -694,7 +532,7 @@ export function Component() {
           <motion.p
             {...rise}
             transition={{ duration: 0.5, delay: 0.07 }}
-            className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep"
+            className="text-[#999] text-[16px] md:text-[18px] leading-[26px] mb-7 break-keep"
           >
             <b className="font-semibold text-[#555]">국가표준</b>은 낙구 충격,
             파쇄 시험, 사람이 부딪히는 상황을 본뜬 쇼트백 충격을 규정하고
@@ -711,7 +549,7 @@ export function Component() {
           <motion.h2
             {...rise}
             transition={{ duration: 0.5 }}
-            className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] mb-3 break-keep -tracking-[.02em]"
+            className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep"
           >
             {" "}
             <span className="text-[#d22727]">강화유리는</span>
@@ -721,7 +559,7 @@ export function Component() {
           <motion.p
             {...rise}
             transition={{ duration: 0.5, delay: 0.07 }}
-            className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep max-w-[460px]"
+            className="text-[#999] text-[16px] md:text-[18px] leading-[26px] mb-7 break-keep max-w-[460px]"
           >
             표면은 서로를 누르고, 속은 잡아당깁니다. 식히는 속도를 어떻게
             잡느냐에 따라 단단함의 정도와 깨질 때의 모양이 달라집니다.
@@ -742,7 +580,7 @@ export function Component() {
           <motion.h2
             {...rise}
             transition={{ duration: 0.5 }}
-            className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] mb-3 break-keep -tracking-[.02em]"
+            className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep"
           >
             혹시 깨질까봐 걱정되시나요?
             <br />
@@ -751,7 +589,7 @@ export function Component() {
           <motion.p
             {...rise}
             transition={{ duration: 0.5, delay: 0.07 }}
-            className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep"
+            className="text-[#999] text-[16px] md:text-[18px] leading-[26px] mb-7 break-keep"
           >
             일반 유리는 칼처럼 길고 날카롭게 쪼개집니다. 강화유리는 가공 방식에
             따라 알갱이로 부서지거나, 깨지더라도 파편이 흩어지지 않습니다.
@@ -772,7 +610,7 @@ export function Component() {
           <motion.h2
             {...rise}
             transition={{ duration: 0.5 }}
-            className="text-[22px] md:text-[28px] font-extrabold text-[#1a1a1a] leading-[1.3] mb-3 break-keep -tracking-[.02em]"
+            className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep"
           >
             이런 자리일수록{" "}
             <span className="text-[#d22727]">차이가 큽니다</span>
@@ -780,7 +618,7 @@ export function Component() {
           <motion.p
             {...rise}
             transition={{ duration: 0.5, delay: 0.07 }}
-            className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep"
+            className="text-[#999] text-[16px] md:text-[18px] leading-[26px] mb-7 break-keep"
           >
             유리 면적이 넓거나, 사람이 부딪히기 쉽거나, 바람을 정면으로 받는
             곳입니다.
@@ -789,20 +627,6 @@ export function Component() {
             <WhereSlider />
           </motion.div>
         </Section>
-
-        {/* ── 07. 상담 신청 ─────────────────────────────── */}
-        <Section
-          id="apply"
-          className="py-16 md:py-24 border-t border-[#f3f3f3]"
-        >
-          <motion.div {...rise} transition={{ duration: 0.5 }}>
-            <TemperedConsultForm />
-          </motion.div>
-        </Section>
-      </main>
-
-      <Footer />
-      <BottomBar entrySource={TEMPERED_SOURCE} entryLabel={ENTRY_WHERE.bottomBar} />
-    </div>
+    </>
   )
 }
