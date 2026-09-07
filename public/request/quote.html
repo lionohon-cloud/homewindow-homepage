@@ -83,13 +83,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
-      <div class="field" style="margin-bottom:0">
+      <div class="field">
         <label id="lb-scope">교체 범위</label>
         <div class="seg grid2" id="i-scope" role="radiogroup" aria-labelledby="lb-scope">
           <button type="button" data-v="거실 발코니 창">거실 발코니 창</button>
           <button type="button" data-v="방 창문만">방 창문만</button>
           <button type="button" data-v="집 전체">집 전체</button>
           <button type="button" data-v="아직 모르겠음">아직 모르겠음</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:0">
+        <label id="lb-when">교체 희망 시기</label>
+        <div class="seg grid2" id="i-when" role="radiogroup" aria-labelledby="lb-when">
+          <button type="button" data-v="최대한 빠르게">최대한 빠르게</button>
+          <button type="button" data-v="3개월 이내">3개월 이내</button>
+          <button type="button" data-v="6개월 이후">6개월 이후</button>
+          <button type="button" data-v="아직 고민 중">아직 고민 중</button>
         </div>
       </div>
     </div>
@@ -150,19 +160,8 @@ if(!d){
   $('zone-note').textContent = g.zone + ' 담당 매니저가 ';
   track('step3_quote_view', {danji:g.name, zone:g.zone, grade:g.grade});
 
-  function initSeg(id){
-    const box=$(id);
-    box.querySelectorAll('button').forEach(b=>{
-      b.setAttribute('role','radio'); b.setAttribute('aria-checked','false');
-      b.addEventListener('click', ()=>{
-        const on = b.getAttribute('aria-checked')==='true';
-        box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked','false'));
-        b.setAttribute('aria-checked', on?'false':'true');
-      });
-    });
-  }
-  const segValue = id => { const b=$(id).querySelector('button[aria-checked="true"]'); return b?b.dataset.v:''; };
-  initSeg('i-pyeong'); initSeg('i-scope');
+  /* initSeg/segValue 는 app.js 공용부로 옮겼다(260907, 교체 희망 시기 추가하며 region.html 도 쓰게 됨) */
+  initSeg('i-pyeong'); initSeg('i-scope'); initSeg('i-when');
 
   const V = initTelVerify();
 
@@ -209,7 +208,7 @@ if(!d){
       복도유형:g.corr, 난방방식:g.heat, 시공사:g.builder,
       창호세대:g.grade, 창호종류:g.era?g.era.type:'', 단열성능:g.era?g.era.uval:'',
       연락처:$('i-tel').value, 인증토큰:V.token(),
-      평형:segValue('i-pyeong'), 교체범위:segValue('i-scope'),
+      평형:segValue('i-pyeong'), 교체범위:segValue('i-scope'), 교체시기:segValue('i-when'),
       헤드라인:qs('ab'), 방식:'2안(단계 분리)',
       동의방식:'견적 받기 버튼 클릭', 동의문구버전:'2024-01-01',
       접수시각:dt.toISOString()

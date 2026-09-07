@@ -34,6 +34,7 @@ function rawLead(overrides: Record<string, unknown> = {}) {
     단열성능: '약 3.4 W/m²K',
     평형: '30평대',
     교체범위: '집 전체',
+    교체시기: '3개월 이내',
     헤드라인: 'A',
     동의방식: '견적 받기 버튼 클릭',
     동의문구버전: '2024-01-01',
@@ -70,7 +71,7 @@ test('Korean funnel payload is normalized to the ERP contract', () => {
     'completionYear', 'buildingAge', 'householdCount', 'buildingCount', 'maxFloor',
     'corridorType', 'heatingType', 'builder', 'windowGeneration',
     'windowTypeEstimate', 'insulationEstimate', 'areaPyeong', 'replacementScope',
-    'headlineVariant', 'consentMethod', 'consentVersion', 'submittedAt',
+    'replacementTiming', 'headlineVariant', 'consentMethod', 'consentVersion', 'submittedAt',
   ].sort());
 });
 
@@ -95,6 +96,7 @@ test('region/house lead omits empty optional snapshot fields for the strict ERP 
     단열성능: '',
     평형: '',
     교체범위: '',
+    교체시기: '',
     헤드라인: '',
     동의방식: '상담 신청하기 버튼 클릭',
   }));

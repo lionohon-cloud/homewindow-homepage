@@ -70,8 +70,13 @@ export function HeroConsultSection() {
 
   return (
     <>
-      <section id="consult-form" className="w-full bg-white border-b border-[#ececec] shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
-        <div className="max-w-screen-lg mx-auto px-5 md:px-10 py-5 md:py-7">
+      {/* 260907 통합버전: 히어로와 이 접수창 사이에 강화유리 본문이 길게 들어가면서
+          위 섹션도 흰 바탕이라 경계가 사라졌다. 접수창 안쪽은 그대로 두고
+          위아래에 메인 컬러 선(30%)만 얹어 "여기서 블록이 바뀐다" 를 표시한다.
+          그림자는 넣지 않는다 — 선만으로 충분하고, 그림자를 얹으면 띠가 떠 보인다.
+          위아래 여백도 한 단계 넓혀 앞뒤 섹션과 붙지 않게 했다. */}
+      <section id="consult-form" className="w-full bg-white border-y border-y-[#D22727]/30">
+        <div className="max-w-screen-lg mx-auto px-5 md:px-10 py-7 md:py-9">
           <form
             onSubmit={handleSubmit}
             className="flex flex-col w-fit mx-auto md:w-full md:mx-0 md:flex-row md:items-center md:justify-between gap-4 md:gap-10"
@@ -97,15 +102,18 @@ export function HeroConsultSection() {
             <div className="flex flex-col gap-2">
               {/* 전화번호 입력 행 */}
               <div className="flex items-center gap-1.5 md:gap-2">
-                {/* 010 — 편집 가능 */}
+                {/* 지역/통신사 국번 — 010/070/02 등, 최대 3자리 */}
                 <input
                   type="tel"
                   value={phone1}
                   onChange={(e) => {
                     const v = e.target.value.replace(/[^0-9]/g, "");
-                    if (v.length <= 4) setPhone1(v);
+                    if (v.length <= 3) {
+                      setPhone1(v);
+                      if (v.length === 3) phone2Ref.current?.focus();
+                    }
                   }}
-                  maxLength={4}
+                  maxLength={3}
                   disabled={isSubmitting}
                   className={`w-[56px] md:w-[64px] ${inputCls}`}
                 />
@@ -168,7 +176,7 @@ export function HeroConsultSection() {
                   <button
                     type="button"
                     onClick={() => setShowPrivacy(true)}
-                    className="text-[#D22727] underline hover:text-[#b02020] cursor-pointer font-medium"
+                    className="text-[length:inherit] text-[#D22727] underline hover:text-[#b02020] cursor-pointer font-medium"
                   >
                     [내용보기]
                   </button>

@@ -855,7 +855,7 @@ export function EstimateForm() {
                       <button
                         type="button"
                         onClick={() => setShowPrivacy(true)}
-                        className="text-[#D22727] underline hover:text-[#b02020] transition-colors cursor-pointer font-medium text-[10px]"
+                        className="text-[length:inherit] text-[#D22727] underline hover:text-[#b02020] transition-colors cursor-pointer font-medium text-[10px]"
                       >
                         [내용보기]
                       </button>

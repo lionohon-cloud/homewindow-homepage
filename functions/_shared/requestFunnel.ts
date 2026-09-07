@@ -145,6 +145,7 @@ export interface ErpLeadPayload {
     insulationEstimate?: string;
     areaPyeong?: string;
     replacementScope?: string;
+    replacementTiming?: string;
     headlineVariant?: string;
     consentMethod: string;
     consentVersion: string;
@@ -185,6 +186,7 @@ export function normalizeLead(input: unknown): ErpLeadPayload {
     insulationEstimate: text(body['단열성능'], '단열성능', 100),
     areaPyeong: text(body['평형'], '평형', 50),
     replacementScope: text(body['교체범위'], '교체범위', 100),
+    replacementTiming: text(body['교체시기'], '교체시기', 50),
     headlineVariant: text(body['헤드라인'], '헤드라인', 100),
   };
   for (const [key, value] of Object.entries(optionalStrings)) {

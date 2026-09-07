@@ -597,6 +597,26 @@ function initTelVerify(){
   };
 }
 
+/* ── 선택 버튼 그룹 (평형·교체 범위·희망 시기 공용) ──
+   한 번 더 누르면 해제되는 라디오 그룹입니다. quote.html 에만 있던 것을
+   region.html 도 쓰게 되어 공용부로 옮겼다(260907, 교체 희망 시기 추가). */
+function initSeg(id){
+  const box = $(id);
+  if(!box) return;
+  box.querySelectorAll('button').forEach(b=>{
+    b.setAttribute('role','radio'); b.setAttribute('aria-checked','false');
+    b.addEventListener('click', ()=>{
+      const on = b.getAttribute('aria-checked')==='true';
+      box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked','false'));
+      b.setAttribute('aria-checked', on?'false':'true');
+    });
+  });
+}
+const segValue = id => {
+  const b = $(id) && $(id).querySelector('button[aria-checked="true"]');
+  return b ? b.dataset.v : '';
+};
+
 /* ── 모달 열고 닫기 ── */
 function bindModal(modalId, openId, closeId){
   const m = $(modalId), o = $(openId), c = $(closeId);

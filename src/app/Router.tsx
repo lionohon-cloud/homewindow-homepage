@@ -85,6 +85,8 @@ const router = createBrowserRouter([
         path: 'thanks',
         lazy: lazyWithRetry(() => import('./pages/ThanksPage')),
       },
+      /* 260907 통합버전 — 강화유리 상세페이지 라우트를 뺐다.
+         그 본문은 메인(HomePage)의 <TemperedSections /> 로 들어가 있다. */
       {
         path: 'partners',
         lazy: lazyWithRetry(() => import('./pages/PartnersPage')),
