@@ -69,6 +69,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p class="code-note" id="code-note"></p>
       <div class="err">인증번호가 맞지 않습니다.</div>
     </div>
+
+    <div class="field" id="f-when" style="margin-bottom:0">
+      <label id="lb-when">교체 희망 시기</label>
+      <div class="seg grid2" id="i-when" role="radiogroup" aria-labelledby="lb-when">
+        <button type="button" data-v="최대한 빠르게">최대한 빠르게</button>
+        <button type="button" data-v="3개월 이내">3개월 이내</button>
+        <button type="button" data-v="6개월 이후">6개월 이후</button>
+        <button type="button" data-v="아직 고민 중">아직 고민 중</button>
+      </div>
+    </div>
   </div>
 
   <ul class="trustlist">
@@ -311,6 +321,7 @@ $('zhits').addEventListener('click', e=>{
 
 $('zone-btn').addEventListener('click', zOpen);
 
+initSeg('i-when');
 const V = initTelVerify();
 
 $('i-tel').addEventListener('input', e=>{
@@ -351,7 +362,7 @@ $('send').addEventListener('click', async ()=>{
   const payload = {
     접수경로:'지역선택', 거주형태:HOME_TYPE, 경로:PATH,
     상담권역: zPicked || '미정 · 통화 시 확인', 단지명:'',
-    연락처:$('i-tel').value, 인증토큰:V.token(),
+    연락처:$('i-tel').value, 인증토큰:V.token(), 교체시기:segValue('i-when'),
     헤드라인:qs('ab'), 방식:'2안(단계 분리)',
     동의방식:'상담 신청하기 버튼 클릭', 동의문구버전:'2024-01-01',
     접수시각:dt.toISOString()
