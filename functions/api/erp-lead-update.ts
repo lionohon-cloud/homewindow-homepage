@@ -5,7 +5,7 @@
  *
  * 입력 (POST JSON):
  * { docId: string, region: string, consultField: string,
- *   intakeRequestId?: string, meshReferralRequested?: boolean }
+ *   intakeRequestId?: string, meshReferralRequested?: boolean, replacementTiming?: string }
  * ERP 로 PATCH {ERP_API_BASE}/api/external/inbound-customers/{docId} 포워드.
  *
  * 환경변수 (erp-lead.ts와 동일):
@@ -35,6 +35,7 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
     consultFieldText?: unknown;
     intakeRequestId?: unknown;
     meshReferralRequested?: unknown;
+    replacementTiming?: unknown;
   };
   try {
     payload = (await request.json()) as typeof payload;
@@ -63,6 +64,11 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env }) => {
     meshReferralRequested:
       typeof payload.meshReferralRequested === 'boolean'
         ? payload.meshReferralRequested
+        : undefined,
+    // 교체 희망 시기 (260907 추가) — 값이 없으면(건너뛰기) 키를 아예 안 보낸다.
+    replacementTiming:
+      typeof payload.replacementTiming === 'string' && payload.replacementTiming
+        ? payload.replacementTiming
         : undefined,
   };
 
