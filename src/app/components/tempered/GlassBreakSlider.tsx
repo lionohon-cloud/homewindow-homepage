@@ -80,7 +80,7 @@ export function GlassBreakSlider() {
         />
         <div className="absolute right-4 bottom-4 z-10 text-white text-right drop-shadow-md">
           <p className="text-[12px] md:text-[14px] opacity-80">강화유리</p>
-          <p className="text-[16px] md:text-[18px] font-bold">둥근 알갱이 형태</p>
+          <p className="text-[16px] md:text-[18px] font-bold">알갱이 또는 비산 억제</p>
         </div>
       </div>
 

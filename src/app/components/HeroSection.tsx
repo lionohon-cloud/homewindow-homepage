@@ -1,27 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { TemperedGlassLink } from "./TemperedGlassLink";
-/* 히어로 배경 영상 — 창가에서 뛰노는 아이.
-   260903: 유리 클로즈업 영상(hero-glass-closeup.mp4)으로 바꿨다가 되돌렸다.
-   그 영상은 지우지 않고 남겨 뒀으니 다시 쓰려면 이 줄만 바꾸면 된다. */
-import heroVideo from "../../assets/hero-tempered.mp4";
-import { HandwriteSept } from "./HandwriteSept";
-import { SashTurntable } from "./SashTurntable";
-import tempedTag from "@/assets/handwrite-tempered.svg";
+/* 히어로 배경 영상 — 유리 클로즈업(CF 스타일). PC 와 모바일이 서로 다른 파일이다.
+
+   260907 시안 비교(/video-lab) 끝에 B 안으로 정하면서, 새 영상이 720×1280 세로라
+   PC 에서 위아래가 크게 잘리는 문제가 있었다. 그래서 모바일에만 새 영상을 쓰고
+   PC 는 쓰던 가로 영상을 그대로 둔다. 가로 원본이 생기면 PC 쪽만 바꾸면 된다.
+
+   그 이전 히어로 영상(창가에서 뛰노는 아이)은 hero-tempered.mp4 로 남겨 뒀다. */
+import heroVideoPc from "../../assets/hero-glass-closeup.mp4";
+import heroVideoMo from "../../assets/hero-glass-closeup-mo.mp4";
+
+/* 화면 폭으로 배경 영상을 가른다. md(768px) — 히어로 안의 모바일/PC 블록과 같은 경계.
+   CSS 로 두 개를 겹쳐 놓고 숨기는 방법도 있지만, 그러면 안 보이는 쪽까지 받아 온다. */
+function useHeroVideo() {
+  const [isPc, setIsPc] = useState(() => window.matchMedia("(min-width: 768px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const on = () => setIsPc(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return isPc ? heroVideoPc : heroVideoMo;
+}
 
 /* ══════════════════════════════════════════════════════════════════════
-   260831 — 9월 강화유리 프로모션 기간 한정 히어로.
+   260907 — 강화유리 상시 히어로.
 
-   강화유리 상세페이지의 히어로를 그대로 가져왔다(배경 영상 + 카피).
+   구성은 강화유리 상세페이지 히어로와 같다: 배지 · 두 줄 헤드라인 · 문단 · 버튼.
    기존 히어로("창호 교체, 이제 믿을 수 있는 곳에서")는 이 파일 맨 아래에
    주석으로 통째로 남겨 뒀다.
 
-   ▸ 이벤트 끝나면 되돌리는 법
+   ▸ 260907 에 뺀 것 — 파일은 지우지 않았으니 되살릴 수 있다
+     · 창짝 3D 턴테이블  <SashTurntable height={188} /> — PC 는 238
+       + styles/index.css 의 hw-sash-* (없으면 안 돈다)
+     · 손글씨 "강화유리" 태그  @/assets/handwrite-tempered.svg
+       창짝 박스에 absolute 로 얹었다 — MO left 72% / PC 72.7%, top 49%, width 97%
+     · "9월 한정" 손글씨  ./HandwriteSept + fonts.css 의 Nanum Pen Script @import
+
+   ▸ 원래 히어로로 되돌리는 법
      1. 아래 HeroSection 을 통째로 지우고, 파일 끝의 주석 블록을 풀어 되살린다
      2. src/styles/fonts.css 의 Nanum Pen Script @import 삭제
-     3. 안 쓰게 되는 파일 삭제 — src/assets/hero-tempered.mp4 (2.4MB),
-        src/app/components/HandwriteSept.tsx
-     4. 되살릴 때 필요한 것: src/assets/hero-bg.jpeg, ./VideoModal — 지우지 말 것
+     3. 되살릴 때 필요한 것: src/assets/hero-bg.jpeg, ./VideoModal — 지우지 말 것
    ══════════════════════════════════════════════════════════════════════ */
 
 const rise = {
@@ -29,7 +49,11 @@ const rise = {
   animate: { opacity: 1, y: 0 },
 } as const;
 
-export function HeroSection() {
+/* videoSrc 는 배경 영상 시안 비교용(/video-lab)으로만 넘긴다.
+   안 넘기면 위에서 import 한 기본 영상을 쓰므로 실서비스 동작은 그대로다. */
+export function HeroSection({ videoSrc }: { videoSrc?: string } = {}) {
+  const heroVideo = useHeroVideo();
+
   /* 접수 바는 GNB 가 하나만 그린다(lib/consultBar.ts).
      여기서 따로 <ConsultationModal> 을 두면 GNB 것과 두 겹으로 열린다. */
 
@@ -38,7 +62,8 @@ export function HeroSection() {
   return (
     <section className="relative w-full h-[100svh] min-h-fit max-h-[900px] bg-black overflow-hidden flex flex-col">
       <video
-        src={heroVideo}
+        key={videoSrc ?? heroVideo}
+        src={videoSrc ?? heroVideo}
         autoPlay
         loop
         muted
@@ -67,7 +92,7 @@ export function HeroSection() {
         <motion.div
           {...rise}
           transition={{ duration: 0.5 }}
-          className="inline-flex self-start items-center gap-2 mb-9"
+          className="inline-flex self-start items-center gap-2 mb-5"
         >
           {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
               이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
@@ -77,50 +102,27 @@ export function HeroSection() {
           </div>
         </motion.div>
 
-        {/* 핵심 한 덩어리 — 강화유리 취급 시작.
-            상세페이지 히어로에 있던 "열과 충격에 강한 강화유리" 헤드라인과
-            설명 문단은 뺐다. 메인 히어로에서는 혜택이 먼저 읽혀야 한다. */}
         <motion.h1
           {...rise}
           transition={{ duration: 0.55, delay: 0.05 }}
-          className="flex flex-col items-start gap-1 mb-1.5"
+          className="text-[30px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
+          style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
         >
-          {/* 일반유리 대비 없이 강화유리 창짝 하나만 천천히 돌린다.
-              이전의 두 판 픽토그램은 GlassUpgradeIcon.tsx 에 그대로 있다 —
-              되돌리려면 <GlassUpgradeIcon width={311} className="block -ml-2.5 mb-1" /> */}
-          <div className="relative w-fit -ml-4 mb-5">
-            <SashTurntable height={188} />
-            {/* 손글씨 "강화유리" + 창짝을 가리키는 화살표. 창짝 오른쪽 아래에 걸친다.
-                크기·위치를 창짝 상자에 대한 %로 잡아서 창짝이 커지면 같이 커진다.
-                흰 선이라 밝은 배경에서 묻히므로 그림자를 두 겹 준다. */}
-            <img
-              src={tempedTag}
-              alt="강화유리"
-              className="absolute pointer-events-none select-none
-                         drop-shadow-[0_2px_8px_rgba(0,0,0,.55)]
-                         [filter:drop-shadow(0_2px_8px_rgba(0,0,0,.55))_drop-shadow(0_0_2px_rgba(0,0,0,.45))]"
-              /* 폭은 글씨 크기 기준으로 잡는다. 잉크 상자에서 글씨가 차지하는 비율이
-                 65.77/90.27 이라, 글씨를 104px 로 두려면 폭이 97% 여야 한다.
-                 left 는 화살표 머리 위치. 창짝 상자 기준으로 78% 가 유리 오른쪽 끝,
-                 94% 가 프레임 바깥 끝이므로 70% 면 머리가 유리면 위로 들어온다. */
-              style={{ left: "72%", top: "49%", width: "97%" }}
-            />
-          </div>
-          <span
-            className="text-[25.6px] font-extrabold text-white leading-[1.1] -tracking-[.03em] break-keep"
-            style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
-          >
-            <span className="font-light">샷시교체,</span> 이제는 강화유리가 기본
-          </span>
+          {/* 굵기 대비로 두 줄을 나눈다 — 상세페이지 히어로와 같은 형태 */}
+          <span className="font-light">이제는 창호도</span>
+          <br />
+          <span className="font-extrabold">강화유리가 기본입니다</span>
         </motion.h1>
 
         <motion.p
           {...rise}
           transition={{ duration: 0.55, delay: 0.1 }}
-          className="text-[15px] text-white/85 leading-[1.6] mb-7 break-keep"
+          className="text-[15px] text-white/85 leading-[1.6] -tracking-[.02em] mb-7 break-keep"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
         >
-          <b className="font-extrabold text-white">60억원 규모</b>의 자동화 생산라인에서 직접 만듭니다.
+          휴대폰도 자동차도 유리가 사용되는 곳은 강화유리입니다.
+          <br />
+          <b className="font-extrabold text-white">집에서 가장 큰 유리만</b> 그대로였습니다.
         </motion.p>
 
         <motion.div
@@ -145,7 +147,7 @@ export function HeroSection() {
         <motion.div
           {...rise}
           transition={{ duration: 0.5 }}
-          className="inline-flex self-start items-center gap-2 mb-9"
+          className="inline-flex self-start items-center gap-2 mb-5"
         >
           {/* 상시버전 배지 — 행사가 아니라 "설비를 갖췄다" 는 사실만 알린다.
               이벤트판에서는 여기에 "이벤트 마감 D-XX" 가 들어간다. */}
@@ -158,33 +160,13 @@ export function HeroSection() {
         <motion.h1
           {...rise}
           transition={{ duration: 0.55, delay: 0.05 }}
-          className="flex flex-col items-start gap-1.5 mb-5"
+          className="text-[40px] text-white leading-[1.25] mb-4 break-keep -tracking-[.025em]"
+          style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
         >
-          <div className="relative w-fit -ml-5 mb-5">
-            <SashTurntable height={238} />
-            {/* 손글씨 "강화유리" + 창짝을 가리키는 화살표. 창짝 오른쪽 아래에 걸친다.
-                크기·위치를 창짝 상자에 대한 %로 잡아서 창짝이 커지면 같이 커진다.
-                흰 선이라 밝은 배경에서 묻히므로 그림자를 두 겹 준다. */}
-            <img
-              src={tempedTag}
-              alt="강화유리"
-              className="absolute pointer-events-none select-none
-                         drop-shadow-[0_2px_8px_rgba(0,0,0,.55)]
-                         [filter:drop-shadow(0_2px_8px_rgba(0,0,0,.55))_drop-shadow(0_0_2px_rgba(0,0,0,.45))]"
-              /* 폭은 글씨 크기 기준으로 잡는다. 잉크 상자에서 글씨가 차지하는 비율이
-                 65.77/90.27 이라, 글씨를 104px 로 두려면 폭이 97% 여야 한다.
-                 left 는 화살표 머리 위치. 창짝 상자 기준으로 78% 가 유리 오른쪽 끝,
-                 94% 가 프레임 바깥 끝이므로 70% 면 머리가 유리면 위로 들어온다. */
-              style={{ left: "72.7%", top: "49%", width: "97%" }}
-            />
-          </div>
-          {/* 손글씨는 잠시 뺀 상태 — 모바일 쪽 주석에 되살리는 형태를 적어 뒀다 */}
-          <span
-            className="text-[32px] font-extrabold text-white leading-[1.05] -tracking-[.03em] break-keep"
-            style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}
-          >
-            <span className="font-light">샷시교체,</span> 이제는 강화유리가 기본
-          </span>
+          {/* 굵기 대비로 두 줄을 나눈다 — 상세페이지 히어로와 같은 형태 */}
+          <span className="font-light">이제는 창호도</span>
+          <br />
+          <span className="font-extrabold">강화유리가 기본입니다</span>
         </motion.h1>
 
         <motion.p
@@ -193,7 +175,9 @@ export function HeroSection() {
           className="text-[19px] text-white/85 leading-[1.6] mb-8 break-keep"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
         >
-          <b className="font-extrabold text-white">60억원 규모</b>의 자동화 생산라인에서 직접 만듭니다.
+          휴대폰도 자동차도 유리가 사용되는 곳은 강화유리입니다.
+          <br />
+          <b className="font-extrabold text-white">집에서 가장 큰 유리만</b> 그대로였습니다.
         </motion.p>
 
         <motion.div

@@ -34,13 +34,13 @@ const COMPARE: {
   aBad?: boolean
   ratio?: number // 강화유리 우위 비율 0~1 (bar 표시용)
 }[] = [
-  { k: "충격\n강도", a: "1배", b: "3~5배" },
-  { k: "풍압\n저항", a: "1배", b: "약 3배" },
+  { k: "충격\n강도", a: "1배", b: "2~5배" },
+  { k: "풍압\n저항", a: "1배", b: "약 2~3배" },
   { k: "열충격\n한계", a: "약 80℃", b: "약 180℃" },
   {
     k: "파손\n형태",
     a: "길고 날카로운 조각",
-    b: "잘게 부서진 알갱이",
+    b: "알갱이 또는 비산 억제",
     aBad: true,
   },
 ]
@@ -444,7 +444,9 @@ export function Component() {
               className="text-[17px] text-white/80 leading-[1.7] mb-8 break-keep max-w-[480px]"
               style={{ textShadow: "0 1px 8px rgba(0,0,0,.55)" }}
             >
+              {/* 그냥 두면 "강화유리 생산 / 설비" 로 갈라진다. 문장 단위로 끊는다. */}
               같은 두께라도 충격과 열에 훨씬 강합니다.
+              <br />
               청암홈윈도우는 <b className="font-extrabold text-white">강화유리 생산 설비</b>를 직접 갖췄습니다.
             </motion.p>
 
@@ -510,7 +512,7 @@ export function Component() {
             >
               {[
                 '일반 유리는 길고 날카로운 조각으로 쪼개집니다',
-                '강화유리는 손톱만 한 알갱이로 부서집니다',
+                '강화유리는 가공 방식에 따라 알갱이로 부서지거나, 깨져도 파편이 흩어지지 않습니다',
                 '같은 두께인데 견디는 충격의 크기가 다릅니다',
               ].map((t) => (
                 <li
@@ -666,8 +668,8 @@ export function Component() {
 
           <p className="text-[11.5px] text-[#bbb] mt-7 break-keep leading-[1.6]">
             ※ 위 수치는 강화유리라는 소재에 대해 동일 두께 기준으로 일반적으로 알려진
-            비교값입니다. 특정 제품의 시험 결과가 아니며, 제품 규격·두께·시공 조건에 따라
-            달라질 수 있습니다.
+            비교값입니다. 특정 제품의 시험 결과가 아니며, 가공 방식과 제품 규격·두께·시공
+            조건에 따라 달라질 수 있습니다.
           </p>
         </Section>
 
@@ -686,10 +688,9 @@ export function Component() {
             transition={{ duration: 0.5, delay: 0.07 }}
             className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep"
           >
-            국가표준{" "}
-            <b className="font-semibold text-[#555]">KS L 2002(강화 유리)</b>는
-            낙구 충격, 파쇄 시험, 사람이 부딪히는 상황을 본뜬 쇼트백 충격을
-            규정하고 있습니다.
+            <b className="font-semibold text-[#555]">국가표준</b>은 낙구 충격,
+            파쇄 시험, 사람이 부딪히는 상황을 본뜬 쇼트백 충격을 규정하고
+            있습니다.
           </motion.p>
           <motion.div {...rise} transition={{ duration: 0.5, delay: 0.1 }}>
             <TestFilm />
@@ -714,8 +715,8 @@ export function Component() {
             transition={{ duration: 0.5, delay: 0.07 }}
             className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep max-w-[460px]"
           >
-            표면은 서로를 누르고, 속은 잡아당깁니다. 이 균형이 유리를 단단하게
-            만들고, 깨질 때의 모양까지 바꿔 놓습니다.
+            표면은 서로를 누르고, 속은 잡아당깁니다. 식히는 속도를 어떻게
+            잡느냐에 따라 단단함의 정도와 깨질 때의 모양이 달라집니다.
           </motion.p>
 
           <motion.div {...rise} transition={{ duration: 0.5, delay: 0.1 }}>
@@ -744,8 +745,8 @@ export function Component() {
             transition={{ duration: 0.5, delay: 0.07 }}
             className="text-[14px] md:text-[15.5px] text-[#777] leading-[1.75] mb-7 break-keep"
           >
-            일반 유리는 칼처럼 길고 날카롭게 쪼개집니다. 강화유리는 손톱만 한
-            알갱이로 부서집니다.
+            일반 유리는 칼처럼 길고 날카롭게 쪼개집니다. 강화유리는 가공 방식에
+            따라 알갱이로 부서지거나, 깨지더라도 파편이 흩어지지 않습니다.
           </motion.p>
           <motion.div {...rise} transition={{ duration: 0.5, delay: 0.1 }}>
             <GlassBreakSlider />

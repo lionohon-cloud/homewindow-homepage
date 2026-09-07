@@ -122,11 +122,11 @@ export function DanjiAiBanner() {
               예상견적부터 확인하세요.
             </h2>
 
-            <p className="mt-5 md:mt-7 text-[15px] md:text-[17px] font-semibold text-[#5f5b66]">
+            <p className="mt-4 md:mt-7 text-[15px] md:text-[17px] font-semibold text-[#5f5b66]">
               주거형태가 어떻게 되시나요?
             </p>
 
-            <div className="mt-3 md:mt-4 grid grid-cols-2 gap-2.5 md:gap-3 w-full max-w-[440px] mx-auto">
+            <div className="mt-[18px] md:mt-4 grid grid-cols-2 gap-2.5 md:gap-3 w-full max-w-[440px] mx-auto">
               {/* 배포본과 같은 동작 — 고르면 광고 랜딩 퍼널로 넘긴다.
                   아파트는 단지 검색부터, 주택·상가는 자료가 없어 지역 선택부터 시작한다.
 

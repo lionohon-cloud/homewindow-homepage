@@ -15,7 +15,7 @@ const SHOT_IMPACT = 3.85; // 쇼트백 파트 로컬 시각
 const LIFT = 36;
 
 const CAPS: [number, string][] = [
-  [0.0, 'KS L 2002가 정한 두 가지 충격 시험을 이어서 보여드립니다.'],
+  [0.0, '국가표준이 정한 두 가지 충격 시험을 이어서 보여드립니다.'],
   [
     S1,
     '정해진 높이에서 강철 구슬을 떨어뜨려 <b class="font-bold text-[#333]">버티는 정도</b>를 봅니다. 같은 두께라면 강화유리가 훨씬 큰 충격까지 견딥니다.',
@@ -23,7 +23,7 @@ const CAPS: [number, string][] = [
   [7.4, ''],
   [
     S2,
-    '<b class="font-bold text-[#333]">45kg</b> 추를 <b class="font-bold text-[#333]">75cm</b>에서 떨어뜨려 사람이 부딪히는 상황을 본뜹니다. <b class="font-bold text-[#333]">파괴되지 않고, 파편이 비산하지 않아야</b> 합니다.',
+    '<b class="font-bold text-[#333]">45kg</b> 추를 <b class="font-bold text-[#333]">75cm</b>에서 떨어뜨려 사람이 부딪히는 상황을 본뜹니다. <b class="font-bold text-[#333]">파괴되지 않거나, 깨지더라도 파편이 기준 이내여야</b> 합니다.',
   ],
   [DUR, ''],
 ];
@@ -727,8 +727,8 @@ export function TestFilm() {
       </div>
 
       <p className="mt-2 text-[11px] md:text-[12px] leading-[17px] text-[#bbb] break-keep">
-        ※ 국가표준(KS)에 정해진 시험 방법을 이해하기 쉽게 표현한 화면입니다. 정확한 시험 조건과 합격
-        기준은 KS 규격을 따르며, 강화유리라는 소재의 일반적인 기준을 안내한 것입니다.
+        ※ 국가표준에 정해진 시험 방법을 이해하기 쉽게 표현한 화면입니다. 정확한 시험 조건과 합격
+        기준은 해당 규격을 따르며, 강화유리라는 소재의 일반적인 기준을 안내한 것입니다.
       </p>
     </div>
   );
