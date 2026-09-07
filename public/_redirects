@@ -23,8 +23,6 @@
 
 /admin/reviews / 200
 
-/tempered-glass / 200
-
 /partners/* / 200
 /as/* / 200
 /admin/as/* / 200
