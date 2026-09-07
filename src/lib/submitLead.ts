@@ -233,9 +233,10 @@ export async function submitLead(params: {
 /**
  * Call2 — 접수 건에 지역·상담분야 추가 반영.
  * POST /api/erp-lead-update
- * (docId, region, consultField, consultFieldText?, meshReferralRequested?). GA4 이벤트도 함께 발송.
+ * (docId, region, consultField, consultFieldText?, meshReferralRequested?, replacementTiming?). GA4 이벤트도 함께 발송.
  * 시군구 개편 (2026-07-10): region = TERRITORY 4자리 시군구 코드 (ERP 는 과도기에 9권역도 수용).
  *   consultFieldText = 상담분야 「직접입력」 자유 텍스트 (consultField='ETC' 동반).
+ *   replacementTiming = 교체 희망 시기 (260907 추가, ConsultRegionFieldModal 의 새 단계).
  * 실패해도 throw 하지 않음(고객 흐름을 막지 않는다). 결과 boolean 만 반환.
  */
 export async function submitLeadDetail(
@@ -244,6 +245,7 @@ export async function submitLeadDetail(
   consultField: string,
   consultFieldText?: string,
   meshReferralRequested?: boolean,
+  replacementTiming?: string,
 ): Promise<boolean> {
   let ok = false;
   const intakeRequestId = sessionStorage.getItem(
@@ -262,6 +264,7 @@ export async function submitLeadDetail(
         // 구 홈페이지/다른 호출부도 SAFETY_SCREEN이면 안전하게 대기 표식을 남긴다.
         meshReferralRequested:
           meshReferralRequested ?? consultField === 'SAFETY_SCREEN',
+        replacementTiming,
       }),
     });
     ok = res.ok;

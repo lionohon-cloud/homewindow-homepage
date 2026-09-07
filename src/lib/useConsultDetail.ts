@@ -30,6 +30,7 @@ export function useConsultDetail() {
     consultField,
     consultFieldText,
     meshReferralRequested,
+    replacementTiming,
   }: ConsultDetailResult) => {
     setIsOpen(false);
     if (leadDocId) {
@@ -39,6 +40,7 @@ export function useConsultDetail() {
         consultField,
         consultFieldText,
         meshReferralRequested,
+        replacementTiming,
       );
     }
     navigate('/thanks');
