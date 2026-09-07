@@ -19,6 +19,14 @@ import { submitLead } from "@/lib/submitLead";
  *  - 첫 화면 버튼은 사용자가 직접 고른 것이므로 즉시 진행(확인 불필요).
  */
 
+/** "01012345678" → "010-1234-5678". 다른 폼(BottomBar 등)은 입력칸이 3개라 하이픈이
+ *  자동으로 붙지만, 여긴 자유입력 한 칸이라 구글시트에 숫자만 그대로 들어가던 문제 수정. */
+function formatPhoneHyphen(digits: string): string {
+  if (digits.length === 11) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  if (digits.length === 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return digits;
+}
+
 type Branch = "menu" | "window" | "as" | "inquiry" | "consultPhone";
 type Intent =
   | "window_estimate"
@@ -191,11 +199,12 @@ export function AiConsultChat() {
       detail.open(detail.leadDocId);
       return;
     }
-    const phone = consultPhone.replace(/[^0-9]/g, "");
-    if (phone.length < 9) {
+    const digits = consultPhone.replace(/[^0-9]/g, "");
+    if (digits.length < 9) {
       push({ role: "bot", text: "연락처를 정확히 입력해 주세요. 예) 010-1234-5678" });
       return;
     }
+    const phone = formatPhoneHyphen(digits);
     setSubmitting(true);
     push({ role: "user", text: phone });
     try {

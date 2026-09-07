@@ -116,6 +116,14 @@ function WhereSlider(): React.ReactElement {
   const prev = () => setCurrent((i) => (i - 1 + total) % total)
   const next = () => setCurrent((i) => (i + 1) % total)
 
+  // 4초마다 자동으로 다음 장. 화살표·점을 눌러 current 가 바뀌면 그 시점부터 다시 4초.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((i) => (i + 1) % total)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [current, total])
+
   return (
     /* 모바일 230px 유지, PC 는 230 → 276(+20%) → 317(+15%) 로 키웠다.
        인라인 style 로 두면 브레이크포인트를 못 타므로 클래스로 옮겼다. */
