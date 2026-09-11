@@ -168,21 +168,22 @@ function OutsideTrack({ route, play, speed }: { route: OutsideRoute; play: boole
   }, [play, t1, t2, D]);
 
   /* 구간별 키프레임 — 0 번 구간은 0~t1 에 달리고, 1 번 구간은 t2~1 에 달린다.
-     채움선(scaleY)과 트럭 위치(top)는 같은 시점표를 쓴다. 트럭은 달리는 동안만 보인다. */
+     채움선(scaleY)과 트럭 위치(y)는 같은 시점표를 쓴다. 트럭은 달리는 동안만 보인다. */
   const segs = [
     {
       frames: [0, 1, 1],
-      tops: ["0%", "100%", "100%"],
+      ys: ["0%", "100%", "100%"],
       times: [0, t1, 1],
-      ease: ["easeInOut", "linear"] as const,
+      /* 260911 등속 — easeInOut 은 짧은 구간에서 출발·도착이 느리고 가운데가 빨라 울컥거려 보였다 */
+      ease: ["linear", "linear"] as const,
       op: [0, 1, 1, 0, 0],
       opTimes: [0, 0.02, t1 - 0.02, t1, 1],
     },
     {
       frames: [0, 0, 1],
-      tops: ["0%", "0%", "100%"],
+      ys: ["0%", "0%", "100%"],
       times: [0, t2, 1],
-      ease: ["linear", "easeInOut"] as const,
+      ease: ["linear", "linear"] as const,
       op: [0, 0, 1, 1, 0],
       opTimes: [0, t2, t2 + 0.02, 0.98, 1],
     },
@@ -207,16 +208,27 @@ function OutsideTrack({ route, play, speed }: { route: OutsideRoute; play: boole
                 />
                 {/* 트럭 — 선 위를 따라 내려간다. 뒤에 칸 바탕색을 깔아 선이 아이콘을 뚫고 보이지 않게 한다
                     (바탕과 같은 색이라 상자로 보이지 않는다). 흔들림 없이 일자로. */}
+                {/* 260911 top(레이아웃 값) 대신 transform(y) 로 움직인다.
+                    top 은 1px 단위로 끊겨 그려져서, 36~44px 을 3.5초에 걸쳐 천천히 내려가면
+                    0.1초마다 한 칸씩 툭툭 끊겨 렉처럼 보였다. transform 은 픽셀 사이 위치까지
+                    부드럽게 그려지고 GPU 가 합성한다.
+                    구간 높이와 같은 투명 틀을 y: 0% → 100%(자기 높이 = 구간 높이)로 내리고,
+                    트럭은 그 틀 맨 위에 붙여 둔다. */}
                 <motion.span
-                  className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
-                  initial={{ top: "0%", opacity: 0 }}
-                  animate={play ? { top: k.tops, opacity: k.op } : { top: "0%", opacity: 0 }}
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-full z-10 pointer-events-none"
+                  style={{ willChange: "transform, opacity" }}
+                  initial={{ y: "0%", opacity: 0 }}
+                  animate={play ? { y: k.ys, opacity: k.op } : { y: "0%", opacity: 0 }}
                   transition={{
-                    top: { duration: D, times: k.times, ease: [...k.ease] },
+                    y: { duration: D, times: k.times, ease: [...k.ease] },
                     opacity: { duration: D, times: k.opTimes, ease: "linear" },
                   }}
                 >
-                  <span data-truck className="block py-0.5 bg-[#f7f7f8] text-[#8a8a8e]">
+                  <span
+                    data-truck
+                    className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 block py-0.5 bg-[#f7f7f8] text-[#8a8a8e]"
+                  >
                     <Truck size={20} strokeWidth={1.9} />
                   </span>
                 </motion.span>
