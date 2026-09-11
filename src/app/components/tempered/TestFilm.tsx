@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Easing as E, clamp, track } from './motionEngine';
 import { useScene } from './useScene';
 
@@ -64,6 +64,27 @@ const SHOT_GRIT: [number, number][] = [
 export function TestFilm() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(true);
+
+  /* 진행 바가 세로 스크롤을 먹는 문제.
+     진행 바는 드래그로 구간을 옮겨야 해서 touch-none 이 걸려 있는데, 모바일에서
+     스크롤하다 여기에 손가락이 닿으면 페이지가 안 내려간다.
+     유튜브처럼 평소에는 조작줄을 숨겼다가 한 번 탭하면 드러나게 한다.
+     숨은 동안에는 pointer-events-none 이라 손가락이 그대로 통과한다.
+     PC 는 md: 로 항상 보이게 두므로 이 상태와 무관하다. */
+  const [uiOpen, setUiOpen] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const revealUi = () => {
+    setUiOpen(true);
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setUiOpen(false), 3000);
+  };
+  useEffect(
+    () => () => {
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+    },
+    [],
+  );
 
   // 파트 컨테이너
   const p1Ref = useRef<HTMLDivElement>(null);
@@ -373,7 +394,11 @@ export function TestFilm() {
   };
 
   return (
-    <div ref={rootRef} className="bg-white border border-[#e5e5e5] rounded-xl p-4 md:p-5 w-full">
+    <div
+      ref={rootRef}
+      onClick={revealUi}
+      className="bg-white border border-[#e5e5e5] rounded-xl p-4 md:p-5 w-full"
+    >
       <div className="flex items-center justify-between gap-2.5 mb-2.5">
         <span
           ref={tagRef}
@@ -638,8 +663,13 @@ export function TestFilm() {
         ))}
       </div>
 
-      {/* 트랜스포트 */}
-      <div className="relative flex items-center gap-2.5 mt-2.5">
+      {/* 트랜스포트 — 모바일은 탭해야 드러난다(위 revealUi 주석 참고).
+          display 가 아니라 opacity 로 숨겨서 아래 자막이 밀리지 않게 한다. */}
+      <div
+        className={`relative flex items-center gap-2.5 mt-2.5 transition-opacity duration-200 md:opacity-100 md:pointer-events-auto ${
+          uiOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
         <button
           type="button"
           onClick={togglePlay}

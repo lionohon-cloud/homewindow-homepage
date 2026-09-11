@@ -82,6 +82,18 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
     }
   }, [showNav]);
 
+  /* 260911 — 접수 바가 열리면 GNB 를 다시 내린다.
+     바는 GNB 가 보일 때만 그려진다(아래 isOpen={showNav && …}). 그래서 아래로 스크롤해
+     GNB 가 접힌 상태에서 다른 버튼(히어로 스크롤 스토리 끝의 CTA 등)으로 열면
+     "열림" 상태인데 화면에는 아무것도 안 뜨는 버그가 있었다.
+     기준 스크롤 위치도 지금 자리로 맞춰, 열자마자 숨김 판정이 다시 걸리지 않게 한다.
+     열린 뒤 아래로 스크롤하면 전처럼 GNB 와 함께 닫힌다. */
+  useEffect(() => {
+    if (!isConsultationOpen) return;
+    setShowNav(true);
+    setLastScrollY(window.scrollY);
+  }, [isConsultationOpen]);
+
   // 모바일 사이드 메뉴 열려있는 동안 body 스크롤 잠금
   // (iOS Safari scroll chaining + 메뉴 바깥 터치 둘 다 차단)
   useEffect(() => {

@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { Navigation } from "../components/Navigation";
-import { HeroSection } from "../components/HeroSection";
+// 260911 히어로를 스크롤 스토리로 교체 — 되돌릴 때 이 import 를 살린다
+// import { HeroSection } from "../components/HeroSection";
+import { STORY_E } from "../components/hero-lab/HeroScrollStory";
+import { HeroScrollStoryLab } from "../components/hero-lab/HeroScrollStoryModes";
 import { HeroConsultSection } from "../components/HeroConsultSection";
 // 260831: 9월 프로모션 배너로 교체. 원래 SUPER SALE 배너는 EventSection.tsx 에 그대로 있다 —
 // 되돌리려면 아래 import 와 <EventPromoBanner /> 를 EventSection 으로 되돌리면 된다.
 import { EventPromoBanner } from "../components/EventPromoBanner";
 import { TemperedSections } from "../components/tempered/TemperedSections";
+import { WhyBasicSection } from "../components/tempered/WhyBasicSection";
 import { AwardsSection } from "../components/AwardsSection";
 import { InsuranceSection } from "../components/InsuranceSection";
 import { ProductionSection } from "../components/ProductionSection";
@@ -30,12 +34,22 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen pb-[100px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-hidden selection:bg-[#d22727] selection:text-white">
+    /* 260911 overflow-x-hidden → overflow-x-clip.
+       히어로 스크롤 스토리가 화면에 붙어(sticky) 있어야 하는데, overflow-x:hidden 은 세로까지
+       스크롤 상자로 만들어 sticky 가 풀린다. clip 은 가로로 넘치는 걸 똑같이 잘라 내면서 sticky 는 살린다. */
+    <div className="relative w-full min-h-screen pb-[100px] md:pb-[110px] bg-white font-['Pretendard',sans-serif] overflow-x-clip selection:bg-[#d22727] selection:text-white">
       <Navigation />
       <main className="w-full h-full flex flex-col">
         <div id="hero">
-          <HeroSection />
+          {/* 260911 — 히어로를 E안 스크롤 스토리로 교체 (/copy-lab E · /scroll-lab B 에서 확정).
+              한 번 내릴 때마다 한 장면: 영상 → 사진 → 검정 "하지만" → "청암홈윈도우는 가능합니다." → 영상 + CTA.
+              문구는 hero-lab/HeroScrollStory.tsx 의 STORY_E.
+              예전 히어로로 되돌리려면 이 자리를 <HeroSection /> 로 바꾸고 위 overflow-x-clip 은 그대로 둬도 된다. */}
+          <HeroScrollStoryLab story={STORY_E} mode="snap" />
         </div>
+        {/* 260911 — 히어로가 다 말하지 못한 "왜" 를 잇는다.
+            왜 비싸고 번거로웠나 → 유리가 지나가는 길 비교 → 그래서 강화유리가 기본 */}
+        <WhyBasicSection />
         {/* 260907 통합버전 — 상세페이지가 없는 대신 그 본문(01 영상 ~ 06 어디에 쓰이나)이
             히어로 바로 다음에 통째로 들어간다. 히어로의 "강화유리 자세히 보기" 도
             여기(#video)로 내려온다.
