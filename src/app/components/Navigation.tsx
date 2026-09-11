@@ -19,19 +19,23 @@ interface NavigationProps {
   entrySource?: string;
 }
 
+/* 화면에 나오는 순서와 같아야 한다 — 현재 섹션 감지가 뒤에서부터 "화면 가운데를 지난 첫 섹션" 을 찾는다.
+   260911 통합안: 강화유리가 히어로 바로 다음(why-basic "강화유리가 드물었던 이유")으로 올라왔다.
+   그 아래 강화유리 본문(01~06)·번호 접수까지 따로 항목이 없으므로 이벤트 배너 전까지 "강화유리" 가 켜진다.
+   예전 자리(자재품질 ~ 단열유리 사이, id "tempered")의 티저 섹션은 통합안에서 빠졌다. */
 const sections = [
   { id: "hero", label: "처음으로" },
+  { id: "why-basic", label: "강화유리" },
   { id: "event", label: "이벤트" },
   { id: "awards", label: "수상내역" },
   { id: "insurance", label: "안심보증" },
   { id: "production", label: "자동화 제조 공장" },
   { id: "brands", label: "취급 브랜드" },
   { id: "materials", label: "자재품질" },
-  { id: "tempered", label: "강화유리" },
   { id: "glass", label: "단열유리" },
   { id: "safety", label: "방충망" },
   { id: "installation", label: "원데이 시공" },
-  { id: "warranty", label: "업게 최장 15년 보증" },
+  { id: "warranty", label: "업계 최장 15년 보증" },
   { id: "review", label: "시공 후기" },
   { id: "corporate", label: "사회공헌활동" },
 ];
