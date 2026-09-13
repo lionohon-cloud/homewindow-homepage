@@ -41,8 +41,10 @@ const LEGACY_REVIEWS = [
 ];
 
 function LegacyReviewSection() {
+  /* 260913 — section 의 id="review" 를 뺐다. HomePage 의 <div id="review"> 와 겹쳐
+     문서에 같은 id 가 둘이 되고, getElementById 는 바깥 것만 잡아 안쪽은 죽은 id 였다. */
   return (
-    <section className="w-full py-16 md:py-24 bg-white" id="review">
+    <section className="w-full py-16 md:py-24 bg-white">
       <div className="max-w-screen-md mx-auto px-6 md:px-10">
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -198,8 +200,9 @@ function LiveReviewSection() {
   const hasItems = items.length > 0;
   const premiumItems = items.filter((it) => it.tier === "premium");
 
+  /* 260913 — id="review" 는 HomePage 의 바깥 래퍼가 갖는다 (중복 id 정리) */
   return (
-    <section className="w-full bg-[#faf7f4] text-[#1c1614] py-16 md:py-24" id="review">
+    <section className="w-full bg-[#faf7f4] text-[#1c1614] py-16 md:py-24">
       <div className="max-w-screen-md mx-auto px-6 md:px-10">
         {/* 헤더 */}
         <div className="md:flex md:items-end md:justify-between md:gap-8">

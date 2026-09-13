@@ -23,6 +23,7 @@ import { ReviewSection } from "../components/ReviewSection";
 import { CorporateValueSection } from "../components/CorporateValueSection";
 import { Footer } from "../components/Footer";
 import { BottomBar } from "../components/BottomBar";
+import { SectionStepArrow } from "../components/SectionStepArrow";
 import { DanjiAiBanner } from "../components/DanjiAiBanner";
 
 export default function HomePage() {
@@ -45,7 +46,11 @@ export default function HomePage() {
               한 번 내릴 때마다 한 장면: 영상 → 사진 → 검정 "하지만" → "청암홈윈도우는 가능합니다." → 영상 + CTA.
               문구는 hero-lab/HeroScrollStory.tsx 의 STORY_E.
               예전 히어로로 되돌리려면 이 자리를 <HeroSection /> 로 바꾸고 위 overflow-x-clip 은 그대로 둬도 된다. */}
-          <HeroScrollStoryLab story={STORY_E} mode="snap" />
+          {/* 260913 — snap(장면별 멈춤) → auto(자동 재생).
+              스크롤을 잡지 않는다: 히어로가 화면에 있는 동안 5.7초 타임라인이 저절로 흐르고,
+              첫 휠·터치부터 페이지는 평소대로 움직인다. snap 시안은 코드에 그대로 남아 있어
+              mode 만 되돌리면 복귀한다. */}
+          <HeroScrollStoryLab story={STORY_E} mode="auto" />
         </div>
         {/* 260911 — 히어로가 다 말하지 못한 "왜" 를 잇는다.
             왜 비싸고 번거로웠나 → 유리가 지나가는 길 비교 → 그래서 강화유리가 기본 */}
@@ -104,6 +109,11 @@ export default function HomePage() {
         </div>
       </main>
       <Footer />
+      {/* 260913 — 히어로 안에만 있던 장식용 화살표를 대신하는 단계 이동 버튼.
+          하단 상담 바 위 가운데에 상시 노출되고, 왼쪽 단계 메뉴와 같은 순서
+          (app/nav/sections.ts)로 다음 섹션까지 내려간다. 마지막 단계에서는 위로 뒤집혀
+          "처음으로" 돌아간다. BottomBar 와 형제로 두어야 fixed 가 잘리지 않는다. */}
+      <SectionStepArrow />
       <BottomBar />
     </div>
   );
