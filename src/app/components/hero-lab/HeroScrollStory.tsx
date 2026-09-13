@@ -72,7 +72,7 @@ export const T = {
   darkFrom: 0.3, //  ② 어두워지기 시작
   darkTo: 0.44, //   완전 검정
   /* ③ "하지만" — 검정이 된 뒤 딱 떴다가(짧게) 잠깐 머물고 사라진다.
-     장면별 멈춤(B)은 결론 연출을 2.8초에 재생하므로 뜨는 데 약 .13초, 머무는 게 약 .55초다. */
+     장면별 멈춤(B)은 결론 연출을 1.5초에 재생하므로 뜨는 데 약 .07초, 머무는 게 약 .3초다. */
   butFrom: 0.46,
   butIn: 0.49, //    다 뜸
   butOut: 0.62, //   사라지기 시작
@@ -103,7 +103,6 @@ export type SceneFx = {
   butOp: number; // ③ "하지만"
   butIn: number; //  "하지만" 뜨는 정도 (살짝 크게 시작해 제자리로)
   lastOp: number;
-  hintOp: number;
   ctaOn: boolean;
 };
 
@@ -118,8 +117,6 @@ function fxFromScroll(t: number): SceneFx {
     butIn: easeOut(ramp(t, T.butFrom, T.butIn)),
     /* 결론 문장 — 커지기 시작하자마자 보이게(점으로) */
     lastOp: ramp(t, T.growFrom, T.growFrom + 0.03),
-    /* 첫 화면 스크롤 안내 — 조금만 내려도(첫 문장이 굴러가기 전에) 사라진다 */
-    hintOp: 1 - ramp(t, 0, T.swapFrom * 0.6),
     ctaOn: t >= T.splitTo - 0.02,
   };
 }
@@ -138,7 +135,6 @@ export function fxFromPlay(a: number, b: number): SceneFx {
     butOp: ramp(tb, T.butFrom, T.butIn) * (1 - ramp(tb, T.butOut, T.butTo)),
     butIn: easeOut(ramp(tb, T.butFrom, T.butIn)),
     lastOp: ramp(tb, T.growFrom, T.growFrom + 0.03),
-    hintOp: 1 - clamp01(Math.max(a, b) * 5),
     ctaOn: tb >= T.splitTo - 0.02,
   };
 }
@@ -210,13 +206,6 @@ export function StoryScene({ story, fx, layout }: { story: ScrollStory; fx: Scen
 
   return (
     <div ref={layout.outerRef} className="relative" style={{ height: layout.outerH }}>
-      {/* 스크롤 안내 화살표 애니메이션 — 움직임 줄이기 설정이면 멈춘다 */}
-      <style>{`
-        @keyframes hw-scroll-cue { 0%,100% { transform: translateY(0); opacity: .5 } 50% { transform: translateY(7px); opacity: 1 } }
-        .hw-scroll-cue { animation: hw-scroll-cue 1.4s ease-in-out infinite }
-        .hw-scroll-cue-2 { animation-delay: .18s }
-        @media (prefers-reduced-motion: reduce) { .hw-scroll-cue { animation: none } }
-      `}</style>
       <div ref={layout.innerRef} className="sticky top-0 h-[100svh] w-full overflow-hidden bg-black">
         {/* 배경 1 — 영상 (맨 아래, 항상 깔려 있다) */}
         <video
@@ -272,22 +261,9 @@ export function StoryScene({ story, fx, layout }: { story: ScrollStory; fx: Scen
           }}
         />
 
-        {/* 첫 화면 스크롤 안내 — 아래로 꺾인 화살표 두 개가 차례로 내려간다(글자 없음).
-            이 시안은 내려야 장면이 넘어가는데, 첫 화면만 봐선 알 수 없어서 넣었다.
-            조금만 내려도 사라진다. 하단 고정바(85·94px)에서 한참 띄워 둔다. */}
-        <div
-          data-scroll-hint
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 z-20 flex flex-col items-center bottom-[140px] md:bottom-[152px] [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.6))]"
-          style={{ opacity: fx.hintOp }}
-        >
-          <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none">
-            <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none">
-            <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
+        {/* 260913 — 여기 있던 장식용 스크롤 안내 화살표는 뺐다.
+            누를 수 있는 단계 이동 버튼(components/SectionStepArrow.tsx)이 화면 하단에 상시로
+            떠 있어 같은 신호를 주고, 둘 다 두면 화살표가 두 개로 보인다. */}
 
         {/* 글 — 화면 가운데. 세 문장은 같은 자리에 겹쳐 두고 투명도·크기로만 바꾼다 */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-[60px] pb-[110px] md:pt-[70px] md:pb-[110px]">

@@ -10,6 +10,14 @@ import {
   useConsultBarOpen,
 } from "@/lib/consultBar";
 import { useDday } from "@/lib/dday";
+/* 섹션 목록·이동·현재 단계 감지는 하단 단계 화살표(SectionStepArrow)와 함께 쓴다 —
+   nav/sections.ts 한 곳에서만 관리한다. */
+import {
+  isProgrammaticScroll,
+  scrollToSection as scrollToSectionEl,
+  sections,
+  useActiveSection,
+} from "../nav/sections";
 import logo from "@/assets/logo-gnb.svg";
 
 interface NavigationProps {
@@ -19,26 +27,6 @@ interface NavigationProps {
   entrySource?: string;
 }
 
-/* 화면에 나오는 순서와 같아야 한다 — 현재 섹션 감지가 뒤에서부터 "화면 가운데를 지난 첫 섹션" 을 찾는다.
-   260911 통합안: 강화유리가 히어로 바로 다음(why-basic "강화유리가 드물었던 이유")으로 올라왔다.
-   그 아래 강화유리 본문(01~06)·번호 접수까지 따로 항목이 없으므로 이벤트 배너 전까지 "강화유리" 가 켜진다.
-   예전 자리(자재품질 ~ 단열유리 사이, id "tempered")의 티저 섹션은 통합안에서 빠졌다. */
-const sections = [
-  { id: "hero", label: "처음으로" },
-  { id: "why-basic", label: "강화유리" },
-  { id: "event", label: "이벤트" },
-  { id: "awards", label: "수상내역" },
-  { id: "insurance", label: "안심보증" },
-  { id: "production", label: "자동화 제조 공장" },
-  { id: "brands", label: "취급 브랜드" },
-  { id: "materials", label: "자재품질" },
-  { id: "glass", label: "단열유리" },
-  { id: "safety", label: "방충망" },
-  { id: "installation", label: "원데이 시공" },
-  { id: "warranty", label: "업계 최장 15년 보증" },
-  { id: "review", label: "시공 후기" },
-  { id: "corporate", label: "사회공헌활동" },
-];
 
 // 데스크톱 GNB 메뉴 항목
 // type 'section' = 같은 페이지 앵커 스크롤, type 'route' = 별도 페이지 이동
@@ -70,7 +58,9 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
   const location = useLocation();
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [activeSection, setActiveSection] = useState("hero");
+  /* 현재 단계 — 하단 화살표와 같은 판정을 쓴다(nav/sections.ts).
+     메인이 아닌 경로에는 섹션이 없으므로 감지를 끈다. */
+  const activeSection = useActiveSection(location.pathname === "/");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isEstimateModalOpen, setIsEstimateModalOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -142,8 +132,8 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           
-          // 네비게이션 클릭 직후에는 숨김 로직 무시
-          if (!isNavigating) {
+          // 네비게이션 클릭 직후 · 메뉴/화살표가 건 이동 중에는 숨김 로직 무시
+          if (!isNavigating && !isProgrammaticScroll()) {
             // 모바일 네비게이션 show/hide 로직
             if (currentScrollY > lastScrollY && currentScrollY > 100) {
               setShowNav(false);
@@ -153,26 +143,7 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
           }
           
           setLastScrollY(currentScrollY);
-          
-          // 현재 활성 섹션 감지
-          let currentSection = "hero";
 
-          // 역순으로 순회하여 화면 상단을 지난 섹션 중 가장 마지막 것을 찾기
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const { id } = sections[i];
-            const element = document.getElementById(id);
-            if (element) {
-              const rect = element.getBoundingClientRect();
-              // 섹션의 상단이 화면 중앙보다 위에 있으면 현재 섹션으로 설정
-              if (rect.top <= window.innerHeight / 2) {
-                currentSection = id;
-                break;
-              }
-            }
-          }
-
-          setActiveSection(currentSection);
-          
           ticking = false;
         });
 
@@ -192,19 +163,13 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
       setIsMobileMenuOpen(false);
       return;
     }
-    const element = document.getElementById(id);
-    if (element) {
-      const offsetTop = element.offsetTop;
-      window.scrollTo({
-        top: offsetTop,
-        behavior: "smooth"
-      });
-      // 모바일 메뉴 닫기
-      setIsMobileMenuOpen(false);
-      // 네비게이션 중복 방지
-      setIsNavigating(true);
-      setTimeout(() => setIsNavigating(false), 3000);
-    }
+    /* 고정 GNB 높이 보정·문서 절대좌표·프로그램 스크롤 표시까지 공용 함수가 맡는다 */
+    if (!scrollToSectionEl(id)) return;
+    // 모바일 메뉴 닫기
+    setIsMobileMenuOpen(false);
+    // 네비게이션 중복 방지
+    setIsNavigating(true);
+    setTimeout(() => setIsNavigating(false), 3000);
   };
 
   const goToRoute = (href: string) => {

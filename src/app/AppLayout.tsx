@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Outlet, ScrollRestoration, useLocation } from 'react-router';
 import { initUtm } from '@/lib/utm';
+import { scrollToSection } from './nav/sections';
 
 /**
  * 최상위 레이아웃: UTM 초기화 + Outlet
@@ -20,12 +21,8 @@ export default function AppLayout() {
       if (targetId) {
         sessionStorage.removeItem('hw_scroll_to');
         // DOM 렌더링 후 스크롤
-        setTimeout(() => {
-          const el = document.getElementById(targetId);
-          if (el) {
-            window.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
-          }
-        }, 300);
+        // 고정 GNB 높이 보정은 nav/sections.ts 의 공용 함수가 맡는다
+        setTimeout(() => scrollToSection(targetId), 300);
       }
     }
   }, [location.pathname]);
