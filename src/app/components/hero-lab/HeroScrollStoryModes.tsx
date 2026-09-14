@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { StoryScene, fxFromPlay, useStoryLayout, type ScrollStory, type StoryLayout } from "./HeroScrollStory";
+import { StoryScene, fxFromPlay, isCtaScrolling, useStoryLayout, type ScrollStory, type StoryLayout } from "./HeroScrollStory";
 
 /**
  * E안 스토리의 "진행 방식" 실험 — /scroll-lab 전용.
@@ -20,18 +20,31 @@ import { StoryScene, fxFromPlay, useStoryLayout, type ScrollStory, type StoryLay
 export type StoryMode = "signal" | "snap" | "combo";
 type Stage = 0 | 1 | 2;
 
-/* 재생 시간(ms) */
-const A_FWD = 700; //   ① → ②
-const A_BACK = 450; //  ② → ① (올릴 때)
+/* 재생 시간(ms).
+   260914 체감 속도 개선 — 장면 순서·문구·그림은 그대로 두고 재생 시간만 약 28% 줄인다.
+   빠르게 내리는 사람이 "멈췄다" 고 느끼던 구간을 짧게 하되, 문구는 읽을 수 있는 속도를 지킨다. */
+const A_FWD = 500; //   ① → ②                (700 → 500, −28.6%)
+const A_BACK = 320; //  ② → ① (올릴 때)      (450 → 320, −28.9%)
 const A_RUSH = 260; //  ① → ② 중인데 이미 결론까지 가야 할 때 — 남은 전환을 짧게 끝낸다(C)
-const B_BACK = 900; //  결론 → ② (올릴 때)
+const B_BACK = 640; //  결론 → ② (올릴 때)    (900 → 640, −28.9%)
+
+/* 스크롤 입력 제한 — 한 장면을 재생하는 동안 다음 입력을 받지 않는 시간.
+   재생 시간을 줄인 만큼 같이 줄여야 "연속으로 굴려도 안 먹는" 느낌이 사라진다.
+   LOCK_TAIL  : 전환이 끝난 뒤 다음 동작을 받기까지의 여유   (150 → 110, −26.7%)
+   PUSH_GRACE : 휠을 쉬지 않고 굴릴 때 다음 단계로 인정하기까지의 여유 (400 → 290, −27.5%)
+   FRESH_GAP  : 이만큼 끊기면 새 동작으로 본다 (트랙패드 관성을 한 덩어리로 묶는 기준, 유지) */
+const LOCK_TAIL = 110;
+const PUSH_GRACE = 290;
+const FRESH_GAP = 160;
 
 /* bFwd = 결론 연출(검정 → "하지만" → 커짐 → 갈라짐) 재생 시간.
-   260911 "하지만" 한 박자를 넣으면서 2200 → 2800 (combo 1800 → 2300). */
+   260911 "하지만" 한 박자를 넣으면서 2200 → 2800 (combo 1800 → 2300).
+   260914 운영에 쓰는 snap 만 2800 → 2000 (−28.6%). 장면 안의 시간 비율(T 표)은 그대로라
+   "하지만" 이 뜨고 머무는 호흡도 같은 비율로 짧아진다. signal·combo 시안 값은 건드리지 않는다. */
 const MODE = {
   /* th1·th2 = 고정 구간 진행률 몇 % 에서 장면 1·2 가 시작되는지 */
   signal: { screens: 2.4, th1: 0.06, th2: 0.45, bFwd: 2800 },
-  snap: { screens: 1.5, bFwd: 2800 },
+  snap: { screens: 1.5, bFwd: 2000 },
   /* settleMs — 장면 1 경계를 넘고 이 시간 안에 장면 2 경계까지 넘으면 "빨리 지나가는 중" 으로 보고
      ② 를 건너뛴다. 1.5화면이면 모바일에서 두 경계 사이가 약 430px 이다. */
   combo: { screens: 1.5, th1: 0.08, th2: 0.42, bFwd: 2300, settleMs: 140 },
@@ -169,7 +182,7 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
       setS(s);
       jumpTo(s);
       const dur = s > prev ? (s === 2 ? MODE.snap.bFwd : A_FWD) : prev === 2 ? B_BACK : A_BACK;
-      lockUntil = performance.now() + dur + 150;
+      lockUntil = performance.now() + dur + LOCK_TAIL;
     };
     const snapToNearest = () => {
       const g = geom();
@@ -183,7 +196,7 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
 
     const onWheel = (e: WheelEvent) => {
       const now = performance.now();
-      const fresh = now - lastWheel > 160;
+      const fresh = now - lastWheel > FRESH_GAP;
       lastWheel = now;
       const dir = Math.sign(e.deltaY);
       if (!dir) return;
@@ -196,7 +209,7 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
       }
       if (wheelMode !== "locked") return;
       /* 마우스 휠을 쉬지 않고 계속 굴리는 경우 — 전환이 끝나고 조금 지나면 다음 동작으로 인정 */
-      const pushOn = idle && now - lockUntil > 400 && Math.abs(e.deltaY) >= 50;
+      const pushOn = idle && now - lockUntil > PUSH_GRACE && Math.abs(e.deltaY) >= 50;
       if (pushOn && atEnd(dir)) {
         wheelMode = "native";
         return;
@@ -234,8 +247,11 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
     const onScroll = () => {
       window.clearTimeout(idleTimer);
       idleTimer = window.setTimeout(() => {
+        /* 결론 CTA 가 건 부드러운 스크롤이 이 구간을 지나가는 중이면 손대지 않는다 —
+           프레임이 한 번 밀려 잠깐 멎으면 여기서 목적지를 가로채 버린다. */
+        if (isCtaScrolling()) return;
         if (inZone() && performance.now() >= lockUntil) snapToNearest();
-      }, 160);
+      }, FRESH_GAP);
     };
 
     window.addEventListener("wheel", onWheel, { passive: false });
@@ -262,7 +278,8 @@ function SnapStory({ story }: { story: ScrollStory }) {
      장면마다 "더 내리면 된다" 는 신호가 필요하고, 결론 뒤에도 아래로 본문이 이어진다.
      히어로가 위로 밀려 올라가면 화살표도 같이 화면 밖으로 나간다. */
   const fx = { ...fxFromPlay(a, b), hintOp: 1 };
-  return <StoryScene story={story} fx={fx} layout={layout} />;
+  /* step — 진행 표시(01/03)는 이 단계 값을 그대로 쓴다. 같은 state 라 어긋날 일이 없다. */
+  return <StoryScene story={story} fx={fx} layout={layout} step={stage} />;
 }
 
 export function HeroScrollStoryLab({ story, mode }: { story: ScrollStory; mode: StoryMode }) {

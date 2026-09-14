@@ -1,6 +1,29 @@
-import { useEffect, useRef, useState } from "react";
-import { openConsultBar } from "@/lib/consultBar";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useHeroVideo } from "../HeroSection";
+
+/**
+ * 결론 CTA 의 목적지 — 히어로 바로 아래 강화유리 설명 섹션
+ * ("지금까지도 창문에는 강화유리가 드물었던 이유", WhyBasicSection).
+ * 문서에 이 id 는 한 곳뿐이다(tempered/WhyBasicSection.tsx).
+ */
+export const HERO_CTA_TARGET_ID = "why-basic";
+
+/* CTA 가 건 부드러운 스크롤이 히어로 고정 구간을 지나가는 동안에는
+   스냅 복귀(useSnapStepper 의 snapToNearest)가 끼어들지 않게 알려 준다. */
+let ctaScrollUntil = 0;
+export const isCtaScrolling = () => performance.now() < ctaScrollUntil;
+
+/** 결론 CTA 클릭 — 상담창을 열지 않고 강화유리 설명 섹션으로 내려간다. */
+function goToTemperedIntro() {
+  const el = document.getElementById(HERO_CTA_TARGET_ID);
+  if (!el) return;
+  const reduce =
+    typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  ctaScrollUntil = performance.now() + (reduce ? 0 : 1400);
+  /* scrollIntoView 는 그 섹션이 이미 달고 있는 scroll-mt(모바일 73px / 1550px↑ 83px)를 지켜 준다 —
+     고정 GNB 에 제목이 가리지 않는다. window.scrollTo 로는 scroll-margin 이 먹지 않는다. */
+  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+}
 
 /**
  * 히어로 E안 — 스크롤로 넘기는 인터랙티브 스토리. (문구 시안 비교 /copy-lab 전용)
@@ -59,7 +82,7 @@ export const STORY_E: ScrollStory = {
   lastEmphasis: "가능합니다.",
   /* public/hero-story/ 에 넣은 사진 */
   image: "/hero-story/whisper-calculator.png",
-  cta: "지금 견적서에서 강화유리를 확인하세요.",
+  cta: "지금 강화유리를 확인해보세요.",
 };
 
 /** 고정 구간이 화면 몇 개 분량인지. 장면이 다섯이라 너무 짧으면 휙 지나간다. */
@@ -192,8 +215,80 @@ export function useStoryLayout(screens: number) {
 }
 export type StoryLayout = ReturnType<typeof useStoryLayout>;
 
+/* ── 히어로 3단계 진행 표시 ────────────────────────────────────────────────
+   사용자가 한 번 내릴 때마다 넘어가는 단계와 같다.
+     01 창에 강화유리, 원래 가능했습니다.
+     02 비싸고 번거롭기 때문에 말하지 않았을 뿐입니다.
+     03 "하지만" → 청암홈윈도우는 가능합니다. + CTA
+        ("하지만" 과 결론은 하나의 자동 연출이라 단계를 나누지 않는다)
+
+   PC 와 모바일이 방향만 다르고 점·선·색·크기는 같은 것을 쓴다 — DOM 을 하나만 두고
+   flex 방향과 선의 가로/세로만 바꿔, 두 벌을 따로 관리하다 어긋나는 일이 없게 했다.
+     · 데스크톱 : 히어로 하단 가운데, 가로 (안내 화살표 bottom-152 위 · 하단 상담 바 110 위)
+     · 모바일   : 화면 우측 가운데, 세로 (하단 상담·AI 바와 겹치지 않는 높이)
+   왼쪽 세로 목록(GNB 의 페이지 전체 목차)과는 별개다 — 그쪽은 건드리지 않는다. */
+const STEP_TOTAL = 3;
+const STEP_ON = "#d22727"; //             청암홈윈도우 빨강 — 현재 단계까지
+const STEP_OFF = "rgba(255,255,255,.32)"; // 남은 단계
+
+function HeroProgress({ step }: { step: number }) {
+  const now = Math.min(Math.max(step, 0), STEP_TOTAL - 1);
+  const label = String(now + 1).padStart(2, "0") + " / 0" + STEP_TOTAL;
+  return (
+    <div
+      data-hero-progress
+      role="progressbar"
+      aria-label="히어로 진행 단계"
+      aria-valuemin={1}
+      aria-valuemax={STEP_TOTAL}
+      aria-valuenow={now + 1}
+      aria-valuetext={label}
+      className="pointer-events-none absolute z-20 flex select-none items-center gap-2
+                 right-2 top-1/2 -translate-y-1/2 flex-col
+                 md:right-auto md:top-auto md:bottom-[196px] md:left-1/2 md:-translate-x-1/2 md:translate-y-0 md:flex-row md:gap-3
+                 [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.55))]"
+    >
+      <span className="text-[10px] md:text-[11px] font-bold tabular-nums tracking-[.08em] text-white/75 [writing-mode:vertical-rl] md:[writing-mode:horizontal-tb]">
+        {label}
+      </span>
+      <div className="flex flex-col items-center md:flex-row">
+        {Array.from({ length: STEP_TOTAL }, (_, i) => (
+          <Fragment key={i}>
+            {i > 0 && (
+              <span
+                className="block h-5 w-[2px] rounded-full transition-colors duration-300 md:h-[2px] md:w-6"
+                style={{ background: i <= now ? STEP_ON : STEP_OFF }}
+              />
+            )}
+            <span
+              className="block rounded-full transition-all duration-300"
+              style={{
+                width: i === now ? 9 : 6,
+                height: i === now ? 9 : 6,
+                background: i <= now ? STEP_ON : STEP_OFF,
+                boxShadow: i === now ? "0 0 0 3px " + STEP_ON + "33" : "none",
+              }}
+            />
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** 그림 — 장면 값만 받아서 그린다 */
-export function StoryScene({ story, fx, layout }: { story: ScrollStory; fx: SceneFx; layout: StoryLayout }) {
+export function StoryScene({
+  story,
+  fx,
+  layout,
+  step,
+}: {
+  story: ScrollStory;
+  fx: SceneFx;
+  layout: StoryLayout;
+  /** 진행 표시에 쓸 현재 단계(0·1·2). 안 넘기면 표시하지 않는다 — 시안 모드는 그대로 둔다. */
+  step?: number;
+}) {
   const heroVideo = useHeroVideo();
   const { swap, dark, grow, split } = fx;
 
@@ -271,6 +366,8 @@ export function StoryScene({ story, fx, layout }: { story: ScrollStory; fx: Scen
             transform: `translateY(${split * 100}%)`,
           }}
         />
+
+        {typeof step === "number" && <HeroProgress step={step} />}
 
         {/* 첫 화면 스크롤 안내 — 아래로 꺾인 화살표 두 개가 차례로 내려간다(글자 없음).
             이 시안은 내려야 장면이 넘어가는데, 첫 화면만 봐선 알 수 없어서 넣었다.
@@ -363,7 +460,7 @@ export function StoryScene({ story, fx, layout }: { story: ScrollStory; fx: Scen
           >
             <button
               type="button"
-              onClick={() => openConsultBar("히어로")}
+              onClick={goToTemperedIntro}
               className="flex items-center justify-center h-[52px] min-w-[260px] px-8 whitespace-nowrap bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] md:text-[16.5px] rounded-xl cursor-pointer transition-colors"
               style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
             >
