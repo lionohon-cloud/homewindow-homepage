@@ -226,6 +226,10 @@ export type StoryLayout = ReturnType<typeof useStoryLayout>;
    flex 방향과 선의 가로/세로만 바꿔, 두 벌을 따로 관리하다 어긋나는 일이 없게 했다.
      · 데스크톱 : 히어로 하단 가운데, 가로 (안내 화살표 bottom-152 위 · 하단 상담 바 110 위)
      · 모바일   : 화면 우측 가운데, 세로 (하단 상담·AI 바와 겹치지 않는 높이)
+   숫자 라벨은 양쪽 다 가로로 읽는다 — 세로로 눕히면 01/03 을 한눈에 알아보기 어렵다.
+   모바일에서는 라벨만 흐름 밖으로 빼 진행선 아래에 둔다. 가로 라벨은 폭이 40px 라
+   세로 진행선 옆에 두면 360px 기기에서 히어로 문구와 겹친다. 흐름에서 빼면
+   진행선은 원래 자리(화면 오른쪽 11px · 세로 가운데)를 그대로 지킨다.
    왼쪽 세로 목록(GNB 의 페이지 전체 목차)과는 별개다 — 그쪽은 건드리지 않는다. */
 const STEP_TOTAL = 3;
 const STEP_ON = "#d22727"; //             청암홈윈도우 빨강 — 현재 단계까지
@@ -244,11 +248,11 @@ function HeroProgress({ step }: { step: number }) {
       aria-valuenow={now + 1}
       aria-valuetext={label}
       className="pointer-events-none absolute z-20 flex select-none items-center gap-2
-                 right-2 top-1/2 -translate-y-1/2 flex-col
+                 right-[11px] top-1/2 -translate-y-1/2 flex-col
                  md:right-auto md:top-auto md:bottom-[196px] md:left-1/2 md:-translate-x-1/2 md:translate-y-0 md:flex-row md:gap-3
                  [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.55))]"
     >
-      <span className="text-[10px] md:text-[11px] font-bold tabular-nums tracking-[.08em] text-white/75 [writing-mode:vertical-rl] md:[writing-mode:horizontal-tb]">
+      <span className="absolute right-0 top-full mt-2 whitespace-nowrap text-[10px] font-bold tabular-nums tracking-[.08em] text-white/75 md:relative md:right-auto md:top-auto md:mt-0 md:text-[11px]">
         {label}
       </span>
       <div className="flex flex-col items-center md:flex-row">
