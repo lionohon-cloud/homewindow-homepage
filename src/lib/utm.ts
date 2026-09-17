@@ -67,10 +67,12 @@ export function initUtm(): void {
   const hasUtm = params.has('utm_source');
 
   if (hasUtm) {
+    // 값이 없는 키는 쿠키를 지운다 — 예전 방문의 쿠키가 이번 방문에 섞여 들어오는 것을 막는다.
     for (const key of UTM_KEYS) {
       const val = params.get(key) || '';
       sessionStorage.setItem(`${SS_PREFIX}${key}`, val);
       if (val) setCookie(`${SS_PREFIX}${key}`, val);
+      else document.cookie = `${SS_PREFIX}${key}=;max-age=0;path=/`;
     }
   } else {
     // referrer 기반 자동분류
@@ -79,9 +81,10 @@ export function initUtm(): void {
     sessionStorage.setItem(`${SS_PREFIX}utm_medium`, classified.medium);
     setCookie(`${SS_PREFIX}utm_source`, classified.source);
     setCookie(`${SS_PREFIX}utm_medium`, classified.medium);
-    // campaign/content/term은 빈 문자열
+    // campaign/content/term은 빈 문자열 — 쿠키도 같이 지운다(위와 같은 이유).
     for (const key of ['utm_campaign', 'utm_content', 'utm_term'] as const) {
       sessionStorage.setItem(`${SS_PREFIX}${key}`, '');
+      document.cookie = `${SS_PREFIX}${key}=;max-age=0;path=/`;
     }
   }
 
@@ -99,8 +102,13 @@ export function initUtm(): void {
  * 저장된 UTM 데이터 읽기. sessionStorage 우선, fallback으로 cookie.
  */
 export function getUtmData(): UtmData {
+  // 이번 세션 값이 있으면 sessionStorage 에서만, 없을 때만 쿠키에서 — 키별로 섞지 않는다
+  // (키마다 따로 fallback 하면 빈 값인 키만 예전 방문의 쿠키를 가져오는 문제가 생긴다).
+  const fromSession = !!sessionStorage.getItem(`${SS_PREFIX}utm_source`);
   const get = (key: string) =>
-    sessionStorage.getItem(`${SS_PREFIX}${key}`) || getCookie(`${SS_PREFIX}${key}`) || '';
+    fromSession
+      ? sessionStorage.getItem(`${SS_PREFIX}${key}`) || ''
+      : getCookie(`${SS_PREFIX}${key}`) || '';
 
   return {
     utm_source: get('utm_source'),
