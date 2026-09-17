@@ -286,12 +286,15 @@ export function StoryScene({
   fx,
   layout,
   step,
+  onAdvance,
 }: {
   story: ScrollStory;
   fx: SceneFx;
   layout: StoryLayout;
   /** 진행 표시에 쓸 현재 단계(0·1·2). 안 넘기면 표시하지 않는다 — 시안 모드는 그대로 둔다. */
   step?: number;
+  /** 스크롤 안내 화살표를 누르면 한 단계 진행. 안 넘기면(시안 모드) 예전처럼 장식용으로만 둔다. */
+  onAdvance?: () => void;
 }) {
   const heroVideo = useHeroVideo();
   const { swap, dark, grow, split } = fx;
@@ -375,20 +378,40 @@ export function StoryScene({
 
         {/* 첫 화면 스크롤 안내 — 아래로 꺾인 화살표 두 개가 차례로 내려간다(글자 없음).
             이 시안은 내려야 장면이 넘어가는데, 첫 화면만 봐선 알 수 없어서 넣었다.
-            조금만 내려도 사라진다. 하단 고정바(85·94px)에서 한참 띄워 둔다. */}
-        <div
-          data-scroll-hint
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 z-20 flex flex-col items-center bottom-[140px] md:bottom-[152px] [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.6))]"
-          style={{ opacity: fx.hintOp }}
-        >
-          <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none">
-            <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none">
-            <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
+            조금만 내려도 사라진다. 하단 고정바(85·94px)에서 한참 띄워 둔다.
+            onAdvance 가 있으면(snap 모드) 눌러서도 한 단계 진행할 수 있는 버튼이 된다 —
+            전체 폭을 덮으면 아래 CTA 등을 가리므로 화살표 크기만큼만 히트영역을 준다. */}
+        {onAdvance ? (
+          <button
+            type="button"
+            onClick={onAdvance}
+            aria-label="다음 장면 보기"
+            data-scroll-hint
+            className="absolute z-20 left-1/2 -translate-x-1/2 flex flex-col items-center bottom-[140px] md:bottom-[152px] px-4 py-2 cursor-pointer [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.6))]"
+            style={{ opacity: fx.hintOp }}
+          >
+            <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none">
+              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none">
+              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        ) : (
+          <div
+            data-scroll-hint
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 z-20 flex flex-col items-center bottom-[140px] md:bottom-[152px] [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.6))]"
+            style={{ opacity: fx.hintOp }}
+          >
+            <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none">
+              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none">
+              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
 
         {/* 글 — 화면 가운데. 세 문장은 같은 자리에 겹쳐 두고 투명도·크기로만 바꾼다 */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-[60px] pb-[110px] md:pt-[70px] md:pb-[110px]">
