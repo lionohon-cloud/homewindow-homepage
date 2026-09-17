@@ -41,16 +41,39 @@ function getFlowId(){
   return value;
 }
 
-/* 홈페이지(React)가 저장해 둔 유입값 읽기 — sessionStorage 우선, 없으면 쿠키.
-   키 이름은 src/lib/utm.ts 와 같다(hw_ 접두어). */
-function readHomeAttribution(key){
-  try{
-    const v = sessionStorage.getItem('hw_' + key);
-    if(v) return v;
-  }catch(e){}
-  const m = document.cookie.match(new RegExp('(?:^|; )hw_' + key + '=([^;]*)'));
+const HOME_UTM_KEYS = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
+
+function readCookie(name){
+  const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
   if(!m) return '';
   try{ return decodeURIComponent(m[1]); }catch(e){ return m[1]; }
+}
+
+/* 홈페이지(React, src/lib/utm.ts)가 저장해 둔 유입값을 "한 묶음"으로 읽는다.
+   - 같은 탭에서 넘어왔으면 sessionStorage 에 이번 방문 값이 있다 → 5개 모두 sessionStorage 에서만 읽는다.
+     (빈 값이어도 쿠키로 채우지 않는다. 쿠키에는 예전 방문 값이 남아 있을 수 있다)
+   - sessionStorage 가 비었을 때만(새 탭 등) 쿠키에서 읽는다. */
+function readHomeAttribution(){
+  const out = {};
+  let fromSession = false;
+  try{ fromSession = !!sessionStorage.getItem('hw_utm_source'); }catch(e){}
+
+  HOME_UTM_KEYS.forEach(key=>{
+    let v = '';
+    if(fromSession){
+      try{ v = sessionStorage.getItem('hw_' + key) || ''; }catch(e){}
+    }else{
+      v = readCookie('hw_' + key);
+    }
+    v = v.trim();
+    if(v) out[key] = v.slice(0,200);
+  });
+
+  try{
+    const visit = (sessionStorage.getItem('hw_visit_id') || '').trim();
+    if(visit) out.visit_id = visit.slice(0,200);
+  }catch(e){}
+  return out;
 }
 
 function getAttribution(currentFlowId){
@@ -63,18 +86,12 @@ function getAttribution(currentFlowId){
       if(value) saved[key] = value.slice(0,200);
     });
 
-    /* 주소에 utm 이 없으면(홈페이지 안의 링크로 넘어온 경우) 홈페이지가 저장해 둔 값을 이어받는다 */
+    /* 주소에 utm 이 없으면(홈페이지 안의 링크로 넘어온 경우) 홈페이지 값을 묶음째 이어받는다 */
+    const home = readHomeAttribution();
     if(!saved.utm_source){
-      ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(key=>{
-        const value = readHomeAttribution(key).trim();
-        if(value) saved[key] = value.slice(0,200);
-      });
+      HOME_UTM_KEYS.forEach(key=>{ if(home[key]) saved[key] = home[key]; });
     }
-    /* 방문번호도 홈페이지 것을 이어받아 홈페이지 방문과 접수 건을 같은 번호로 묶는다 */
-    if(!saved.visit_id){
-      const homeVisit = readHomeAttribution('visit_id').trim();
-      if(homeVisit) saved.visit_id = homeVisit.slice(0,200);
-    }
+    if(!saved.visit_id && home.visit_id) saved.visit_id = home.visit_id;
 
     saved.landing_path = (location.pathname + location.search).slice(0,500);
     saved.referrer = (document.referrer || '').slice(0,500);
