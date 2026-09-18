@@ -47,11 +47,13 @@ export function TemperedConsultForm() {
 
     const phone = `${phone1}-${phone2}-${phone3}`;
     try {
-      const { ok, docId } = await submitLead({
+      const { ok, docId, cancelled } = await submitLead({
         phone,
         entryForm: temperedEntryForm(ENTRY_WHERE.form),
         honeypot: honeypotRef.current?.value,
       });
+      // 260917 번호인증 실험 — 인증 팝업을 닫으면 오류 없이 멈춘다
+      if (cancelled) return;
       if (!ok) throw new Error();
       setPhone1('010');
       setPhone2('');

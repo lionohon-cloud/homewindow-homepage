@@ -36,7 +36,8 @@ function CutIcon({ size = 24, strokeWidth = 2 }: { size?: number; strokeWidth?: 
  *
  * 260911 — 끝에 있던 검정 카드("그래서 강화유리가 기본입니다" + 60억 원·38,000평)는 뺐다.
  *
- * 행사 문구(가격·무상 등)는 넣지 않는다 — 설비 도입 · 직접 생산 사실만.
+ * 260917 이벤트버전 — 강화유리 무상 업그레이드 행사 오픈. 요약 박스에 행사 한 줄·조건을 넣었다.
+ * (상시버전 원칙은 "행사 문구(가격·무상 등)는 넣지 않는다 — 설비 도입 · 직접 생산 사실만")
  * 섹션 타이틀·리드 글자 규격은 메인 섹션(TemperedSections)과 같다.
  */
 
@@ -357,8 +358,9 @@ function FactoryTrack({ route, play, speed }: { route: InsideRoute; play: boolea
           );
         })}
       </div>
-      <p className="mt-3 text-[13px] md:text-[14px] font-bold text-[#444] leading-[1.3]">직영 공장</p>
-      <p className="text-[11px] md:text-[11.5px] text-[#9a9a9e] leading-[1.35] whitespace-nowrap">
+      {/* 260917 PC 문구 키움 — 직영 공장 14 → 18px, 재단·강화·제작 11.5 → 15px */}
+      <p className="mt-3 md:mt-4 text-[13px] md:text-[18px] font-bold text-[#444] leading-[1.3]">직영 공장</p>
+      <p className="md:mt-1 text-[11px] md:text-[15px] text-[#9a9a9e] leading-[1.35] whitespace-nowrap">
         {route.tasks.map((t) => t.name).join(" · ")}
       </p>
     </div>
@@ -487,11 +489,26 @@ export function WhyBasicSection() {
             </span>
             <span className="w-px h-14 md:h-16 bg-[#d22727]/50" />
           </div>
-          <div className="rounded-2xl bg-[#d22727] px-6 py-7 md:px-10 md:py-8 text-center text-white">
-            <p className="text-[16px] md:text-[18px] font-bold leading-[1.6] break-keep">
-              청암홈윈도우는 이 모든 과정을 직영 공장 한곳에서 끝냅니다.
+          {/* 260917 모바일 좌우 여백 24 → 16px, 첫 문장은 글 폭에 맞춰 13~15px 로 줄여 한 줄로.
+              문장이 15px 에서 265px 이라 글 폭(화면폭 − 80px) × 15/265 × .97 ≈ × .0549. 약 314px 미만 기기만 두 줄 */}
+          <div className="rounded-2xl bg-[#d22727] px-4 py-7 md:px-10 md:py-8 text-center text-white">
+            <p className="text-[length:clamp(13px,calc((100vw_-_80px)_*_0.0549),15px)] md:text-[17px] font-medium text-white/85 leading-[1.6] break-keep">
+              {/* 260917 "이 모든 과정을" 삭제 */}
+              청암홈윈도우는 직영 공장 한곳에서 끝냅니다.
+            </p>
+            {/* 260917 이벤트버전 — 행사 한 줄 + 조건. 상시버전에는 위 문장 한 줄만 있다.
+                모바일은 "…가격에" 뒤에서 끊어 두 줄로(한 줄에 안 들어간다). */}
+            {/* 혜택 → 조건. (260917 "10월 한정" 알약 · "찬 바람 불기 전 9~10월…" 문구는 뺐다) */}
+            {/* 260917 PC 21 → 28px (한 줄 유지) */}
+            <p data-promo className="mt-2 md:mt-3 text-[19px] md:text-[28px] font-extrabold leading-[1.4] break-keep">
+              일반유리 가격에
+              <br className="md:hidden" /> 강화유리로 무상 업그레이드
             </p>
           </div>
+          {/* 260917 조건은 박스 밖 아래 캡션으로 뺐다 */}
+          <p data-promo-caption className="mt-3 text-center text-[12px] md:text-[13px] text-[#999] break-keep">
+            LX 제품군 한정 · 10월 31일까지 계약 시
+          </p>
         </motion.div>
 
         {/* ── ② 생산 과정 비교 ── */}

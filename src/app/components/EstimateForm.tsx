@@ -481,7 +481,13 @@ export function EstimateForm() {
     addUserText(formatted);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     // honeypot 없는 경로 (contact-phone 카드). 접수 확정 직후 2단계 팝업.
-    const { docId } = await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}`, aiChat: { summary: buildAiChatSummary() }, consultField: 'WINDOW_QUOTE' });
+    const { docId, cancelled } = await submitLead({ phone: formatted, entryForm: `AI채팅 ${device}`, aiChat: { summary: buildAiChatSummary() }, consultField: 'WINDOW_QUOTE' });
+    // 260917 번호인증 실험 — 인증 팝업을 닫으면 다시 입력할 수 있게 풀어 둔다
+    if (cancelled) {
+      phoneSubmittingRef.current = false;
+      setIsPhoneSubmitting(false);
+      return;
+    }
     if (docId) {
       detail.open(docId);
     } else {
@@ -528,13 +534,18 @@ export function EstimateForm() {
 
     setIsSubmitting(true);
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
-    const { docId } = await submitLead({
+    const { docId, cancelled } = await submitLead({
       phone,
       entryForm: `AI채팅 ${device}`,
       honeypot: honeypotRef.current?.value,
       aiChat: { summary: buildAiChatSummary() },
       consultField: 'WINDOW_QUOTE',
     });
+    // 260917 번호인증 실험 — 인증 팝업을 닫으면 모달을 그대로 둔다
+    if (cancelled) {
+      setIsSubmitting(false);
+      return;
+    }
     closeConsultationModal();
     // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
     if (docId) {

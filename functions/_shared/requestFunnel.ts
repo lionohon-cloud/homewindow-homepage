@@ -95,7 +95,10 @@ function normalizeUtm(value: unknown): Record<string, string> {
  *  이 상수는 클라이언트 번들에 안 들어가는 서버 전용 코드에만 있어 소스를 봐도 알 수 없다.
  *  값 자체를 비밀로 지키기보다 "010-9999-9999로 들어온 접수는 테스트"로 걸러 쓰는 걸 권한다. */
 export const DEV_BYPASS_PHONE = '01099999999';
+/** 견적 퍼널(public/request, 6자리)용 우회 코드. */
 export const DEV_BYPASS_CODE = '999999';
+/** 메인 접수 본인확인(src/lib/phoneVerify.ts, 2자리)용 우회 코드 — 같은 번호에 둘 다 허용. */
+export const DEV_BYPASS_CODE_SHORT = '99';
 /** verify 통과 시 내려주는 토큰 — normalizeLead() 의 최소 길이(16자) 조건을 만족해야 최종 접수도 통과한다. */
 export const DEV_BYPASS_TOKEN_PREFIX = 'DEV-BYPASS-TOKEN-';
 

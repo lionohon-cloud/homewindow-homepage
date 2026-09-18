@@ -14,9 +14,6 @@ import logo from "@/assets/logo-gnb.svg";
 
 interface NavigationProps {
   onMenuClick?: () => void;
-  /** 접수 출처 접두. 시트 D열의 "<출처> <기기> <위치>" 중 출처.
-      기본값이 원본과 같아 메인 동작은 그대로다. */
-  entrySource?: string;
 }
 
 /* 화면에 나오는 순서와 같아야 한다 — 현재 섹션 감지가 뒤에서부터 "화면 가운데를 지난 첫 섹션" 을 찾는다.
@@ -64,7 +61,7 @@ const desktopMenuItems: DesktopMenuItem[] = [
   { type: "route", href: "/as", label: "AS접수" },
 ];
 
-export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
+export function Navigation({ onMenuClick }: NavigationProps) {
   const navigate = useNavigate();
   const dday = useDday(); // 종료일은 src/lib/dday.ts 의 PROMO_END 한 곳에서 관리
   const location = useLocation();
@@ -143,7 +140,15 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
           const currentScrollY = window.scrollY;
           
           // 네비게이션 클릭 직후에는 숨김 로직 무시
-          if (!isNavigating) {
+          /* 260917 — 히어로(스크롤 스토리)가 화면 맨 위를 덮고 있는 동안은 GNB 를 숨기지 않는다.
+             히어로는 한 번 내릴 때마다 장면이 넘어가며 스크롤 위치가 계속 내려가서, 예전 규칙이면
+             첫 장면부터 GNB 가 사라졌다. 히어로 아래끝이 GNB 높이(약 71px)보다 아래에 있으면 "히어로 안" 으로 본다.
+             히어로를 지나 본문으로 가면 아래 원래 규칙(내리면 숨김·올리면 보임)을 따른다. */
+          const heroEl = window.location.pathname === "/" ? document.getElementById("hero") : null;
+          const inHero = !!heroEl && heroEl.getBoundingClientRect().bottom > 80;
+          if (inHero) {
+            setShowNav(true);
+          } else if (!isNavigating) {
             // 모바일 네비게이션 show/hide 로직
             if (currentScrollY > lastScrollY && currentScrollY > 100) {
               setShowNav(false);
@@ -316,7 +321,6 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
         onClose={closeConsultBar}
         variant="top"
         entry={consultEntry}
-        entrySource={entrySource}
       />
 
       {/* 모바일 네비게이션 */}
@@ -407,9 +411,10 @@ export function Navigation({ onMenuClick, entrySource }: NavigationProps) {
                   type="button"
                   onClick={() => scrollToSection("event")}
                   className="ml-auto shrink-0 inline-flex items-center gap-1.5 bg-[#d22727] rounded-full px-2 min-[350px]:px-2.5 py-1 text-[10px] min-[350px]:text-[11px] font-bold text-white whitespace-nowrap cursor-pointer active:opacity-80 transition-opacity"
-                  aria-label="추석맞이 할인 보기"
+                  aria-label="강화유리 이벤트 보기"
                 >
-                  추석맞이 할인 진행중
+                  {/* 260917 이벤트버전 — 추석맞이 할인 → 강화유리 무상 업그레이드 이벤트 (마감 10/31) */}
+                  강화유리 이벤트 마감
                   <span className="font-extrabold tabular-nums">{dday}</span>
                 </button>
               </div>
