@@ -584,7 +584,7 @@ function initTelVerify(){
   check.addEventListener('click', async ()=>{
     const v = code.value.replace(/\D/g,'');
     codeF.classList.remove('bad');
-    if(v.length !== 2 && v.length !== 6){ codeF.classList.add('bad'); code.focus(); return; }
+    if(v.length !== 6){ codeF.classList.add('bad'); code.focus(); return; }
     if(left <= 0){ say('인증번호가 만료되었습니다. 다시 받아주세요.'); return; }
 
     check.disabled = true;
