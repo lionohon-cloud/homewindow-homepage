@@ -90,6 +90,15 @@ function normalizeUtm(value: unknown): Record<string, string> {
   return output;
 }
 
+/** 개발/테스트용 우회 번호+인증번호. 실제 문자 없이도 접수 흐름을 끝까지(운영 ERP까지)
+ *  확인할 수 있게 한다 — 프론트(app.js)는 손대지 않고 send.ts/verify.ts 에서만 가로챈다.
+ *  이 상수는 클라이언트 번들에 안 들어가는 서버 전용 코드에만 있어 소스를 봐도 알 수 없다.
+ *  값 자체를 비밀로 지키기보다 "010-9999-9999로 들어온 접수는 테스트"로 걸러 쓰는 걸 권한다. */
+export const DEV_BYPASS_PHONE = '01099999999';
+export const DEV_BYPASS_CODE = '999999';
+/** verify 통과 시 내려주는 토큰 — normalizeLead() 의 최소 길이(16자) 조건을 만족해야 최종 접수도 통과한다. */
+export const DEV_BYPASS_TOKEN_PREFIX = 'DEV-BYPASS-TOKEN-';
+
 export interface SmsSendPayload {
   tel: string;
   flowId: string;
