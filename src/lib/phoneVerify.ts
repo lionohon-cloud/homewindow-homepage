@@ -52,7 +52,7 @@ type Session = {
 };
 const sessions = new Map<string, Session>();
 
-const digits = (phone: string) => phone.replace(/[^0-9]/g, "");
+export const digits = (phone: string) => phone.replace(/[^0-9]/g, "");
 
 function uuidV4() {
   if (typeof globalThis.crypto?.randomUUID === "function") return globalThis.crypto.randomUUID();
@@ -210,16 +210,28 @@ export const onVerifyRequest = (fn: ReqListener) => {
   return () => void reqListeners.delete(fn);
 };
 
-/** 본인확인 팝업을 띄우고, 통과하면 true · 닫으면 false 로 끝난다. */
-export function requestPhoneVerification(phone: string): Promise<boolean> {
+/** 260921 — 팝업의 "전화번호 수정"에서 새 번호를 확정했을 때 호출한다. 새 객체로 교체해
+ *  구독자(PhoneVerifyHost)에게 변경을 알린다 — key={req.phone} 라 화면이 그 번호로 다시 마운트되며
+ *  자동으로 새 인증번호를 보낸다. requestPhoneVerification 이 반환할 최종 번호도 이 값을 따라간다. */
+export function updateVerifyPhone(newPhone: string) {
+  if (!current) return;
+  current = { ...current, phone: newPhone };
+  reqListeners.forEach((fn) => fn(current));
+}
+
+/** 본인확인 팝업을 띄운다. 통과하면 verified:true, 닫으면 false — phone 은 팝업에서
+ *  "전화번호 수정"으로 고쳤을 수 있으니 호출부는 반드시 이 반환값의 phone 을 써야 한다
+ *  (처음 넘긴 phone 그대로 쓰면 안 됨 — 인증은 이미 고친 번호로 끝난 상태다). */
+export function requestPhoneVerification(phone: string): Promise<{ verified: boolean; phone: string }> {
   current?.resolve(false);
-  return new Promise<boolean>((resolve) => {
+  return new Promise<{ verified: boolean; phone: string }>((resolve) => {
     current = {
       phone,
       resolve: (v) => {
+        const finalPhone = current!.phone;
         current = null;
         reqListeners.forEach((fn) => fn(null));
-        resolve(v);
+        resolve({ verified: v, phone: finalPhone });
       },
     };
     const req = current;
