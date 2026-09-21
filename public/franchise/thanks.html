@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>상담 신청 완료 | 청암홈윈도우 가맹점 모집</title>
+    <link rel="icon" href="favicon.svg" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <!--
+      광고 전환 추적용 땡큐페이지 — 가맹 상담 접수가 끝나면 이 주소로 넘어온다.
+      전환 태그(네이버 전환 스크립트 · GA4 · Meta 픽셀 · 카카오 픽셀 등)는 이 <head> 안에 넣는다.
+      3초 뒤 가맹점 모집 페이지로 돌아간다 (location.replace — 뒤로가기로 이 페이지에 다시 오지 않게).
+    -->
+    <style>
+      :root { --blue: #2f6bff; --ink: #0f172a; --t2: #4b5563; --t3: #8a94a6; --line: #e6ebf3; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(ellipse 60% 55% at 50% 100%, rgba(84, 140, 255, 0.18), rgba(120, 168, 255, 0) 70%), linear-gradient(135deg, #e8f0ff 0%, #f5f9ff 55%, #eef7ff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        word-break: keep-all;
+        -webkit-font-smoothing: antialiased;
+      }
+      .box { width: min(440px, 100%); background: #fff; border-radius: 26px; padding: 52px 32px 36px; text-align: center; box-shadow: 0 40px 90px -36px rgba(31, 62, 120, 0.35); border: 1px solid var(--line); animation: up 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+      @keyframes up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+      .ic { width: 96px; height: 96px; margin: 0 auto 28px; border-radius: 50%; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 18px 36px -16px rgba(47, 107, 255, 0.75); }
+      .ic svg { width: 46px; height: 46px; }
+      .ic path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: draw 0.5s 0.25s ease forwards; }
+      @keyframes draw { to { stroke-dashoffset: 0; } }
+      h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.35; }
+      p { margin: 12px 0 0; font-size: 15.5px; line-height: 1.7; color: var(--t2); }
+      .count { margin-top: 30px; font-size: 13.5px; color: var(--t3); }
+      .count b { color: var(--blue); font-variant-numeric: tabular-nums; }
+      .bar { margin: 12px auto 0; width: 100%; height: 4px; border-radius: 999px; background: #edf3fb; overflow: hidden; }
+      .bar i { display: block; height: 100%; width: 100%; background: var(--blue); transform-origin: left; animation: shrink 3s linear forwards; }
+      @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+      .btn { display: block; margin-top: 24px; width: 100%; padding: 16px; border-radius: 14px; background: var(--blue); color: #fff; font-size: 16px; font-weight: 700; text-decoration: none; }
+      .btn:hover { background: #1f55dd; }
+      @media (max-width: 480px) { .box { padding: 42px 22px 28px; } .ic { width: 84px; height: 84px; } .ic svg { width: 40px; height: 40px; } h1 { font-size: 23px; } }
+      @media (prefers-reduced-motion: reduce) { .box, .ic path, .bar i { animation: none; stroke-dashoffset: 0; } }
+    </style>
+  </head>
+  <body>
+    <main class="box" role="status" aria-live="polite">
+      <div class="ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+      </div>
+      <h1>상담 신청이 접수되었습니다</h1>
+      <p>확인 후 담당자가 연락드리겠습니다.<br />관심 가져주셔서 감사합니다.</p>
+      <div class="count"><b id="sec">3</b>초 뒤 가맹점 모집 페이지로 돌아갑니다</div>
+      <div class="bar" aria-hidden="true"><i></i></div>
+      <a class="btn" id="back" href="./">바로 돌아가기</a>
+    </main>
+    <script>
+      // 같은 폴더의 가맹점 모집 페이지로 돌아간다 (배포 경로가 바뀌어도 동작하도록 상대 경로)
+      var home = new URL("./", location.href).href
+      var left = 3
+      var el = document.getElementById("sec")
+      var t = setInterval(function () {
+        left -= 1
+        if (left > 0) el.textContent = String(left)
+        else {
+          clearInterval(t)
+          location.replace(home)
+        }
+      }, 1000)
+      document.getElementById("back").addEventListener("click", function (e) {
+        e.preventDefault()
+        location.replace(home)
+      })
+    </script>
+  </body>
+</html>
