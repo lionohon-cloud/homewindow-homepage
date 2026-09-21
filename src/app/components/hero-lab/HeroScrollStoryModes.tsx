@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { StoryScene, fxFromPlay, isCtaScrolling, useStoryLayout, type ScrollStory, type StoryLayout } from "./HeroScrollStory";
+import { StoryScene, fxFromPlay, useStoryLayout, type ScrollStory, type StoryLayout } from "./HeroScrollStory";
 
 /**
  * E안 스토리의 "진행 방식" 실험 — /scroll-lab 전용.
@@ -142,38 +142,12 @@ const SNAP_AT = [0, 0.5, 1] as const;
 function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) => void) {
   const stageRef = useRef(stage);
   stageRef.current = stage;
-  /* 잠금 시간 — 휠/터치 핸들러(useEffect 안)와 아래 advance(버튼 클릭)가 같이 봐야 해서
-     effect 안의 지역변수가 아니라 ref 로 둔다. */
-  const lockUntilRef = useRef(0);
-
-  const geom = () => {
-    const outer = layout.outerRef.current;
-    const inner = layout.innerRef.current;
-    if (!outer || !inner) return null;
-    const range = outer.offsetHeight - inner.offsetHeight;
-    if (range <= 0) return null;
-    return { top: outer.getBoundingClientRect().top + window.scrollY, range };
-  };
-  const jumpTo = (s: Stage) => {
-    const g = geom();
-    if (!g) return;
-    /* 화면이 고정돼 있어 순간 이동해도 눈에 보이는 변화는 없다 */
-    window.scrollTo({ top: Math.round(g.top + SNAP_AT[s] * g.range), behavior: "instant" as ScrollBehavior });
-  };
-  const setS = (s: Stage) => {
-    stageRef.current = s;
-    setStage(s);
-  };
-  const go = (s: Stage) => {
-    const prev = stageRef.current;
-    if (s === prev) return;
-    setS(s);
-    jumpTo(s);
-    const dur = s > prev ? (s === 2 ? MODE.snap.bFwd : A_FWD) : prev === 2 ? B_BACK : A_BACK;
-    lockUntilRef.current = performance.now() + dur + LOCK_TAIL;
-  };
+  /* 260917 — 스크롤 안내 화살표를 눌렀을 때 할 일. 휠·터치와 같은 잠금(lockUntil)을 써야 해서
+     아래 effect 안에서 채운다. */
+  const nextRef = useRef<() => void>(() => {});
 
   useEffect(() => {
+    let lockUntil = 0;
     let lastWheel = 0;
     let wheelMode: "locked" | "native" | "outside" = "outside";
     let touchY = 0;
@@ -181,11 +155,37 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
     let stepped = false;
     let idleTimer = 0;
 
+    const geom = () => {
+      const outer = layout.outerRef.current;
+      const inner = layout.innerRef.current;
+      if (!outer || !inner) return null;
+      const range = outer.offsetHeight - inner.offsetHeight;
+      if (range <= 0) return null;
+      return { top: outer.getBoundingClientRect().top + window.scrollY, range };
+    };
     const inZone = () => {
       const g = geom();
       if (!g) return false;
       const y = window.scrollY;
       return y >= g.top - 2 && y <= g.top + g.range + 2;
+    };
+    const jumpTo = (s: Stage) => {
+      const g = geom();
+      if (!g) return;
+      /* 화면이 고정돼 있어 순간 이동해도 눈에 보이는 변화는 없다 */
+      window.scrollTo({ top: Math.round(g.top + SNAP_AT[s] * g.range), behavior: "instant" as ScrollBehavior });
+    };
+    const setS = (s: Stage) => {
+      stageRef.current = s;
+      setStage(s);
+    };
+    const go = (s: Stage) => {
+      const prev = stageRef.current;
+      if (s === prev) return;
+      setS(s);
+      jumpTo(s);
+      const dur = s > prev ? (s === 2 ? MODE.snap.bFwd : A_FWD) : prev === 2 ? B_BACK : A_BACK;
+      lockUntil = performance.now() + dur + LOCK_TAIL;
     };
     const snapToNearest = () => {
       const g = geom();
@@ -197,6 +197,23 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
     };
     const atEnd = (dir: number) => (dir > 0 && stageRef.current === 2) || (dir < 0 && stageRef.current === 0);
 
+    /* 화살표 한 번 = 한 단계. ① → ② → 결론, 결론에서 누르면 히어로 다음 섹션으로 내려간다.
+       전환 재생 중(lockUntil 전)에 연달아 누른 건 무시한다 — 장면을 건너뛰지 않게. */
+    nextRef.current = () => {
+      if (performance.now() < lockUntil) return;
+      const s = stageRef.current;
+      if (s < 2) {
+        go((s + 1) as Stage);
+        return;
+      }
+      const g = geom();
+      const outer = layout.outerRef.current;
+      if (!g || !outer) return;
+      /* 부드럽게 내려가는 동안 구간 안 스크롤로 잡혀 장면 자리로 되돌려지지 않게 잠깐 잠근다 */
+      lockUntil = performance.now() + 1000;
+      window.scrollTo({ top: Math.round(g.top + outer.offsetHeight), behavior: "smooth" });
+    };
+
     const onWheel = (e: WheelEvent) => {
       const now = performance.now();
       const fresh = now - lastWheel > FRESH_GAP;
@@ -204,7 +221,7 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
       const dir = Math.sign(e.deltaY);
       if (!dir) return;
       const zone = inZone();
-      const idle = now >= lockUntilRef.current;
+      const idle = now >= lockUntil;
       if (fresh) wheelMode = !zone ? "outside" : idle && atEnd(dir) ? "native" : "locked";
       else if (wheelMode === "outside" && zone) {
         wheelMode = "locked";
@@ -212,7 +229,7 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
       }
       if (wheelMode !== "locked") return;
       /* 마우스 휠을 쉬지 않고 계속 굴리는 경우 — 전환이 끝나고 조금 지나면 다음 동작으로 인정 */
-      const pushOn = idle && now - lockUntilRef.current > PUSH_GRACE && Math.abs(e.deltaY) >= 50;
+      const pushOn = idle && now - lockUntil > PUSH_GRACE && Math.abs(e.deltaY) >= 50;
       if (pushOn && atEnd(dir)) {
         wheelMode = "native";
         return;
@@ -232,7 +249,7 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
       const dy = touchY - e.touches[0].clientY; // + = 페이지를 아래로 내리는 방향
       if (dy === 0) return;
       const zone = inZone();
-      const idle = performance.now() >= lockUntilRef.current;
+      const idle = performance.now() >= lockUntil;
       if (touchMode === null) touchMode = !zone ? "outside" : idle && atEnd(Math.sign(dy)) ? "native" : "locked";
       else if (touchMode === "outside" && zone) {
         touchMode = "locked";
@@ -250,10 +267,7 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
     const onScroll = () => {
       window.clearTimeout(idleTimer);
       idleTimer = window.setTimeout(() => {
-        /* 결론 CTA 가 건 부드러운 스크롤이 이 구간을 지나가는 중이면 손대지 않는다 —
-           프레임이 한 번 밀려 잠깐 멎으면 여기서 목적지를 가로채 버린다. */
-        if (isCtaScrolling()) return;
-        if (inZone() && performance.now() >= lockUntilRef.current) snapToNearest();
+        if (inZone() && performance.now() >= lockUntil) snapToNearest();
       }, FRESH_GAP);
     };
 
@@ -271,37 +285,21 @@ function useSnapStepper(layout: StoryLayout, stage: Stage, setStage: (s: Stage) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* 화살표 버튼 클릭 — 휠 한 번과 같은 "다음 단계로" 동작.
-     전환 재생 중(잠금 시간 안)이면 무시해 두 장면이 겹쳐 재생되지 않게 한다. */
-  const advance = () => {
-    if (performance.now() < lockUntilRef.current) return;
-    const next = stageRef.current + 1;
-    if (next <= 2) go(next as Stage);
-  };
-
-  return { advance };
+  return () => nextRef.current();
 }
 
 function SnapStory({ story }: { story: ScrollStory }) {
   const layout = useStoryLayout(MODE.snap.screens);
   const [stage, setStage] = useState<Stage>(0);
   const { a, b } = useStagePlayer(stage, { bFwd: MODE.snap.bFwd });
-  const { advance } = useSnapStepper(layout, stage, setStage);
+  /* next — 스크롤 안내 화살표를 눌렀을 때 (260917) */
+  const next = useSnapStepper(layout, stage, setStage);
   /* 스크롤 안내 화살표는 결론 장면까지 계속 둔다 — 한 번씩 내려야 넘어가는 방식이라
      장면마다 "더 내리면 된다" 는 신호가 필요하고, 결론 뒤에도 아래로 본문이 이어진다.
      히어로가 위로 밀려 올라가면 화살표도 같이 화면 밖으로 나간다. */
   const fx = { ...fxFromPlay(a, b), hintOp: 1 };
-  /* step — 진행 표시(01/03)는 이 단계 값을 그대로 쓴다. 같은 state 라 어긋날 일이 없다.
-     마지막 장면(2)에서는 다음이 없으니 onAdvance 를 안 넘겨 장식용 화살표로 되돌아간다. */
-  return (
-    <StoryScene
-      story={story}
-      fx={fx}
-      layout={layout}
-      step={stage}
-      onAdvance={stage < 2 ? advance : undefined}
-    />
-  );
+  /* 단계 게이지 — ① 은 처음부터 한 칸 차 있고, ② 칸은 a(①→② 전환), ③ 칸은 b(결론 연출) 만큼 찬다 */
+  return <StoryScene story={story} fx={fx} layout={layout} onNext={next} steps={[1, a, b]} />;
 }
 
 export function HeroScrollStoryLab({ story, mode }: { story: ScrollStory; mode: StoryMode }) {

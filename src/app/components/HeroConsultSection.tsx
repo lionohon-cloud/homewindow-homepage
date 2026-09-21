@@ -5,6 +5,7 @@ import { submitLead } from "@/lib/submitLead";
 import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
+import { ConsultAlert } from "./ConsultAlert";
 
 export function HeroConsultSection() {
   const navigate = useNavigate();
@@ -40,11 +41,13 @@ export function HeroConsultSection() {
     const phone = `${phone1}-${phone2}-${phone3}`;
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
     try {
-      const { ok, docId } = await submitLead({
+      const { ok, docId, cancelled } = await submitLead({
         phone,
         entryForm: `홈페이지 ${device} 메인`,
         honeypot: honeypotRef.current?.value,
       });
+      // 260917 번호인증 실험 — 인증 팝업을 닫으면 오류 없이 멈춘다
+      if (cancelled) return;
       if (ok) {
         setPhone1("010");
         setPhone2("");
@@ -77,9 +80,12 @@ export function HeroConsultSection() {
           위아래 여백도 한 단계 넓혀 앞뒤 섹션과 붙지 않게 했다. */}
       <section id="consult-form" className="w-full bg-white border-y border-y-[#D22727]/30">
         <div className="max-w-screen-lg mx-auto px-5 md:px-10 py-7 md:py-9">
+          {/* 260917 반응형 — 예전엔 입력칸이 고정 폭이라 390px 미만 휴대폰에서 "상담신청" 버튼이 잘렸고,
+              768~1023px 에서는 제목·입력줄을 한 줄에 놓아 넘쳤다.
+              지금: 1023px 까지는 위아래로 쌓고 입력칸이 남는 폭을 나눠 쓴다(최대 폭 제한). 1024px 부터 한 줄. */}
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col w-fit mx-auto md:w-full md:mx-0 md:flex-row md:items-center md:justify-between gap-4 md:gap-10"
+            className="flex flex-col w-full max-w-[440px] md:max-w-[560px] mx-auto lg:max-w-none lg:mx-0 lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-10"
           >
             <HoneypotField ref={honeypotRef} />
             {/* 왼쪽: 제목 + 아이콘 */}
@@ -101,8 +107,10 @@ export function HeroConsultSection() {
             {/* 오른쪽: 입력 영역 */}
             <div className="flex flex-col gap-2">
               {/* 전화번호 입력 행 */}
-              <div className="flex items-center gap-1.5 md:gap-2">
-                {/* 지역/통신사 국번 — 010/070/02 등, 최대 3자리 */}
+              <div className="flex w-full items-center gap-1.5 md:gap-2">
+                {/* 지역/통신사 국번 — 010/070/02 등, 최대 3자리.
+                    1023px 까지는 세 칸이 남는 폭을 0.8 : 1 : 1 로 나눠 쓰고(min-w-0 이라 줄어들 수 있다),
+                    1024px 부터는 예전 고정 폭(64 · 82 · 82px). */}
                 <input
                   type="tel"
                   value={phone1}
@@ -115,9 +123,13 @@ export function HeroConsultSection() {
                   }}
                   maxLength={3}
                   disabled={isSubmitting}
-                  className={`w-[56px] md:w-[64px] ${inputCls}`}
+                  className={`flex-[0.8] min-w-0 lg:flex-none lg:w-[64px] ${inputCls}`}
                 />
-                <span className="text-[#ccc] text-[18px] font-light select-none">—</span>
+                {/* 대시 — 글자(—) 대신 선. 좁은 화면에서 입력칸보다 먼저 줄어든다: 320px 이하 6px → 380px 이상 16px */}
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 h-[1.5px] bg-[#ccc] w-[clamp(6px,calc((100vw_-_320px)_*_0.2_+_6px),16px)]"
+                />
                 <input
                   ref={phone2Ref}
                   type="tel"
@@ -132,9 +144,13 @@ export function HeroConsultSection() {
                   placeholder="0000"
                   maxLength={4}
                   disabled={isSubmitting}
-                  className={`w-[70px] md:w-[82px] ${inputCls}`}
+                  className={`flex-1 min-w-0 lg:flex-none lg:w-[82px] ${inputCls}`}
                 />
-                <span className="text-[#ccc] text-[18px] font-light select-none">—</span>
+                {/* 대시 — 글자(—) 대신 선. 좁은 화면에서 입력칸보다 먼저 줄어든다: 320px 이하 6px → 380px 이상 16px */}
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 h-[1.5px] bg-[#ccc] w-[clamp(6px,calc((100vw_-_320px)_*_0.2_+_6px),16px)]"
+                />
                 <input
                   ref={phone3Ref}
                   type="tel"
@@ -146,12 +162,12 @@ export function HeroConsultSection() {
                   placeholder="0000"
                   maxLength={4}
                   disabled={isSubmitting}
-                  className={`w-[70px] md:w-[82px] ${inputCls}`}
+                  className={`flex-1 min-w-0 lg:flex-none lg:w-[82px] ${inputCls}`}
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="h-[46px] md:h-[50px] px-5 md:px-8 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[13px] md:text-[15px] rounded-xl transition-colors cursor-pointer whitespace-nowrap disabled:bg-[#999] disabled:cursor-not-allowed"
+                  className="shrink-0 h-[46px] md:h-[50px] px-4 md:px-8 bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[13px] md:text-[15px] rounded-xl transition-colors cursor-pointer whitespace-nowrap disabled:bg-[#999] disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <span className="inline-flex items-center justify-center gap-2">
@@ -163,13 +179,14 @@ export function HeroConsultSection() {
               </div>
 
               {/* 동의 체크박스 */}
-              <label className="flex items-center gap-2 cursor-pointer">
+              {/* 좁은 화면에서 문구가 두 줄로 넘어가도 체크박스는 첫 줄에 맞춘다 */}
+              <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
                   disabled={isSubmitting}
-                  className="w-3.5 h-3.5 cursor-pointer accent-[#D22727]"
+                  className="shrink-0 mt-[2px] md:mt-[3px] w-3.5 h-3.5 cursor-pointer accent-[#D22727]"
                 />
                 <span className="text-[11px] md:text-[12px] text-[#999]">
                   상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
@@ -210,29 +227,8 @@ export function HeroConsultSection() {
       )}
 
       {/* 완료/오류 알림 */}
-      {showAlert && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowAlert(false)} />
-          <div className="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
-            <div className="p-6 text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="w-14 h-14 rounded-full bg-[#f8f8f8] flex items-center justify-center text-[28px]">
-                  {alertMessage.includes("완료") ? "✓" : "!"}
-                </div>
-              </div>
-              <p className="text-[16px] text-[#333] font-medium leading-[1.6]">{alertMessage}</p>
-            </div>
-            <div className="px-6 pb-6">
-              <button
-                onClick={() => setShowAlert(false)}
-                className="w-full h-[48px] bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[15px] rounded-lg cursor-pointer"
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 260917 번호인증 실험 — 인증창과 같은 틀의 공통 알림창 */}
+      <ConsultAlert open={showAlert} message={alertMessage} onClose={() => setShowAlert(false)} />
 
       {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
       <ConsultRegionFieldModal

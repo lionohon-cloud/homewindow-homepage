@@ -6,6 +6,12 @@
 
 import { getUtmData } from './utm';
 import {
+  VERIFY_TEST_MODE,
+  normalizePhone,
+  requestPhoneVerification,
+  takeVerification,
+} from './phoneVerify';
+import {
   getChannelMedia,
   buildErpUtm,
   buildErpInflowChannel,
@@ -30,6 +36,8 @@ declare global {
 export interface SubmitLeadResult {
   ok: boolean;
   docId: string | null;
+  /** 260917 번호인증 실험 — 고객이 인증 팝업을 닫았다. 폼은 오류 안내 없이 그대로 멈춘다. */
+  cancelled?: boolean;
 }
 
 export async function submitLead(params: {
@@ -55,6 +63,22 @@ export async function submitLead(params: {
   if (honeypot && honeypot.trim().length > 0) {
     sessionStorage.setItem('hw_just_submitted', '1');
     return { ok: true, docId: null };
+  }
+
+  // ── 260917 휴대폰 본인확인 ───────────────────────────────
+  // 접수 전에 본인확인. 어느 폼이든 여기를 지나므로 폼마다 팝업을 달지 않는다.
+  // 팝업을 닫으면 접수하지 않고 멈춘다(cancelled). 미인증 이탈 고객을 따로 저장할지는 미정.
+  const verified = await requestPhoneVerification(phone);
+  if (!verified) {
+    return { ok: false, docId: null, cancelled: true };
+  }
+  const verification = takeVerification(phone);
+
+  // 로컬 시연(TEST_MODE)은 실제 ERP·구글시트로 보내지 않는다 (테스트 번호가 실제 고객 DB 에 쌓이지 않게).
+  if (VERIFY_TEST_MODE) {
+    console.info('[번호인증 실험] 인증 완료 접수 (전송 안 함)', { phone: normalizePhone(phone), entryForm, verified: true });
+    sessionStorage.setItem('hw_just_submitted', '1');
+    return { ok: true, docId: `TEST-${Date.now()}` };
   }
 
   const utm = getUtmData();
@@ -104,12 +128,15 @@ export async function submitLead(params: {
 
   // ── (a-2) ERP — 청암홈윈도우 ERP 자동등록 ─────────────────
   // 사용자 확정 스펙대로 페이로드 구성. 실패해도 사용자 화면은 영향 없음.
-  const intakeRequestId =
+  // 본인확인에 쓴 flowId 를 그대로 접수 ID 로 쓴다 — ERP 가 토큰과 접수를 대조할 수 있게.
+  const intakeRequestId = verification?.flowId ?? (
     typeof globalThis.crypto?.randomUUID === 'function'
       ? globalThis.crypto.randomUUID()
-      : `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      : `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
   const erpPayload = {
     phone,
+    // 260917 휴대폰 본인확인 토큰 — 견적 퍼널(/api/request/lead)과 같은 필드명
+    phoneVerificationToken: verification?.token,
     // 같은 요청의 네트워크 재시도만 멱등 처리하고, 같은 날 별도 재접수는 모두 이력에 남긴다.
     intakeRequestId,
     // customerName, address: 폼에서 받지 않으므로 생략 (ERP 측 optional)
@@ -247,6 +274,12 @@ export async function submitLeadDetail(
   meshReferralRequested?: boolean,
   replacementTiming?: string,
 ): Promise<boolean> {
+  // 260917 번호인증 실험 — 테스트 접수는 ERP 에 없으니 보내지 않고 성공 처리
+  if (VERIFY_TEST_MODE && docId.startsWith('TEST-')) {
+    console.info('[번호인증 실험] 2단계 지역·분야 (전송 안 함)', { region, consultField });
+    return true;
+  }
+
   let ok = false;
   const intakeRequestId = sessionStorage.getItem(
     `hw_intake_request_id:${docId}`,

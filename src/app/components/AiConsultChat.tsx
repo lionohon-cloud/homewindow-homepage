@@ -209,7 +209,7 @@ export function AiConsultChat() {
     push({ role: "user", text: phone });
     try {
       const device = window.innerWidth >= 768 ? "PC" : "모바일";
-      const { docId } = await submitLead({
+      const { docId, cancelled } = await submitLead({
         phone,
         entryForm: `AI채팅 ${device}`,
         honeypot: honeypotRef.current?.value,
@@ -229,6 +229,11 @@ export function AiConsultChat() {
               ? "SAFETY_SCREEN"
               : "WINDOW_QUOTE",
       });
+      // 260917 번호인증 실험 — 인증 팝업을 닫으면 다시 누를 수 있게 풀어 둔다
+      if (cancelled) {
+        setSubmitting(false);
+        return;
+      }
       if (docId) {
         detail.open(docId); // 지도(지역)+분야 팝업 → 접수 완료 시 /thanks
       } else {

@@ -7,6 +7,7 @@ import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 import { useVisualViewport } from "@/lib/useVisualViewport";
+import { ConsultAlert } from "./ConsultAlert";
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -14,9 +15,6 @@ interface ConsultationModalProps {
   variant?: "top" | "bottom";
   /** 어느 버튼으로 열었는지 — ERP entryForm 에 붙어 유입 경로가 구분된다 */
   entry?: string;
-  /** 접수 출처 접두. 시트 D열의 "<출처> <기기> <위치>" 중 출처.
-      기본값이 원본과 같아 메인 동작은 그대로다. */
-  entrySource?: string;
 }
 
 /**
@@ -32,13 +30,7 @@ function focusVisible(selector: string) {
   [...els].find((el) => el.offsetParent !== null)?.focus();
 }
 
-export function ConsultationModal({
-  isOpen,
-  onClose,
-  variant = "bottom",
-  entry,
-  entrySource = "홈페이지",
-}: ConsultationModalProps) {
+export function ConsultationModal({ isOpen, onClose, variant = "bottom", entry }: ConsultationModalProps) {
   const navigate = useNavigate();
 
   /* 위에서 내려오는 접수 바는 GNB 와 같이 움직여야 한다.
@@ -118,12 +110,14 @@ export function ConsultationModal({
     const device = window.innerWidth >= 768 ? 'PC' : '모바일';
 
     try {
-      const { ok, docId } = await submitLead({
+      const { ok, docId, cancelled } = await submitLead({
         phone: phoneNumber,
-        entryForm: `${entrySource} ${device} 상담모달${entry ? `-${entry}` : ""}`,
+        entryForm: `홈페이지 ${device} 상담모달${entry ? `-${entry}` : ""}`,
         honeypot: honeypotRef.current?.value,
       });
 
+      // 260917 번호인증 실험 — 인증 팝업을 닫으면 오류 없이 멈춘다
+      if (cancelled) return;
       if (ok) {
         setPhone2("");
         setPhone3("");
@@ -556,54 +550,8 @@ export function ConsultationModal({
         )}
       </AnimatePresence>
 
-      {/* Alert Modal */}
-      <AnimatePresence>
-        {showAlert && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAlert(false)}
-              className="absolute inset-0 bg-black/50"
-            />
-
-            {/* Alert Modal */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="relative z-10 bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-sm"
-            >
-              {/* Content */}
-              <div className="p-6 text-center">
-                <div className="mb-4 flex justify-center">
-                  <div className="w-14 h-14 rounded-full bg-[#f8f8f8] flex items-center justify-center">
-                    <span className="text-[28px]">
-                      {alertMessage.includes("완료") ? "✓" : "!"}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-[16px] text-[#333] font-medium leading-[1.6]">
-                  {alertMessage}
-                </p>
-              </div>
-
-              {/* Button */}
-              <div className="px-6 pb-6">
-                <button
-                  onClick={() => setShowAlert(false)}
-                  className="w-full h-[48px] bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[15px] rounded-lg transition-colors cursor-pointer"
-                >
-                  확인
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* 260917 번호인증 실험 — 인증창과 같은 틀의 공통 알림창 */}
+      <ConsultAlert open={showAlert} message={alertMessage} onClose={() => setShowAlert(false)} zIndex="z-[110]" />
 
       {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
       <ConsultRegionFieldModal

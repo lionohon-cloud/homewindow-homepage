@@ -1,29 +1,7 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { openConsultBar } from "@/lib/consultBar";
+import { useDday } from "@/lib/dday";
 import { useHeroVideo } from "../HeroSection";
-
-/**
- * 결론 CTA 의 목적지 — 히어로 바로 아래 강화유리 설명 섹션
- * ("지금까지도 창문에는 강화유리가 드물었던 이유", WhyBasicSection).
- * 문서에 이 id 는 한 곳뿐이다(tempered/WhyBasicSection.tsx).
- */
-export const HERO_CTA_TARGET_ID = "why-basic";
-
-/* CTA 가 건 부드러운 스크롤이 히어로 고정 구간을 지나가는 동안에는
-   스냅 복귀(useSnapStepper 의 snapToNearest)가 끼어들지 않게 알려 준다. */
-let ctaScrollUntil = 0;
-export const isCtaScrolling = () => performance.now() < ctaScrollUntil;
-
-/** 결론 CTA 클릭 — 상담창을 열지 않고 강화유리 설명 섹션으로 내려간다. */
-function goToTemperedIntro() {
-  const el = document.getElementById(HERO_CTA_TARGET_ID);
-  if (!el) return;
-  const reduce =
-    typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  ctaScrollUntil = performance.now() + (reduce ? 0 : 1400);
-  /* scrollIntoView 는 그 섹션이 이미 달고 있는 scroll-mt(모바일 73px / 1550px↑ 83px)를 지켜 준다 —
-     고정 GNB 에 제목이 가리지 않는다. window.scrollTo 로는 scroll-margin 이 먹지 않는다. */
-  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-}
 
 /**
  * 히어로 E안 — 스크롤로 넘기는 인터랙티브 스토리. (문구 시안 비교 /copy-lab 전용)
@@ -67,6 +45,10 @@ export type ScrollStory = {
   /** ② 에서 깔리는 사진 (public 경로) */
   image: string;
   cta: string;
+  /** 행사 기간에만 — 결론 장면(CTA 가 뜨는 순간)에 같이 나타난다. 없으면 아무것도 안 뜬다.
+      badge: 머리말 자리의 빨간 알약(뒤에 D-day 가 붙는다, 종료일은 lib/dday.ts PROMO_END)
+      line : 버튼 바로 위 혜택 한 줄 / note: 버튼 아래 조건 한 줄 */
+  promo?: { badge: string; line: string; lineEmphasis?: string; note?: string };
 };
 
 /** E안 문구 — /copy-lab 과 /scroll-lab 이 같이 쓴다. 여기만 고치면 둘 다 바뀐다. */
@@ -77,12 +59,23 @@ export const STORY_E: ScrollStory = {
   /* 260911 — 검정 화면에 "하지만" 을 한 박자 두고 결론으로 넘어간다.
      결론은 "강화유리가 기본입니다" → "가능합니다". ① 의 "원래 가능했습니다" 를 되받는다. */
   but: "하지만",
-  last: "청암홈윈도우는\n가능합니다.",
-  /* 결론 문장은 "가능합니다." 만 굵게, "청암홈윈도우는" 은 얇게 */
-  lastEmphasis: "가능합니다.",
+  /* 260917 이벤트버전 — "가능합니다." → "추가비용 없이 가능합니다." (상시버전은 "가능합니다.") */
+  last: "청암홈윈도우는\n추가비용 없이 가능합니다.",
+  /* 결론 문장은 둘째 줄만 굵게, "청암홈윈도우는" 은 얇게 */
+  lastEmphasis: "추가비용 없이 가능합니다.",
   /* public/hero-story/ 에 넣은 사진 */
   image: "/hero-story/whisper-calculator.png",
-  cta: "지금 강화유리를 확인해보세요.",
+  /* 260917 이벤트버전 — 강화유리 무상 업그레이드 행사 오픈.
+     상시버전 CTA 는 "지금 견적서에서 강화유리를 확인하세요." — 행사가 끝나면 되돌리고 promo 를 지운다. */
+  cta: "무상 업그레이드 상담 신청하기",
+  promo: {
+    /* 260917 마감 9/30 → 10/31 로 새로 세팅 — "9월 한정" 은 빼고 날짜는 note 에 */
+    badge: "10월 한정 이벤트 마감",
+    line: "일반유리 가격에 강화유리로 무상 업그레이드",
+    /* 혜택 줄은 한 단계 가볍게, 이 낱말만 굵게 — 제목 → 혜택 → 버튼 순으로 읽히게 */
+    lineEmphasis: "무상 업그레이드",
+    note: "LX 제품군 한정 · 10월 31일까지 계약 시",
+  },
 };
 
 /** 고정 구간이 화면 몇 개 분량인지. 장면이 다섯이라 너무 짧으면 휙 지나간다. */
@@ -188,7 +181,13 @@ export function useStoryLayout(screens: number) {
       if (last) {
         const ir = inner.getBoundingClientRect();
         const lr = last.getBoundingClientRect();
-        setSplitY(Math.round(lr.top + lr.height / 2 - ir.top));
+        /* 260917 — 결론이 세 줄(모바일)이 되면 상자 가운데는 둘째 줄 글자 한가운데라,
+           "첫 줄 바로 아래" 에서 연다. 커지는 효과(scale)가 가운데 기준이라 화면상 가운데 높이는
+           크기와 상관없고, 원래 높이(offsetHeight)·줄 높이는 transform 영향을 안 받는다.
+           두 줄이면 첫 줄 아래 = 가운데라 예전과 같은 자리다. */
+        const center = lr.top + lr.height / 2;
+        const lineH = parseFloat(getComputedStyle(last).lineHeight) || last.offsetHeight / 2;
+        setSplitY(Math.round(center - last.offsetHeight / 2 + lineH - ir.top));
       }
     };
     const onScroll = () => {
@@ -215,88 +214,24 @@ export function useStoryLayout(screens: number) {
 }
 export type StoryLayout = ReturnType<typeof useStoryLayout>;
 
-/* ── 히어로 3단계 진행 표시 ────────────────────────────────────────────────
-   사용자가 한 번 내릴 때마다 넘어가는 단계와 같다.
-     01 창에 강화유리, 원래 가능했습니다.
-     02 비싸고 번거롭기 때문에 말하지 않았을 뿐입니다.
-     03 "하지만" → 청암홈윈도우는 가능합니다. + CTA
-        ("하지만" 과 결론은 하나의 자동 연출이라 단계를 나누지 않는다)
-
-   PC 와 모바일이 방향만 다르고 점·선·색·크기는 같은 것을 쓴다 — DOM 을 하나만 두고
-   flex 방향과 선의 가로/세로만 바꿔, 두 벌을 따로 관리하다 어긋나는 일이 없게 했다.
-     · 데스크톱 : 히어로 하단 가운데, 가로 (안내 화살표 bottom-152 위 · 하단 상담 바 110 위)
-     · 모바일   : 화면 우측 가운데, 세로 (하단 상담·AI 바와 겹치지 않는 높이)
-   숫자 라벨은 양쪽 다 가로로 읽는다 — 세로로 눕히면 01/03 을 한눈에 알아보기 어렵다.
-   모바일에서는 라벨만 흐름 밖으로 빼 진행선 아래에 둔다. 가로 라벨은 폭이 40px 라
-   세로 진행선 옆에 두면 360px 기기에서 히어로 문구와 겹친다. 흐름에서 빼면
-   진행선은 원래 자리(화면 오른쪽 11px · 세로 가운데)를 그대로 지킨다.
-   왼쪽 세로 목록(GNB 의 페이지 전체 목차)과는 별개다 — 그쪽은 건드리지 않는다. */
-const STEP_TOTAL = 3;
-const STEP_ON = "#d22727"; //             청암홈윈도우 빨강 — 현재 단계까지
-const STEP_OFF = "rgba(255,255,255,.32)"; // 남은 단계
-
-function HeroProgress({ step }: { step: number }) {
-  const now = Math.min(Math.max(step, 0), STEP_TOTAL - 1);
-  const label = String(now + 1).padStart(2, "0") + " / 0" + STEP_TOTAL;
-  return (
-    <div
-      data-hero-progress
-      role="progressbar"
-      aria-label="히어로 진행 단계"
-      aria-valuemin={1}
-      aria-valuemax={STEP_TOTAL}
-      aria-valuenow={now + 1}
-      aria-valuetext={label}
-      className="pointer-events-none absolute z-20 flex select-none items-center gap-2
-                 right-[11px] top-1/2 -translate-y-1/2 flex-col
-                 md:right-auto md:top-auto md:bottom-[196px] md:left-1/2 md:-translate-x-1/2 md:translate-y-0 md:flex-row md:gap-3
-                 [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.55))]"
-    >
-      <span className="absolute right-0 top-full mt-2 whitespace-nowrap text-[10px] font-bold tabular-nums tracking-[.08em] text-white/75 md:relative md:right-auto md:top-auto md:mt-0 md:text-[11px]">
-        {label}
-      </span>
-      <div className="flex flex-col items-center md:flex-row">
-        {Array.from({ length: STEP_TOTAL }, (_, i) => (
-          <Fragment key={i}>
-            {i > 0 && (
-              <span
-                className="block h-5 w-[2px] rounded-full transition-colors duration-300 md:h-[2px] md:w-6"
-                style={{ background: i <= now ? STEP_ON : STEP_OFF }}
-              />
-            )}
-            <span
-              className="block rounded-full transition-all duration-300"
-              style={{
-                width: i === now ? 9 : 6,
-                height: i === now ? 9 : 6,
-                background: i <= now ? STEP_ON : STEP_OFF,
-                boxShadow: i === now ? "0 0 0 3px " + STEP_ON + "33" : "none",
-              }}
-            />
-          </Fragment>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /** 그림 — 장면 값만 받아서 그린다 */
 export function StoryScene({
   story,
   fx,
   layout,
-  step,
-  onAdvance,
+  onNext,
+  steps,
 }: {
   story: ScrollStory;
   fx: SceneFx;
   layout: StoryLayout;
-  /** 진행 표시에 쓸 현재 단계(0·1·2). 안 넘기면 표시하지 않는다 — 시안 모드는 그대로 둔다. */
-  step?: number;
-  /** 스크롤 안내 화살표를 누르면 한 단계 진행. 안 넘기면(시안 모드) 예전처럼 장식용으로만 둔다. */
-  onAdvance?: () => void;
+  /** 스크롤 안내 화살표를 누르면 부를 함수 — 주면 화살표가 버튼이 된다(장면별 멈춤 B 에서만 준다) */
+  onNext?: () => void;
+  /** 단계 게이지 — 칸마다 채워진 정도(0~1). 주면 화살표 위에 가로 게이지가 뜬다(B 에서만 준다) */
+  steps?: number[];
 }) {
   const heroVideo = useHeroVideo();
+  const dday = useDday();
   const { swap, dark, grow, split } = fx;
 
   /* ①·② 는 한 창 안에서 굴러 넘어가고, 어두워질 때 창째로 흐려진다 */
@@ -374,44 +309,67 @@ export function StoryScene({
           }}
         />
 
-        {typeof step === "number" && <HeroProgress step={step} />}
-
         {/* 첫 화면 스크롤 안내 — 아래로 꺾인 화살표 두 개가 차례로 내려간다(글자 없음).
             이 시안은 내려야 장면이 넘어가는데, 첫 화면만 봐선 알 수 없어서 넣었다.
-            조금만 내려도 사라진다. 하단 고정바(85·94px)에서 한참 띄워 둔다.
-            onAdvance 가 있으면(snap 모드) 눌러서도 한 단계 진행할 수 있는 버튼이 된다 —
-            전체 폭을 덮으면 아래 CTA 등을 가리므로 화살표 크기만큼만 히트영역을 준다. */}
-        {onAdvance ? (
-          <button
-            type="button"
-            onClick={onAdvance}
-            aria-label="다음 장면 보기"
-            data-scroll-hint
-            className="absolute z-20 left-1/2 -translate-x-1/2 flex flex-col items-center bottom-[140px] md:bottom-[152px] px-4 py-2 cursor-pointer [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.6))]"
-            style={{ opacity: fx.hintOp }}
-          >
-            <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none">
-              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none">
-              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        ) : (
-          <div
-            data-scroll-hint
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 z-20 flex flex-col items-center bottom-[140px] md:bottom-[152px] [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.6))]"
-            style={{ opacity: fx.hintOp }}
-          >
-            <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none">
-              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none">
-              <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        )}
+            조금만 내려도 사라진다. 하단 고정바(85·94px)에서 한참 띄워 둔다. */}
+        {/* 260917 — onNext 가 있으면 화살표가 버튼이 된다. 누를 때마다 다음 장면(① → ② → 결론),
+            결론에서 누르면 히어로 다음 섹션으로 내려간다. 손가락으로 누르기 쉽게 누르는 자리를
+            화살표보다 넓게(약 48px) 잡되, 화살표 위치는 그대로 둔다(p-3 · -m-3). */}
+        <div
+          data-scroll-hint
+          className="pointer-events-none absolute inset-x-0 z-20 flex flex-col items-center bottom-[140px] md:bottom-[152px] [filter:drop-shadow(0_1px_6px_rgba(0,0,0,.6))]"
+          style={{ opacity: fx.hintOp }}
+        >
+          {/* 260917 단계 게이지 — 3칸. 칸마다 진행 값만큼 왼쪽부터 차오른다(재생 중인 연출과 같이 움직임).
+              화살표 위에 붙여 "누르거나 내리면 다음 칸" 으로 읽히게 했다. 아래 기준이라 화살표 자리는 그대로. */}
+          {steps && (
+            <div
+              data-story-gauge
+              role="progressbar"
+              aria-label="히어로 진행 단계"
+              aria-valuemin={0}
+              aria-valuemax={steps.length}
+              aria-valuenow={Math.round(steps.reduce((sum, v) => sum + clamp01(v), 0))}
+              className="mb-3 flex gap-1.5"
+            >
+              {steps.map((v, i) => (
+                /* 260917 더 얇게(4 → 2px) · 모서리 직각 */
+                <span key={i} className="relative h-[2px] w-10 md:w-14 overflow-hidden bg-white/25">
+                  <span
+                    className="absolute inset-0 origin-left bg-white"
+                    style={{ transform: `scaleX(${clamp01(v).toFixed(4)})` }}
+                  />
+                </span>
+              ))}
+            </div>
+          )}
+          {onNext ? (
+            <button
+              type="button"
+              data-scroll-next
+              onClick={onNext}
+              aria-label="다음 장면 보기"
+              className="flex flex-col items-center p-3 -m-3 rounded-full cursor-pointer focus-visible:outline-2 focus-visible:outline-white/70"
+              style={{ pointerEvents: fx.hintOp > 0.05 ? "auto" : "none" }}
+            >
+              <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none" aria-hidden="true">
+                <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none" aria-hidden="true">
+                <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          ) : (
+            <div aria-hidden="true" className="flex flex-col items-center">
+              <svg className="hw-scroll-cue" width="22" height="12" viewBox="0 0 22 12" fill="none">
+                <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <svg className="hw-scroll-cue hw-scroll-cue-2 -mt-1" width="22" height="12" viewBox="0 0 22 12" fill="none">
+                <path d="M2 2l9 8 9-8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          )}
+        </div>
 
         {/* 글 — 화면 가운데. 세 문장은 같은 자리에 겹쳐 두고 투명도·크기로만 바꾼다 */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 pt-[60px] pb-[110px] md:pt-[70px] md:pb-[110px]">
@@ -419,9 +377,28 @@ export function StoryScene({
             className="text-white leading-[1.25] break-keep -tracking-[.025em] text-[30px] md:text-[40px]"
             style={{ textShadow: "0 2px 16px rgba(0,0,0,.65)" }}
           >
-            <p className="font-light mb-[.353em]" style={{ fontSize: ".85em", opacity: eyebrowOp }}>
-              {story.eyebrow}
-            </p>
+            {/* 머리말 자리 — 앞 장면에서는 머리말, 결론 장면에서는 행사 배지(행사 기간에만).
+                둘을 한 칸에 겹쳐 두고 투명도로 바꿔서 자리가 들썩이지 않는다. */}
+            <div className="grid justify-items-center mb-[.353em]">
+              <p className="[grid-area:1/1] font-light" style={{ fontSize: ".85em", opacity: eyebrowOp }}>
+                {story.eyebrow}
+              </p>
+              {story.promo && (
+                <span
+                  data-promo-badge
+                  /* 260917 패딩을 키움 — 높이 약 25 → 36px(모바일) / 26 → 41px(PC).
+                     모바일은 제목과 24px 띄운다(그냥 두면 11px) — 13px 올림. PC 는 제자리(15px) */
+                  /* 260917 빨간 알약 → 반투명 글라스 칩. 아래 빨간 상담 버튼과 같은 층위로 보여서
+                     한 단계 낮췄다(흰 15% 바탕 + 뒤 흐림 + 흰 30% 테두리). 점만 옅은 빨강으로 행사 신호를 남긴다. */
+                  className="[grid-area:1/1] self-center -translate-y-[13px] md:translate-y-0 inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-md border border-white/30 shadow-[0_4px_16px_rgba(0,0,0,.18)] px-4 py-2.5 md:px-5 md:py-3 text-[13px] md:text-[14px] font-bold leading-[1.2] tracking-normal transition-opacity duration-500"
+                  style={{ opacity: fx.ctaOn ? 1 : 0, textShadow: "none" }}
+                >
+                  {/* 260917 앞 점(블릿) 제거 */}
+                  {story.promo.badge}
+                  <span className="font-extrabold tabular-nums">{dday}</span>
+                </span>
+              )}
+            </div>
             <div className="grid font-extrabold whitespace-pre-line">
               {/* ①→② 롤링 창 — [②, ①] 을 세로로 쌓아 두고 트랙을
                   -2.5em → 0 으로 내린다. ② 가 위에서 내려오며 ① 을 아래로 밀어낸다.
@@ -458,7 +435,13 @@ export function StoryScene({
               <p
                 ref={layout.lastRef}
                 data-last
-                className={`[grid-area:1/1] ${story.lastEmphasis ? "font-medium" : ""}`}
+                /* 260917 결론이 핵심이라 앞 문장(30/40px)보다 크게 — 모바일 32px · PC 48px.
+                   모바일은 폭이 모자라 "청암홈윈도우는 / 추가비용 없이 / 가능합니다." 세 줄이 되고(띄어쓰기에서 줄바꿈),
+                   PC 는 두 줄. 검정이 갈라지는 자리는 useStoryLayout 에서 첫 줄 바로 아래로 잡는다. */
+                /* 모바일 크기 — 둘째 줄("추가비용 없이 가능합니다.")이 32px 에서 317px 이라 글 폭(화면폭 − 48px)에
+                   맞춰 줄인다: (100vw − 48px) × 32/317 × .97 ≈ × .0979. 최대 32px(375px 이상 기기),
+                   최소 26px — 그보다 좁은 기기(약 314px 미만)만 세 줄로 넘어간다. */
+                className={`[grid-area:1/1] text-[length:clamp(26px,calc((100vw_-_48px)_*_0.0979),32px)] md:text-[48px] ${story.lastEmphasis ? "font-medium" : ""}`}
                 style={{
                   opacity: fx.lastOp,
                   transform: `scale(${lastScale})`,
@@ -481,18 +464,51 @@ export function StoryScene({
             </div>
           </div>
 
+          {/* 260917 결론 장면 간격 — 제목 → 28px(PC 20) → 혜택 줄 → 28px(PC 20) → 버튼 → 12px → 조건.
+              모바일은 글이 좁은 폭에 몰려 답답해 보여 더 띄웠다. (행사 줄이 없는 상시버전은 제목 → 버튼) */}
           <div
-            className="mt-8 transition-opacity duration-500"
+            className="relative mt-7 md:mt-5 flex flex-col items-center transition-opacity duration-500"
             style={{ opacity: fx.ctaOn ? 1 : 0, pointerEvents: fx.ctaOn ? "auto" : "none" }}
           >
+            {/* 행사 혜택 한 줄 — 버튼 바로 위 (행사 기간에만). 제목보다 한 단계 가볍게, 강조 낱말만 굵게 */}
+            {story.promo && (
+              <p
+                data-promo-line
+                className="mb-7 md:mb-5 text-[16px] md:text-[19px] font-medium text-white/90 leading-[1.4] break-keep"
+                style={{ textShadow: "0 1px 10px rgba(0,0,0,.6)" }}
+              >
+                {story.promo.lineEmphasis && story.promo.line.includes(story.promo.lineEmphasis)
+                  ? story.promo.line.split(story.promo.lineEmphasis).flatMap((part, i) =>
+                      i === 0
+                        ? [part]
+                        : [
+                            <b key={i} className="font-extrabold text-white">
+                              {story.promo!.lineEmphasis}
+                            </b>,
+                            part,
+                          ],
+                    )
+                  : story.promo.line}
+              </p>
+            )}
             <button
               type="button"
-              onClick={goToTemperedIntro}
+              onClick={() => openConsultBar("히어로")}
               className="flex items-center justify-center h-[52px] min-w-[260px] px-8 whitespace-nowrap bg-[#d22727] hover:bg-[#b81f1f] text-white font-bold text-[15.5px] md:text-[16.5px] rounded-xl cursor-pointer transition-colors"
               style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
             >
               {story.cta}
             </button>
+            {/* 조건 한 줄 — 버튼 아래. 자리를 차지하지 않게 띄워서 장면 전체가 위로 밀리지 않는다 */}
+            {story.promo?.note && (
+              <p
+                data-promo-note
+                className="absolute left-1/2 top-full mt-3 -translate-x-1/2 whitespace-nowrap text-[12px] md:text-[13px] font-light text-white/70"
+                style={{ textShadow: "0 1px 6px rgba(0,0,0,.6)" }}
+              >
+                {story.promo.note}
+              </p>
+            )}
           </div>
         </div>
       </div>

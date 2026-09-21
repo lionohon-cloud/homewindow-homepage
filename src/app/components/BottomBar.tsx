@@ -7,12 +7,13 @@ import { useConsultDetail } from "@/lib/useConsultDetail";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 import { useVisualViewport } from "@/lib/useVisualViewport";
+import { ConsultAlert } from "./ConsultAlert";
 
 /**
  * 화면에 보이는 입력칸에 포커스한다.
  *
  * PC 바와 모바일 팝업이 같은 파일에 둘 다 마운트돼 있고, 화면 크기로만 한쪽을 숨긴다
- * (hidden md:block / md:hidden). 그래서 ref 하나를 둘이 공유하면 나중에 마운트된
+ * (hidden lg:flex / lg:hidden). 그래서 ref 하나를 둘이 공유하면 나중에 마운트된
  * 쪽이 ref 를 차지하고, 반대쪽에서 focus() 를 불러도 display:none 인 칸으로 가
  * 아무 일도 일어나지 않는다. 셀렉터로 찾아 offsetParent 로 보이는 쪽을 고른다.
  */
@@ -21,14 +22,11 @@ function focusVisible(selector: string) {
   [...els].find((el) => el.offsetParent !== null)?.focus();
 }
 
-interface BottomBarProps {
-  /** 접수 출처. 시트 D열(유입채널)의 "<출처> <기기> <위치>" 중 출처·위치.
-      기본값 둘 다 메인이 쓰던 값 그대로라 메인 동작은 바뀌지 않는다. */
-  entrySource?: string;
-  entryLabel?: string;
-}
-
-export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단바" }: BottomBarProps = {}) {
+/* compact — 문구 시안 비교(/copy-lab)에서 바 높이를 15% 줄여 보기 위한 것.
+   실서비스에서는 안 넘기므로 100 / 110px 그대로다.
+   바를 줄이면 이 바가 덮는 만큼 비워 둔 페이지 아래 여백(pb)도 같이 줄여야
+   빈 틈이 생기지 않는다 — Solo 쪽에서 함께 맞춘다. */
+export function BottomBar({ compact = false }: { compact?: boolean } = {}) {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMobilePopup, setShowMobilePopup] = useState(false);
@@ -76,14 +74,16 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
     if (isSubmitting) return;
     setIsSubmitting(true);
     const phone = `${phone1}-${phone2}-${phone3}`;
-    const device = window.innerWidth >= 768 ? 'PC' : '모바일';
+    const device = window.innerWidth >= 1024 ? 'PC' : '모바일';
     try {
       const honeypot = honeypotPopupRef.current?.value || honeypotPcRef.current?.value;
-      const { ok, docId } = await submitLead({
+      const { ok, docId, cancelled } = await submitLead({
         phone,
-        entryForm: `${entrySource} ${device} ${entryLabel}`,
+        entryForm: `홈페이지 ${device} 하단바`,
         honeypot,
       });
+      // 260917 번호인증 실험 — 인증 팝업을 닫으면 오류 없이 멈춘다
+      if (cancelled) return;
       if (ok) {
         setPhone1("010");
         setPhone2("");
@@ -116,13 +116,18 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
   return (
     <>
       {/* ── 하단 고정 바 ── */}
-      {/* 모바일: h-[100px] / PC: h-[110px] */}
-      <div className="fixed bottom-0 left-0 right-0 h-[100px] md:h-[110px] bg-white z-50 flex shadow-[0_-4px_24px_rgba(0,0,0,0.10)]">
+      {/* 모바일: h-[100px] / PC: h-[110px] · compact 는 그 85%
+          260917 태블릿(768~1023)도 모바일 바를 쓴다 — PC 인라인 폼은 lg(1024) 부터. */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 bg-white z-50 flex shadow-[0_-4px_24px_rgba(0,0,0,0.10)] ${
+          compact ? "h-[85px] lg:h-[94px]" : "h-[100px] lg:h-[110px]"
+        }`}
+      >
 
         {/* ════ PC 전용 폼 영역 (2/3) ════ */}
         <form
           onSubmit={handleSubmit}
-          className="hidden md:flex flex-[2] flex-col lg:flex-row items-center justify-center px-8 lg:px-12 gap-2 lg:gap-12 bg-white border-r border-[#e5e5e5]"
+          className="hidden lg:flex flex-[2] flex-row items-center justify-center px-12 gap-12 bg-white border-r border-[#e5e5e5]"
         >
           <HoneypotField ref={honeypotPcRef} />
           {/* 왼쪽: 아이콘 + 제목 */}
@@ -229,7 +234,7 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
         <button
           type="button"
           onClick={() => setShowMobilePopup(true)}
-          className="md:hidden flex-[2] bg-[#D22727] flex items-center justify-center gap-3 px-4 active:bg-[#b02020] transition-colors"
+          className="lg:hidden flex-[2] bg-[#D22727] flex items-center justify-center gap-3 px-4 active:bg-[#b02020] transition-colors"
         >
           <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center shrink-0">
             <Phone size={17} className="text-white" />
@@ -240,8 +245,8 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
             </span>
             {/* 여기에 입력값을 비추면 안 된다.
                 phone1/2/3 은 PC 인라인 폼과 모바일 팝업이 같이 쓰는 상태인데,
-                이 버튼은 모바일 전용(md:hidden)이고 모바일에는 인라인 폼이 없다
-                (폼은 hidden md:flex). 그래서 여기 값을 물리면 팝업에 치는 글자가
+                이 버튼은 모바일 전용(lg:hidden)이고 모바일에는 인라인 폼이 없다
+                (폼은 hidden lg:flex). 그래서 여기 값을 물리면 팝업에 치는 글자가
                 뒤에 깔린 CTA 버튼에 그대로 나타난다. 라벨은 고정. */}
             <span className="text-white font-bold text-[15px] leading-tight">
               번호를 입력해 상담신청
@@ -252,10 +257,10 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
         {/* ════ 직접견적 / AI 상담 (1/3) ════ */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex-[1] bg-[#f5f5f5] md:bg-[#D22727] hover:bg-[#ececec] md:hover:bg-[#b02020] active:bg-[#e5e5e5] md:active:bg-[#a01818] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
+          className="flex-[1] bg-[#f5f5f5] lg:bg-[#D22727] hover:bg-[#ececec] lg:hover:bg-[#b02020] active:bg-[#e5e5e5] lg:active:bg-[#a01818] flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 transition-colors cursor-pointer px-2"
         >
-          <MessageSquare size={18} className="text-[#D22727] md:text-white md:size-5" strokeWidth={2} />
-          <span className="text-[#2A2A2A] md:text-white font-bold text-[13px] md:text-[17px] text-center leading-tight">
+          <MessageSquare size={18} className="text-[#D22727] lg:text-white lg:size-5" strokeWidth={2} />
+          <span className="text-[#2A2A2A] lg:text-white font-bold text-[13px] lg:text-[17px] text-center leading-tight">
             <span className="lg:hidden">AI 채팅<br />견적</span>
             <span className="hidden lg:inline">AI 상담</span>
           </span>
@@ -265,7 +270,7 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
       {/* ════ 모바일 팝업 입력창 ════ */}
       {showMobilePopup && (
         <div
-          className="md:hidden fixed left-0 right-0 z-[100] bg-black/60 flex items-start justify-center px-0 pb-6 overflow-y-auto"
+          className="lg:hidden fixed left-0 right-0 z-[100] bg-black/60 flex items-start justify-center px-0 pb-6 overflow-y-auto"
           /* 키패드가 뜨면 보이는 영역만큼만 차지해 카드가 그 안에서 가운데로 온다. */
           style={
             visible
@@ -420,29 +425,8 @@ export function BottomBar({ entrySource = "홈페이지", entryLabel = "하단�
       )}
 
       {/* ── 완료/오류 알림 ── */}
-      {showAlert && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowAlert(false)} />
-          <div className="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
-            <div className="p-6 text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="w-14 h-14 rounded-full bg-[#f8f8f8] flex items-center justify-center text-[28px]">
-                  {alertMessage.includes("완료") ? "✓" : "!"}
-                </div>
-              </div>
-              <p className="text-[16px] text-[#333] font-medium leading-[1.6]">{alertMessage}</p>
-            </div>
-            <div className="px-6 pb-6">
-              <button
-                onClick={() => setShowAlert(false)}
-                className="w-full h-[48px] bg-[#D22727] hover:bg-[#b02020] text-white font-bold text-[15px] rounded-lg transition-colors cursor-pointer"
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 260917 번호인증 실험 — 인증창과 같은 틀의 공통 알림창 */}
+      <ConsultAlert open={showAlert} message={alertMessage} onClose={() => setShowAlert(false)} />
 
       {/* W2 2단계 접수 팝업 (지역 → 상담분야) */}
       <ConsultRegionFieldModal
