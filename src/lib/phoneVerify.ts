@@ -123,7 +123,7 @@ export async function sendCode(phone: string): Promise<SendResult> {
     return { ok: true, expiresAt: session.expiresAt };
   }
 
-  const r = await post("send", { tel: digits(phone), flowId: session.flowId });
+  const r = await post("send", { tel: digits(phone), flowId: session.flowId, codeLength: CODE_LENGTH });
   if (!r.ok) {
     if (r.code === "RATE_LIMIT") {
       return { ok: false, reason: "limit", message: "요청이 너무 많아요. 잠시 후 다시 시도해 주세요." };
