@@ -105,22 +105,38 @@ export const DEV_BYPASS_TOKEN_PREFIX = 'DEV-BYPASS-TOKEN-';
 export interface SmsSendPayload {
   tel: string;
   flowId: string;
+  /** 260921 — 메인 접수·가맹모집(src/lib/phoneVerify.ts)만 보냄. 안 보내면(견적 퍼널) ERP가 기존대로 6자리. */
+  codeLength?: 2 | 6;
 }
 
 export interface SmsVerifyPayload extends SmsSendPayload {
   code: string;
 }
 
+function codeLength(value: unknown): 2 | 6 | undefined {
+  if (value == null) return undefined;
+  if (value !== 2 && value !== 6) throw new RequestInputError('codeLength 형식이 올바르지 않습니다.');
+  return value;
+}
+
 export function normalizeSmsSend(input: unknown): SmsSendPayload {
   const body = record(input);
-  return { tel: phoneDigits(body.tel ?? body.phone), flowId: flowId(body.flowId) };
+  const length = codeLength(body.codeLength);
+  return {
+    tel: phoneDigits(body.tel ?? body.phone),
+    flowId: flowId(body.flowId),
+    ...(length ? { codeLength: length } : {}),
+  };
 }
 
 export function normalizeSmsVerify(input: unknown): SmsVerifyPayload {
   const body = record(input);
   const base = normalizeSmsSend(body);
+  // 홈페이지 상담 폼은 2자리(codeLength: 2), 견적 퍼널은 6자리 — 둘 다 여기서 받는다.
   const code = text(body.code, '인증번호', 6, true);
-  if (!/^\d{6}$/.test(code)) throw new RequestInputError('인증번호 형식이 올바르지 않습니다.', 400, 'CODE_MISMATCH');
+  if (!/^\d{2}$|^\d{6}$/.test(code)) {
+    throw new RequestInputError('인증번호 형식이 올바르지 않습니다.', 400, 'CODE_MISMATCH');
+  }
   return { ...base, code };
 }
 

@@ -143,6 +143,29 @@ test('SMS adapters require one flowId across send and verify', () => {
   assert.throws(() => normalizeSmsVerify({ tel: '01012345678', code: '123456' }), /flowId/);
 });
 
+test('codeLength: 2 는 메인 접수·가맹모집용으로 ERP까지 그대로 전달되고, 견적 퍼널처럼 안 보내면 기존과 동일', () => {
+  assert.deepEqual(normalizeSmsSend({ tel: '01012345678', flowId: FLOW_ID, codeLength: 2 }), {
+    tel: '01012345678', flowId: FLOW_ID, codeLength: 2,
+  });
+  // 견적 퍼널(public/request/app.js)은 codeLength 를 안 보낸다 — 결과에 그 필드가 아예 없어야 한다(기존 동작 유지).
+  assert.deepEqual(normalizeSmsSend({ tel: '01012345678', flowId: FLOW_ID }), {
+    tel: '01012345678', flowId: FLOW_ID,
+  });
+  assert.throws(() => normalizeSmsSend({ tel: '01012345678', flowId: FLOW_ID, codeLength: 4 }), /codeLength/);
+});
+
+test('인증번호는 2자리(메인 접수) 또는 6자리(견적 퍼널) 둘 다 받는다', () => {
+  assert.deepEqual(normalizeSmsVerify({ tel: '01012345678', code: '42', flowId: FLOW_ID }), {
+    tel: '01012345678', code: '42', flowId: FLOW_ID,
+  });
+  assert.deepEqual(normalizeSmsVerify({ tel: '01012345678', code: '123456', flowId: FLOW_ID }), {
+    tel: '01012345678', code: '123456', flowId: FLOW_ID,
+  });
+  for (const bad of ['1', '123', '1234', '12345', '1234567']) {
+    assert.throws(() => normalizeSmsVerify({ tel: '01012345678', code: bad, flowId: FLOW_ID }), /인증번호/);
+  }
+});
+
 test('ERP forward keeps payload/status and sends client IP only as a header', async () => {
   let captured: { input?: RequestInfo | URL; init?: RequestInit } = {};
   const fetcher: typeof fetch = async (input, init) => {
