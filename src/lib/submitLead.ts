@@ -56,7 +56,7 @@ export async function submitLead(params: {
    */
   consultField?: string;
 }): Promise<SubmitLeadResult> {
-  const { phone, entryForm, honeypot, aiChat, consultField } = params;
+  const { phone: rawPhone, entryForm, honeypot, aiChat, consultField } = params;
 
   // Honeypot: 사람은 숨겨진 필드를 보지 못함. 값이 채워져 들어오면 봇으로 판단.
   // UX는 정상 제출처럼 보이게 하되 GAS/GA4로는 전송하지 않음.
@@ -68,10 +68,12 @@ export async function submitLead(params: {
   // ── 260917 휴대폰 본인확인 ───────────────────────────────
   // 접수 전에 본인확인. 어느 폼이든 여기를 지나므로 폼마다 팝업을 달지 않는다.
   // 팝업을 닫으면 접수하지 않고 멈춘다(cancelled). 미인증 이탈 고객을 따로 저장할지는 미정.
-  const verified = await requestPhoneVerification(phone);
-  if (!verified) {
+  // 260921 — 팝업 안 "전화번호 수정"으로 고쳤을 수 있으니, 이후로는 반드시 이 결과의 phone(고친 번호)을 쓴다.
+  const verifyResult = await requestPhoneVerification(rawPhone);
+  if (!verifyResult.verified) {
     return { ok: false, docId: null, cancelled: true };
   }
+  const phone = verifyResult.phone;
   const verification = takeVerification(phone);
 
   // 로컬 시연(TEST_MODE)은 실제 ERP·구글시트로 보내지 않는다 (테스트 번호가 실제 고객 DB 에 쌓이지 않게).

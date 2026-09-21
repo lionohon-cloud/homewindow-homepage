@@ -16,10 +16,12 @@ import {
   MAX_TRIES,
   VERIFY_TEST_MODE,
   checkCode,
+  digits,
   normalizePhone,
   onFakeSms,
   onVerifyRequest,
   sendCode,
+  updateVerifyPhone,
   type FakeSms,
   type VerifyRequest,
 } from "@/lib/phoneVerify";
@@ -51,6 +53,14 @@ export function PhoneVerifyHost() {
 
 type Phase = "sending" | "input" | "checking" | "done";
 
+/** 260921 — 전화번호 수정 칸 입력 중 자동 대시. 010-1234-5678 (숫자 11자리까지, 3-4-4) */
+const formatPhoneInput = (raw: string) => {
+  const d = digits(raw).slice(0, 11);
+  if (d.length > 7) return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+  if (d.length > 3) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return d;
+};
+
 function VerifyDialog({ req }: { req: VerifyRequest }) {
   const [phase, setPhase] = useState<Phase>("sending");
   const [code, setCode] = useState("");
@@ -60,6 +70,10 @@ function VerifyDialog({ req }: { req: VerifyRequest }) {
   const [locked, setLocked] = useState(false);
   const [shake, setShake] = useState(0);
   const [now, setNow] = useState(Date.now());
+  // 260921 — "전화번호 수정" 인라인 편집. 확정하면 updateVerifyPhone() 이 phone 을 바꾸고,
+  // 그 새 값이 key={req.phone} 라 이 다이얼로그 전체를 새로 마운트시켜 새 번호로 재발송한다.
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [phoneDraft, setPhoneDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const visible = useVisualViewport(true);
 
@@ -191,7 +205,50 @@ function VerifyDialog({ req }: { req: VerifyRequest }) {
           {phase !== "done" && <DialogClose onClick={close} />}
         </div>
 
-        {phase !== "done" && (
+        {phase !== "done" && editingPhone && (
+          <>
+            <div className={dialogDivider} />
+            <div className={dialogBody}>
+              <div>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  autoFocus
+                  value={phoneDraft}
+                  onChange={(e) => setPhoneDraft(formatPhoneInput(e.target.value))}
+                  placeholder="010-1234-5678"
+                  aria-label="전화번호"
+                  className="w-full h-[56px] px-4 border-2 rounded-xl bg-white text-[18px] font-bold text-[#2A2A2A] tabular-nums outline-none transition-colors border-[#e0e0e0] focus:border-[#D22727]"
+                />
+              </div>
+              <div className="flex items-center gap-2.5 text-[13px]">
+                <button
+                  type="button"
+                  onClick={() => setEditingPhone(false)}
+                  className="text-[13px] whitespace-nowrap text-[#666] font-medium underline underline-offset-[3px] decoration-[#ccc] cursor-pointer"
+                >
+                  취소
+                </button>
+              </div>
+              <button
+                type="button"
+                disabled={digits(phoneDraft).length < 9}
+                onClick={() => {
+                  // 번호가 안 바뀌었으면(같은 값 재입력) key={req.phone} 이 안 바뀌어 다시 마운트되지
+                  // 않으므로, 편집 화면 닫기는 여기서 직접 한다. 번호가 바뀐 경우엔 곧 새로 마운트될
+                  // 다음 인스턴스가 처음부터 editingPhone=false 라 무해하다.
+                  updateVerifyPhone(phoneDraft);
+                  setEditingPhone(false);
+                }}
+                className={`${dialogPrimaryBtn} disabled:opacity-100 disabled:bg-[#f0f0f0] disabled:text-[#b5b5b5]`}
+              >
+                이 번호로 다시 받기
+              </button>
+            </div>
+          </>
+        )}
+
+        {phase !== "done" && !editingPhone && (
           <>
             <div className={dialogDivider} />
             <div className={dialogBody}>
@@ -254,7 +311,10 @@ function VerifyDialog({ req }: { req: VerifyRequest }) {
                 <span className="w-px h-3 bg-[#ddd]" aria-hidden />
                 <button
                   type="button"
-                  onClick={close}
+                  onClick={() => {
+                    setPhoneDraft(formatPhoneInput(req.phone));
+                    setEditingPhone(true);
+                  }}
                   className="text-[13px] whitespace-nowrap text-[#666] font-medium underline underline-offset-[3px] decoration-[#ccc] cursor-pointer"
                 >
                   전화번호 수정
