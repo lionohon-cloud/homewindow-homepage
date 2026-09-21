@@ -279,14 +279,14 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                     );
                   })}
 
-                  {/* 홈윈도우 파트너스 (별도 페이지) — 메뉴 항목 옆 텍스트 링크 */}
+                  {/* 가맹점 문의 (/partners, 260921 "홈윈도우 파트너스" 에서 문구 변경) — 메뉴 항목 옆 텍스트 링크 */}
                   <button
                     onClick={() => navigate("/partners")}
                     className="flex items-center gap-1.5 text-[#1f6fff] hover:underline transition cursor-pointer"
                   >
                     <Handshake className="w-4 h-4" />
                     <span className="font-semibold whitespace-nowrap text-[14.5px]">
-                      홈윈도우 파트너스
+                      가맹점 문의
                     </span>
                   </button>
                 </div>
@@ -473,7 +473,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   <span className="text-[15px] font-semibold">FAQ</span>
                 </motion.button>
 
-                {/* 홈윈도우 파트너스 (별도 페이지) — 톤다운 (회색 + 파란 점) */}
+                {/* 가맹점 문의 (별도 페이지) — 톤다운 (회색 + 파란 점) */}
                 <motion.button
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -482,7 +482,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#333] active:bg-[#f8f8f8] mt-2 border-t border-[#eee] pt-5 flex items-center gap-2"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1f6fff]" />
-                  <span className="text-[15px] font-semibold">홈윈도우 파트너스</span>
+                  <span className="text-[15px] font-semibold">가맹점 문의</span>
                 </motion.button>
               </div>
             </motion.div>
