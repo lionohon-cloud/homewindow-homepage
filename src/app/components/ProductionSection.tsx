@@ -89,7 +89,7 @@ export function ProductionSection() {
               className="text-white/80 text-[16px] md:text-[18px] leading-[26px] break-keep mb-10"
             >
               <p>화려한 과장 광고보다 30년의 실적이 더 정직합니다.</p>
-              <p>3만 8천 평 자동화 공장에서 직접 생산해 전국 어디든 직접 시공합니다.</p>
+              <p>3만 8천 평 자동화 공장에서 직접 생산하고, 전국 가맹점에서 상담받으실 수 있습니다.</p>
             </motion.div>
 
             {/* 통계 배지 */}

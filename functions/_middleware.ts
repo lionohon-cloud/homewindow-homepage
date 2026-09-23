@@ -15,7 +15,7 @@ import { guideFaqs, generalFaqs, type FaqItem } from "../src/app/data/faqData";
 const SITE = "https://homewindow.kr";
 
 const HOME_DESC =
-  "38,000평 자동화 공장에서 직접 제조, 전국 직영팀 직접 시공. LX 수퍼더블로이·TPS 단열간봉·아르곤가스·안전방충망. 업계 최장 15년 무상보증. 대한민국 유일의 완성창 창호시공 전문기업 청암홈윈도우. 무료견적 1661-4830";
+  "38,000평 자동화 공장에서 직접 제조하고 전국 가맹점에서 상담·시공. LX 수퍼더블로이·TPS 단열간봉·아르곤가스·안전방충망. 업계 최장 15년 무상보증. 대한민국 유일의 완성창 창호시공 전문기업 청암홈윈도우. 무료견적 1661-4830";
 
 interface RouteMeta {
   title: string;
@@ -26,13 +26,13 @@ interface RouteMeta {
 
 const ROUTES: Record<string, RouteMeta> = {
   "/": {
-    title: "청암홈윈도우 | 완성창 창호 교체·시공 · 전국 직영 · 15년 무상보증",
+    title: "청암홈윈도우 | 완성창 창호 교체·시공 · 전국 가맹점 · 15년 무상보증",
     description: HOME_DESC,
   },
   "/faq": {
     title: "창호 교체 업체 선택 가이드 (FAQ) | 청암홈윈도우",
     description:
-      "창호 교체 업체를 고르는 기준 — 완성창 여부, 15년 무상보증, SGI 서울보증(업계 최초·유일), 전국 직영 시공. 청암홈윈도우가 실적으로 답합니다.",
+      "창호 교체 업체를 고르는 기준 — 완성창 여부, 15년 무상보증, 공인 실적, 전국 가맹점 상담·시공. 청암홈윈도우가 실적으로 답합니다.",
     faqs: guideFaqs,
     breadcrumb: [
       ["홈", "/"],
@@ -42,13 +42,17 @@ const ROUTES: Record<string, RouteMeta> = {
   "/faq/general": {
     title: "자주 묻는 질문 — 완성창·유리·시공·보증 | 청암홈윈도우",
     description:
-      "완성창과 제작창 차이, 이중창·로이유리 단열, 원데이 시공, 15년 무상보증, 그린리모델링까지. 창호 교체 자주 묻는 질문에 청암홈윈도우가 답합니다.",
+      "완성창과 제작창 차이, 이중창·로이유리 단열, 원데이 시공, 15년 무상보증, 안전방충망까지. 창호 교체 자주 묻는 질문에 청암홈윈도우가 답합니다.",
     faqs: generalFaqs,
     breadcrumb: [
       ["홈", "/"],
       ["업체 선택 가이드", "/faq"],
       ["자주 묻는 질문", "/faq/general"],
     ],
+  },
+  "/privacy": {
+    title: "개인정보처리방침 | 청암홈윈도우",
+    description: "주식회사 청암홈윈도우 개인정보처리방침 — 수집 항목, 보유 기간, 가맹점 제공, 처리 위탁, 국외 이전, 보호책임자 안내.",
   },
   "/partners": {
     title: "홈윈도우 파트너스 — 소개 파트너 모집 | 청암홈윈도우",

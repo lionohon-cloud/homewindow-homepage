@@ -87,6 +87,35 @@ const router = createBrowserRouter([
       },
       /* 260907 통합버전 — 강화유리 상세페이지 라우트를 뺐다.
          그 본문은 메인(HomePage)의 <TemperedSections /> 로 들어가 있다. */
+      /* 히어로 시안 비교용. 개발 서버에서만 등록되므로 빌드 산출물에는 들어가지 않는다. */
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: 'hero-lab',
+              lazy: lazyWithRetry(() => import('./pages/HeroLabPage')),
+            },
+            /* 히어로 배경 영상 시안 비교. GNB · 히어로 · 하단 CTA 만 올린다. */
+            {
+              path: 'video-lab',
+              lazy: lazyWithRetry(() => import('./pages/HeroVideoLabPage')),
+            },
+            /* 히어로 문구 시안 비교. 배경 영상·레이아웃은 고정, 글자만 바뀐다. */
+            {
+              path: 'copy-lab',
+              lazy: lazyWithRetry(() => import('./pages/HeroCopyLabPage')),
+            },
+            /* 히어로 다음 섹션(강화유리가 드물었던 이유) 레이아웃 시안 비교 */
+            {
+              path: 'section-lab',
+              lazy: lazyWithRetry(() => import('./pages/SectionLabPage')),
+            },
+            /* E안 스크롤 스토리의 진행 방식 비교 (신호형 · 장면별 멈춤 · 추천 조합). */
+            {
+              path: 'scroll-lab',
+              lazy: lazyWithRetry(() => import('./pages/HeroScrollLabPage')),
+            },
+          ]
+        : []),
       {
         path: 'partners',
         lazy: lazyWithRetry(() => import('./pages/PartnersPage')),
@@ -102,6 +131,11 @@ const router = createBrowserRouter([
       {
         path: 'faq/general',
         lazy: lazyWithRetry(() => import('./pages/FaqGeneralPage')),
+      },
+      /* 260923 가맹전환 — 개인정보처리방침 (푸터 · 상담 동의 모달에서 연결) */
+      {
+        path: 'privacy',
+        lazy: lazyWithRetry(() => import('./pages/PrivacyPolicyPage')),
       },
       {
         path: 'as',

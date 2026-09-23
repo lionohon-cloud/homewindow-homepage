@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Navigation } from "../components/Navigation";
 // 260911 히어로를 스크롤 스토리로 교체 — 되돌릴 때 이 import 를 살린다
 // import { HeroSection } from "../components/HeroSection";
@@ -11,7 +10,6 @@ import { EventPromoBanner } from "../components/EventPromoBanner";
 import { TemperedSections } from "../components/tempered/TemperedSections";
 import { WhyBasicSection } from "../components/tempered/WhyBasicSection";
 import { AwardsSection } from "../components/AwardsSection";
-import { InsuranceSection } from "../components/InsuranceSection";
 import { ProductionSection } from "../components/ProductionSection";
 import { BrandsSection } from "../components/BrandsSection";
 import { MaterialsSection } from "../components/MaterialsSection";
@@ -26,13 +24,6 @@ import { BottomBar } from "../components/BottomBar";
 import { DanjiAiBanner } from "../components/DanjiAiBanner";
 
 export default function HomePage() {
-  // 탭 구분용 — 로컬 개발 서버(dev)에서만 "메인"으로 바뀐다.
-  // import.meta.env.DEV 는 프로덕션 빌드에서 항상 false 라 배포본은 자동으로
-  // index.html 의 기본 타이틀("청암홈윈도우")로 돌아간다 — 되돌릴 필요 없음.
-  useEffect(() => {
-    if (import.meta.env.DEV) document.title = "메인";
-  }, []);
-
   return (
     /* 260911 overflow-x-hidden → overflow-x-clip.
        히어로 스크롤 스토리가 화면에 붙어(sticky) 있어야 하는데, overflow-x:hidden 은 세로까지
@@ -52,13 +43,8 @@ export default function HomePage() {
         <WhyBasicSection />
         {/* 260907 통합버전 — 상세페이지가 없는 대신 그 본문(01 영상 ~ 06 어디에 쓰이나)이
             히어로 바로 다음에 통째로 들어간다. 히어로의 "강화유리 자세히 보기" 도
-            여기(#video)로 내려온다.
-            id="tempered" — GNB "강화유리" 메뉴가 이 id 로 스크롤한다(Navigation.tsx
-            sections 배열). 이 태그 없이 <TemperedGlassSection> 만 빠지면 그 메뉴가
-            아무 데도 못 간다. */}
-        <div id="tempered">
-          <TemperedSections />
-        </div>
+            여기(#video)로 내려온다. */}
+        <TemperedSections />
         {/* 번호 접수 — 강화유리 이야기를 다 읽은 다음에 받는다 */}
         <HeroConsultSection />
         <DanjiAiBanner />
@@ -68,9 +54,7 @@ export default function HomePage() {
         <div id="awards">
           <AwardsSection />
         </div>
-        <div id="insurance">
-          <InsuranceSection />
-        </div>
+        {/* 260923 가맹전환 — 계약 주체가 가맹점이라 본사 SGI 선금보증보험을 안내할 수 없어 섹션 삭제 */}
         <div id="production">
           <ProductionSection />
         </div>

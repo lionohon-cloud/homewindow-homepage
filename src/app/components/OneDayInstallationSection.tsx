@@ -58,7 +58,7 @@ export function OneDayInstallationSection() {
       icon: BadgeCheck, 
       isLast: true,
       subtitle: "15년 무상보증 시작",
-      description: "시공 완료와 동시에 업계 최장 15년 무상보증이 시작됩니다. 정식 보증서와 함께 평생 사후관리 서비스를 받으실 수 있습니다.",
+      description: "시공 완료와 동시에 업계 최장 15년 무상보증이 시작됩니다. 정식 보증서가 발급되며, 시공 후 A/S는 계약하신 가맹점이 맡습니다.",
       imageUrl: "https://images.unsplash.com/photo-1761178334144-9715e83bf64b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxxdWFsaXR5JTIwYXNzdXJhbmNlJTIwY2VydGlmaWNhdGV8ZW58MXx8fHwxNzc0NTkyNzY0fDA&ixlib=rb-4.1.0&q=80&w=1080"
     },
   ];

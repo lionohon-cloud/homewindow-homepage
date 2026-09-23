@@ -116,7 +116,16 @@ export function Footer() {
               {/* 슬로건 CI 는 두 줄 락업이라 예전 한 줄 로고(h-5)보다 키워야 아랫줄이 읽힌다.
                   어두운 푸터라 brightness-0 invert 로 순백 처리 — 기존 로고도 순백 PNG 였다. */}
               <img src={logoImage} alt="청암홈윈도우 로고" className="h-[30px] w-auto brightness-0 invert" loading="lazy" decoding="async" />
-              <p className="text-[15px] text-[#dddddd] font-bold">주식회사 청암홈윈도우</p>
+              <div className="flex items-baseline gap-3">
+                <p className="text-[15px] text-[#dddddd] font-bold">주식회사 청암홈윈도우</p>
+                {/* 260923 가맹전환 — 개인정보처리방침 (다른 링크와 구분되게 굵게) */}
+                <Link
+                  to="/privacy"
+                  className="text-[13px] md:text-[14px] font-semibold text-white/90 hover:text-white hover:underline whitespace-nowrap"
+                >
+                  [개인정보처리방침]
+                </Link>
+              </div>
             </div>
             <img
               src={lxDealerMark}

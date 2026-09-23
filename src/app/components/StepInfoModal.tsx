@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 interface StepInfoModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface StepInfoModalProps {
 }
 
 export function StepInfoModal({ isOpen, onClose, title, imageUrl, subtitle, description }: StepInfoModalProps) {
+  useScrollLock(isOpen);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -30,13 +32,13 @@ export function StepInfoModal({ isOpen, onClose, title, imageUrl, subtitle, desc
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24 md:pb-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-[116px] md:pb-[150px]"
             onClick={onClose}
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl w-full md:w-[60vw] max-w-2xl flex flex-col shadow-2xl"
-              style={{ maxHeight: 'calc(100vh - 8rem - 100px)' }}
+              className="bg-white rounded-2xl w-full md:w-[60vw] max-w-2xl flex flex-col shadow-2xl overflow-hidden"
+              style={{ maxHeight: 'calc(100vh - 2rem - 150px)' }}
             >
               {/* Header */}
               <div className="flex-shrink-0 bg-white border-b border-[#eee] px-6 py-4 flex items-center justify-between rounded-t-2xl">

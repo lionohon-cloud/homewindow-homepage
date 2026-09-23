@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { SpecInfoButton, SpecInfoModal, type SpecInfo } from "./BrandSpecInfo";
 import imgLogo1 from "figma:asset/677d3c9852a0720b22ed2ae5d4ac1812cc00bc3c.png";
-import imgLogo2 from "figma:asset/978f56bc931f29607d72fa188f89650568cf6ba1.png";
+import imgLogo2 from "@/assets/logo-gnb.svg"; // 260923 — GNB 신규 로고로 교체
 
 type BrandId = 'lx' | 'home';
 
@@ -19,22 +20,22 @@ const brands = [
       borderColor: 'border-[#d22427]'
     },
     table: [
-      { label: "프로파일 보증", p: "15년", s: "15년", e: "15년" },
-      { label: "발코니 방충망", p: "안전방충망", s: "블랙스텐망", e: "스텐망" },
-      { label: "Ar", p: "O", s: "X", e: "X" },
-      { label: "간봉", p: "TPS", s: "TPS", e: "AL" },
-      { label: "유리종류", p: "수퍼더블로이", s: "수퍼로이+투명", e: "투명+그린" },
-      { label: "발코니창 유리", p: "26mm", s: "26mm", e: "-" },
-      { label: "일반창 유리", p: "26mm", s: "24mm", e: "24mm" },
-      { label: "FIX/PJ/터닝도어", p: "24mm", s: "24mm", e: "24mm" },
-      { label: "발코니 핸들", p: "자동", s: "자동", e: "-" },
-      { label: "일반창 핸들", p: "자동", s: "고정+크리센트", e: "크리센트" },
-      { label: "공틀분합문", p: "커플핸들", s: "커플핸들", e: "고정+크리센트" },
-      { label: "윈드클로저", p: "발코니창 적용", s: "X", e: "X" },
-      { label: "레일캡", p: "LX 정품", s: "LX 정품", e: "LX 정품" },
-      { label: "물구멍방충캡", p: "O", s: "O", e: "X" },
-      { label: "안전스토퍼", p: "BF스토퍼", s: "BF스토퍼", e: "BF스토퍼" },
-      { label: "빨래건조대", p: "O", s: "X", e: "X" },
+      { label: "프로파일 보증", options: "15년" },
+      { label: "발코니 방충망", options: "안전방충망 / 블랙스텐망 / 스텐망" },
+      { label: "Ar(아르곤가스)", options: "선택 가능" },
+      { label: "간봉", options: "TPS / AL" },
+      { label: "유리종류", options: "수퍼더블로이 / 수퍼로이+투명 / 투명+그린" },
+      { label: "발코니창 유리", options: "26mm" },
+      { label: "일반창 유리", options: "26mm / 24mm" },
+      { label: "FIX/PJ/터닝도어", options: "24mm" },
+      { label: "발코니 핸들", options: "자동" },
+      { label: "일반창 핸들", options: "자동 / 고정+크리센트 / 크리센트" },
+      { label: "공틀분합문", options: "커플핸들 / 고정+크리센트" },
+      { label: "윈드클로저", options: "발코니창 적용" },
+      { label: "레일캡", options: "LX 정품" },
+      { label: "물구멍방충캡", options: "선택 가능" },
+      { label: "안전스토퍼", options: "BF스토퍼" },
+      { label: "빨래건조대", options: "선택 가능" },
     ]
   },
   {
@@ -50,28 +51,29 @@ const brands = [
       borderColor: 'border-[#333333]'
     },
     table: [
-      { label: "프로파일 보증", p: "15년", s: "15년", e: "15년" },
-      { label: "발코니 방충망", p: "안전방충망", s: "블랙스텐망", e: "스텐망" },
-      { label: "Ar", p: "O", s: "X", e: "X" },
-      { label: "간봉", p: "TPS", s: "TPS", e: "AL" },
-      { label: "유리종류", p: "수퍼더블로이", s: "로이+투명", e: "투명+그린" },
-      { label: "발코니창 유리", p: "26mm", s: "26mm", e: "-" },
-      { label: "일반창 유리", p: "24mm", s: "24mm", e: "22mm" },
-      { label: "FIX/PJ/터닝도어", p: "24mm", s: "24mm", e: "24mm" },
-      { label: "발코니 핸들", p: "자동", s: "자동", e: "-" },
-      { label: "일반창 핸들", p: "자동", s: "고정+크리센트", e: "크리센트" },
-      { label: "공틀분합문", p: "반자동", s: "반자동", e: "고정+크리센트" },
-      { label: "윈드클로저", p: "발코니창 적용", s: "X", e: "X" },
-      { label: "레일캡", p: "기밀형 정품", s: "기밀형 정품", e: "기밀형 정품" },
-      { label: "물구멍방충캡", p: "O", s: "O", e: "X" },
-      { label: "안전스토퍼", p: "BF스토퍼", s: "BF스토퍼", e: "BF스토퍼" },
-      { label: "빨래건조대", p: "O", s: "X", e: "X" },
+      { label: "프로파일 보증", options: "15년" },
+      { label: "발코니 방충망", options: "안전방충망 / 블랙스텐망 / 스텐망" },
+      { label: "Ar(아르곤가스)", options: "선택 가능" },
+      { label: "간봉", options: "TPS / AL" },
+      { label: "유리종류", options: "수퍼더블로이 / 로이+투명 / 투명+그린" },
+      { label: "발코니창 유리", options: "26mm" },
+      { label: "일반창 유리", options: "24mm / 22mm" },
+      { label: "FIX/PJ/터닝도어", options: "24mm" },
+      { label: "발코니 핸들", options: "자동" },
+      { label: "일반창 핸들", options: "자동 / 고정+크리센트 / 크리센트" },
+      { label: "공틀분합문", options: "반자동 / 고정+크리센트" },
+      { label: "윈드클로저", options: "발코니창 적용" },
+      { label: "레일캡", options: "기밀형 정품" },
+      { label: "물구멍방충캡", options: "선택 가능" },
+      { label: "안전스토퍼", options: "BF스토퍼" },
+      { label: "빨래건조대", options: "선택 가능" },
     ]
   }
 ];
 
 export function BrandsSection() {
   const [selectedBrandId, setSelectedBrandId] = useState<BrandId | null>(null);
+  const [specInfo, setSpecInfo] = useState<SpecInfo | null>(null); // 260923 — 항목 (?) 설명 팝업
   
   const currentBrand = selectedBrandId ? brands.find(b => b.id === selectedBrandId) : null;
 
@@ -90,8 +92,8 @@ export function BrandsSection() {
             <span className="text-[#d22727]">프리미엄 창호</span> 브랜드 라인업
           </h2>
           <div className="text-[#999] text-[16px] md:text-[18px] leading-[26px] break-keep">
-            <p>고객님의 예산과 취향에 맞춰</p>
-            <p>브랜드를 자유롭게 선택해 보십시오.</p>
+            <p>브랜드와 사양은 원하시는 대로 맞춰 드립니다.</p>
+            <p>어떤 구성이 좋을지는 상담에서 함께 정해 드립니다.</p>
           </div>
         </motion.div>
 
@@ -153,11 +155,10 @@ export function BrandsSection() {
                 className="w-full overflow-hidden border border-[#ddd] rounded-xl shadow-sm bg-white mb-4"
               >
                 {/* Header (Animates Background Color smoothly) */}
-                <div className={`grid grid-cols-[31%_23%_23%_23%] md:grid-cols-[25%_25%_25%_25%] text-center ${currentBrand.theme.headerBg} text-white text-[13px] md:text-[16px] font-bold transition-colors duration-500 ease-in-out`}>
-                  <div className={`py-3 md:py-4 border-r ${currentBrand.theme.headerBorder} bg-transparent transition-colors duration-500`}></div>
-                  <div className={`py-3 md:py-4 border-r ${currentBrand.theme.headerBorder} flex items-center justify-center transition-colors duration-500`}>PRESTIGE</div>
-                  <div className={`py-3 md:py-4 border-r ${currentBrand.theme.headerBorder} flex items-center justify-center transition-colors duration-500`}>SIGNATURE</div>
-                  <div className={`py-3 md:py-4 flex items-center justify-center`}>LITE</div>
+                {/* 260923 가맹전환 — 등급제(PRESTIGE·SIGNATURE·LITE) 폐지. 항목 | 선택 가능한 사양 2열 */}
+                <div className={`grid grid-cols-[38%_62%] md:grid-cols-[30%_70%] text-center ${currentBrand.theme.headerBg} text-white text-[13px] md:text-[16px] font-bold transition-colors duration-500 ease-in-out`}>
+                  <div className={`py-3 md:py-4 border-r ${currentBrand.theme.headerBorder} flex items-center justify-center transition-colors duration-500`}>항목</div>
+                  <div className={`py-3 md:py-4 flex items-center justify-center transition-colors duration-500`}>선택 가능한 사양</div>
                 </div>
                 
                 {/* Rows with fade animation on switch */}
@@ -171,11 +172,12 @@ export function BrandsSection() {
                       transition={{ duration: 0.25, ease: "easeInOut" }}
                     >
                       {currentBrand.table.map((row, idx) => (
-                        <div key={idx} className={`grid grid-cols-[31%_23%_23%_23%] md:grid-cols-[25%_25%_25%_25%] text-center text-[12px] md:text-[15px] border-t border-[#ddd] transition-colors duration-300 ${idx % 2 === 0 ? currentBrand.theme.rowBgEven : currentBrand.theme.rowBgOdd}`}>
-                          <div className="py-3 md:py-4 border-r border-[#ddd] font-medium text-[#333] flex items-center justify-center px-1 md:px-4 break-keep">{row.label}</div>
-                          <div className={`py-3 md:py-4 border-r border-[#ddd] ${currentBrand.theme.textColor} transition-colors duration-300 flex items-center justify-center px-1 md:px-4 break-keep`}>{row.p}</div>
-                          <div className={`py-3 md:py-4 border-r border-[#ddd] ${currentBrand.theme.textColor} transition-colors duration-300 flex items-center justify-center px-1 md:px-4 break-keep`}>{row.s}</div>
-                          <div className={`py-3 md:py-4 ${currentBrand.theme.textColor} transition-colors duration-300 flex items-center justify-center px-1 md:px-4 break-keep`}>{row.e}</div>
+                        <div key={idx} className={`grid grid-cols-[38%_62%] md:grid-cols-[30%_70%] text-center text-[12px] md:text-[15px] border-t border-[#ddd] transition-colors duration-300 ${idx % 2 === 0 ? currentBrand.theme.rowBgEven : currentBrand.theme.rowBgOdd}`}>
+                          {/* 항목 칸 전체가 설명 버튼 — 위아래 6px 는 비워 두어 옆 줄을 잘못 누르지 않게 */}
+                          <div className="border-r border-[#ddd] flex items-stretch px-1 md:px-2">
+                            <SpecInfoButton label={row.label} brand={currentBrand.id} onOpen={setSpecInfo} />
+                          </div>
+                          <div className={`py-3 md:py-4 ${currentBrand.theme.textColor} transition-colors duration-300 flex items-center justify-center px-2 md:px-4 break-keep`}>{row.options}</div>
                         </div>
                       ))}
                     </motion.div>
@@ -191,12 +193,14 @@ export function BrandsSection() {
                 transition={{ duration: 0.3 }}
                 className="text-center text-[#999] text-[14px] mb-4 px-6"
               >
-                * 궁금하신 브랜드를 선택하시면 상세정보를 보실 수 있습니다.
+                * 항목 옆 물음표를 누르면 설명을 보실 수 있습니다. 어떤 조합이 좋을지는 집 상태를 보고 추천해 드립니다.
               </motion.p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+      {/* 항목 설명 팝업 — 원데이 시공과 같은 모양, 사진 여러 장이면 좌우 슬라이드 */}
+      <SpecInfoModal info={specInfo} onClose={() => setSpecInfo(null)} />
     </section>
   );
 }
