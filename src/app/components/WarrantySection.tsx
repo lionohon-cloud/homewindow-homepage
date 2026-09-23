@@ -1,8 +1,12 @@
 import { motion } from "motion/react";
-import warrantyMark from "figma:asset/c0aa673e45f6c78d85111b9880270af00e191d75.png";
+// 260923 가맹전환 — A/S 문의 번호(본사) 뺀 새 보증마크
+import warrantyMark from "@/assets/warranty-mark-15y.png";
 import serviceMap from "figma:asset/b1e625139de58ae38ac57e9487f92a224a0cd168.png";
 import { useState } from "react";
 import { WarrantyModal } from "./WarrantyModal";
+
+// 260923 가맹전환 — 사무소·공장 지도/주소는 일단 숨김 (본사 거점 노출이 가맹 계약 구조와 안 맞음). 다시 켤 땐 true
+const SHOW_SERVICE_MAP = false;
 
 export function WarrantySection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,7 +47,7 @@ export function WarrantySection() {
               viewport={{ once: true, margin: "-200px" }}
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-[28px] md:text-[36px] font-extrabold text-white leading-[1.3] mb-5 break-keep text-[#cacaca]"
-            ><span className="text-[#fff]">업계 최장 15년 무상보증,</span><br />정식 보증으로 평생 안심</motion.h2>
+            ><span className="text-[#fff]">업계 최장 15년 무상보증,</span><br />정식 보증서로 안심</motion.h2>
 
             {/* Subtitle */}
             <motion.div
@@ -54,10 +58,10 @@ export function WarrantySection() {
               className="text-[#999] text-[16px] md:text-[18px] leading-[26px] break-keep"
             >
               <p className="mb-4">
-                창호는 한 번 바꾸면 10년 이상을 씁니다. 타사 대비 <span className="text-[#eee] font-bold">평균 3배 이상 긴 보증 기간</span>은 물론, 유상 <span className="text-[#eee] font-bold">평생 사후관리</span>로 안심하세요.
+                창호는 한 번 바꾸면 10년 이상을 씁니다. 타사 대비 <span className="text-[#eee] font-bold">평균 3배 이상 긴 보증 기간</span>으로 오래 안심하실 수 있습니다.
               </p>
               <p>
-                청암홈윈도우는 <span className="text-[#eee] font-bold">전국 직영서비스센터 운영</span>으로 시공후 문제가 발생하실 경우 <span className="text-[#eee] font-bold">즉각적인 조치</span>가 가능합니다.
+                제품 보증은 청암홈윈도우 본사가 책임지고, <span className="text-[#eee] font-bold">시공과 A/S는 계약하신 지역 가맹점</span>이 맡습니다. 시공 후 문제가 생기면 계약하신 가맹점으로 문의해 주세요.
               </p>
             </motion.div>
           </div>
@@ -95,6 +99,7 @@ export function WarrantySection() {
           </motion.div>
         </div>
 
+        {SHOW_SERVICE_MAP && (<>
         {/* Service Center Map & Address - Desktop */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -108,7 +113,7 @@ export function WarrantySection() {
             {/* ⚠️ 스케일 조절: overflow-hidden을 overflow-auto로 바꾸고, 아래 transform scale 값을 조절하세요 (예: 1.2, 1.5 등) */}
             <img
               src={serviceMap}
-              alt="전국 직영서비스센터 지도"
+              alt="전국 시공·A/S 가맹점 네트워크 지도"
               className="w-full h-auto object-contain"
               style={{ transform: "scale(1.2)" }}
               loading="lazy"
@@ -138,6 +143,7 @@ export function WarrantySection() {
             </ul>
           </div>
         </motion.div>
+        </>)}
 
         {/* Mobile Layout - Vertical with Centered Text */}
         <div className="flex md:hidden flex-col items-center text-center">
@@ -159,7 +165,7 @@ export function WarrantySection() {
             viewport={{ once: true, margin: "-200px" }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-[28px] font-extrabold text-white leading-[1.3] mb-5 break-keep text-[#cccccc]"
-          ><span className="text-[#fff]">업계 최장 15년 무상보증</span>,<br />정식 보증으로 평생 안심</motion.h2>
+          ><span className="text-[#fff]">업계 최장 15년 무상보증</span>,<br />정식 보증서로 안심</motion.h2>
 
           {/* Subtitle */}
           <motion.div
@@ -170,7 +176,7 @@ export function WarrantySection() {
             className="text-[#999] text-[16px] leading-[26px] break-keep mb-8"
           >
             <p>
-              창호는 한 번 바꾸면 10년 이상을 씁니다. 타사 대비 <span className="text-[#eee] font-bold">평균 3배 이상 긴 보증 기간</span>은 물론, 유상 <span className="text-[#eee] font-bold">평생 사후관리</span>로 안심하세요.
+              창호는 한 번 바꾸면 10년 이상을 씁니다. 타사 대비 <span className="text-[#eee] font-bold">평균 3배 이상 긴 보증 기간</span>으로 오래 안심하실 수 있습니다.
             </p>
           </motion.div>
 
@@ -214,9 +220,10 @@ export function WarrantySection() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-[#999] text-[16px] leading-[26px] break-keep mb-6"
           >
-            청암홈윈도우는 <span className="text-[#eee] font-bold">전국 직영서비스센터 운영</span>으로 시공후 문제가 발생하실 경우 <span className="text-[#eee] font-bold">즉각적인 조치</span>가 가능합니다.
+            제품 보증은 청암홈윈도우 본사가 책임지고, <span className="text-[#eee] font-bold">시공과 A/S는 계약하신 지역 가맹점</span>이 맡습니다. 시공 후 문제가 생기면 계약하신 가맹점으로 문의해 주세요.
           </motion.p>
 
+          {SHOW_SERVICE_MAP && (<>
           {/* Service Center Map */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -227,7 +234,7 @@ export function WarrantySection() {
           >
             <img
               src={serviceMap}
-              alt="전국 직영서비스센터 지도"
+              alt="전국 시공·A/S 가맹점 네트워크 지도"
               className="w-full h-auto object-contain mx-[0px] mt-[0px] mb-[-27px]"
               loading="lazy"
               decoding="async"
@@ -261,6 +268,7 @@ export function WarrantySection() {
               ))}
             </ul>
           </motion.div>
+          </>)}
         </div>
       </div>
 

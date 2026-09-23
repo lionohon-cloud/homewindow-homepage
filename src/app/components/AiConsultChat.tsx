@@ -4,6 +4,7 @@ import { EstimateForm } from "./EstimateForm";
 import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { useConsultDetail } from "@/lib/useConsultDetail";
 import { submitLead } from "@/lib/submitLead";
+import { PRIVACY_CONSENT_LABEL, PrivacyConsentModal } from "./PrivacyConsent";
 
 /**
  * AI상담 셸 — 하이브리드 챗봇 (시군구 개편 Phase E, 2026-07-10. 사장님 확정 구조).
@@ -13,19 +14,11 @@ import { submitLead } from "@/lib/submitLead";
  *    확인 칩을 눌러야 해당 분기로 넘어간다.
  *  - 분기:
  *    · window_estimate(창호 견적 가능) → 기존 매크로(EstimateForm)
- *    · window_consult(방충망·그린리모델링 등 견적 불가) → 지도(지역)+전화만 접수(견적 스킵)
+ *    · window_consult(견적 산출이 어려운 기타 창호 상담) → 지도(지역)+전화만 접수(견적 스킵)
  *    · as  → 간이 폼 → /api/as/create (asTickets, source='ai-chat')
  *    · inquiry → 간이 폼 → /api/inquiry (inquiryTickets)
  *  - 첫 화면 버튼은 사용자가 직접 고른 것이므로 즉시 진행(확인 불필요).
  */
-
-/** "01012345678" → "010-1234-5678". 다른 폼(BottomBar 등)은 입력칸이 3개라 하이픈이
- *  자동으로 붙지만, 여긴 자유입력 한 칸이라 구글시트에 숫자만 그대로 들어가던 문제 수정. */
-function formatPhoneHyphen(digits: string): string {
-  if (digits.length === 11) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
-  if (digits.length === 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-  return digits;
-}
 
 type Branch = "menu" | "window" | "as" | "inquiry" | "consultPhone";
 type Intent =
@@ -46,7 +39,7 @@ const GREETING = "안녕하세요! 청암홈윈도우 AI 상담입니다 😊\n�
 const INTENT_LABEL: Record<Intent, string> = {
   window_estimate: "직접 견적 내보기",
   window_consult_quote: "창호 교체·견적 상담",
-  window_consult: "그린리모델링 및 무이자 문의",
+  window_consult: "기타 창호 상담",  // 260923 가맹전환 — 그린리모델링 메뉴 삭제
   mesh_screen: "방충망 문의",
   as: "AS 접수",
   inquiry: "기타 문의",
@@ -78,6 +71,10 @@ export function AiConsultChat() {
   // 창호 상담(견적 스킵) 전화 + 진입 경로 (ERP 문답 요약 구분용)
   const [consultPhone, setConsultPhone] = useState("");
   const [consultVia, setConsultVia] = useState<"window_consult_quote" | "window_consult" | "mesh_screen">("window_consult");
+  // 260923 가맹전환 — 번호 받는 폼마다 개인정보 동의 (다른 상담폼과 같이 기본 체크)
+  const [agreed, setAgreed] = useState(true);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const NEED_AGREE = "개인정보 수집·이용 및 제3자 제공에 동의해 주셔야 접수할 수 있어요.";
 
   const scrollDown = () =>
     setTimeout(() => bodyRef.current?.scrollTo({ top: 99999, behavior: "smooth" }), 60);
@@ -95,7 +92,7 @@ export function AiConsultChat() {
       setConsultVia("window_consult_quote");
       setBranch("consultPhone");
     } else if (intent === "window_consult") {
-      push({ role: "bot", text: "네! 그린리모델링(창호 교체 지원 사업)과 무이자 할부 상담이시군요.\n지원 조건과 할부 혜택은 주택 상황에 따라 달라져서, 전문 영업팀장님이 직접 확인해드리는 것이 가장 정확해요.\n연락처와 시공 지역을 남겨주시면 담당 영업팀장님이 최대한 빨리 전화드릴게요." });
+      push({ role: "bot", text: "네! 창호 상담이시군요.\n연락처와 시공 지역을 남겨주시면 담당자가 확인 후 지역 가맹점을 연결해 드릴게요." });
       setConsultVia("window_consult");
       setBranch("consultPhone");
     } else if (intent === "mesh_screen") {
@@ -199,12 +196,15 @@ export function AiConsultChat() {
       detail.open(detail.leadDocId);
       return;
     }
-    const digits = consultPhone.replace(/[^0-9]/g, "");
-    if (digits.length < 9) {
+    const phone = consultPhone.replace(/[^0-9]/g, "");
+    if (!agreed) {
+      push({ role: "bot", text: NEED_AGREE });
+      return;
+    }
+    if (phone.length < 9) {
       push({ role: "bot", text: "연락처를 정확히 입력해 주세요. 예) 010-1234-5678" });
       return;
     }
-    const phone = formatPhoneHyphen(digits);
     setSubmitting(true);
     push({ role: "user", text: phone });
     try {
@@ -219,13 +219,11 @@ export function AiConsultChat() {
               ? "창호 교체·견적 상담 (전문 영업팀장 상담 연결)"
               : consultVia === "mesh_screen"
                 ? "방충망 문의 (제휴 전문업체 이관 대상)"
-                : "그린리모델링/무이자 등 창호 상담 (견적 미산출)",
+                : "기타 창호 상담 (견적 미산출)",
         },
         // 챗 분기에서 이미 확정된 분야 — 지도를 닫아도 ERP 배지에 남는다 (사장님 지시).
         consultField:
-          consultVia === "window_consult"
-            ? "GREEN_REMODEL"
-            : consultVia === "mesh_screen"
+          consultVia === "mesh_screen"
               ? "SAFETY_SCREEN"
               : "WINDOW_QUOTE",
       });
@@ -251,6 +249,10 @@ export function AiConsultChat() {
     const phone = asPhone.replace(/[^0-9]/g, "");
     if (!asName.trim() || !asAddress.trim() || !asSymptom.trim()) {
       push({ role: "bot", text: "성함·연락처·주소·증상을 모두 입력해 주세요!" });
+      return;
+    }
+    if (!agreed) {
+      push({ role: "bot", text: NEED_AGREE });
       return;
     }
     // AS 백엔드는 010 휴대폰 11자리만 수용 — 프론트에서 같은 기준으로 안내 (검증 불일치 수리).
@@ -283,6 +285,10 @@ export function AiConsultChat() {
     const phone = inqPhone.replace(/[^0-9]/g, "");
     if (!inqName.trim() || phone.length < 9 || !inqRequest.trim()) {
       push({ role: "bot", text: "성함·연락처·요청사항을 모두 입력해 주세요!" });
+      return;
+    }
+    if (!agreed) {
+      push({ role: "bot", text: NEED_AGREE });
       return;
     }
     setSubmitting(true);
@@ -387,9 +393,6 @@ export function AiConsultChat() {
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("window_estimate")}>
               직접 견적 내보기
             </button>
-            <button type="button" className={chipCls} onClick={() => chooseFromMenu("window_consult")}>
-              그린리모델링 및 무이자 문의
-            </button>
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("mesh_screen")}>
               방충망 문의
             </button>
@@ -406,6 +409,13 @@ export function AiConsultChat() {
         {!done && branch === "consultPhone" && (
           <div className="self-start bg-white border border-[#e8e8e8] rounded-2xl p-4 w-full max-w-[420px] flex flex-col gap-2">
             <input className={inputCls} placeholder="연락처 (010-0000-0000)" inputMode="tel" value={consultPhone} onChange={(e) => setConsultPhone(e.target.value)} />
+            <label className="flex items-start gap-2 px-0.5 py-1 cursor-pointer">
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="shrink-0 mt-[2px] w-4 h-4 accent-[#D22727] cursor-pointer" />
+              <span className="text-[12px] text-[#777] leading-[1.5] break-keep">
+                {PRIVACY_CONSENT_LABEL}{" "}
+                <button type="button" onClick={(e) => { e.preventDefault(); setShowPrivacy(true); }} className="text-[#D22727] underline font-medium cursor-pointer">[내용보기]</button>
+              </span>
+            </label>
             <button type="button" onClick={submitConsultPhone} disabled={submitting}
               className="w-full h-[46px] bg-[#D22727] hover:bg-[#a01d1d] disabled:opacity-50 text-white text-[14.5px] font-extrabold rounded-xl cursor-pointer transition-colors">
               {submitting ? "접수 중…" : "다음 (지역 선택)"}
@@ -419,6 +429,13 @@ export function AiConsultChat() {
             <input className={inputCls} placeholder="연락처 (010-0000-0000)" inputMode="tel" value={asPhone} onChange={(e) => setAsPhone(e.target.value)} />
             <input className={inputCls} placeholder="정확한 주소 (동·호수까지)" value={asAddress} onChange={(e) => setAsAddress(e.target.value)} />
             <textarea className={`${inputCls} resize-none`} rows={3} placeholder="증상 설명 (예: 거실 창 잠금장치 헐거움)" value={asSymptom} onChange={(e) => setAsSymptom(e.target.value)} />
+            <label className="flex items-start gap-2 px-0.5 py-1 cursor-pointer">
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="shrink-0 mt-[2px] w-4 h-4 accent-[#D22727] cursor-pointer" />
+              <span className="text-[12px] text-[#777] leading-[1.5] break-keep">
+                {PRIVACY_CONSENT_LABEL}{" "}
+                <button type="button" onClick={(e) => { e.preventDefault(); setShowPrivacy(true); }} className="text-[#D22727] underline font-medium cursor-pointer">[내용보기]</button>
+              </span>
+            </label>
             <button type="button" onClick={submitAs} disabled={submitting}
               className="w-full h-[46px] bg-[#D22727] hover:bg-[#a01d1d] disabled:opacity-50 text-white text-[14.5px] font-extrabold rounded-xl cursor-pointer transition-colors">
               {submitting ? "접수 중…" : "AS 접수하기"}
@@ -431,6 +448,13 @@ export function AiConsultChat() {
             <input className={inputCls} placeholder="성함" value={inqName} onChange={(e) => setInqName(e.target.value)} />
             <input className={inputCls} placeholder="연락처 (010-0000-0000)" inputMode="tel" value={inqPhone} onChange={(e) => setInqPhone(e.target.value)} />
             <textarea className={`${inputCls} resize-none`} rows={4} placeholder="요청사항" value={inqRequest} onChange={(e) => setInqRequest(e.target.value)} />
+            <label className="flex items-start gap-2 px-0.5 py-1 cursor-pointer">
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="shrink-0 mt-[2px] w-4 h-4 accent-[#D22727] cursor-pointer" />
+              <span className="text-[12px] text-[#777] leading-[1.5] break-keep">
+                {PRIVACY_CONSENT_LABEL}{" "}
+                <button type="button" onClick={(e) => { e.preventDefault(); setShowPrivacy(true); }} className="text-[#D22727] underline font-medium cursor-pointer">[내용보기]</button>
+              </span>
+            </label>
             <button type="button" onClick={submitInquiry} disabled={submitting}
               className="w-full h-[46px] bg-[#D22727] hover:bg-[#a01d1d] disabled:opacity-50 text-white text-[14.5px] font-extrabold rounded-xl cursor-pointer transition-colors">
               {submitting ? "접수 중…" : "문의 접수하기"}
@@ -468,18 +492,24 @@ export function AiConsultChat() {
         </div>
       )}
 
+      <PrivacyConsentModal
+        open={showPrivacy}
+        onClose={() => setShowPrivacy(false)}
+        agreed={agreed}
+        onAgreeChange={setAgreed}
+        {...(branch === "as"
+          ? { items: "성함, 휴대전화번호, 주소, 증상 내용", purpose: "A/S 접수 및 처리를 위한 연락·방문" }
+          : branch === "inquiry"
+            ? { items: "성함, 휴대전화번호, 요청사항", purpose: "문의 접수 및 답변을 위한 연락" }
+            : {})}
+      />
+
       {/* 창호 상담(견적 스킵) 지역 팝업 — AI상담은 분야가 이미 확정 → 분야 선택(2단계) 생략 */}
       <ConsultRegionFieldModal
         isOpen={detail.isOpen}
         onComplete={detail.onComplete}
         onSkip={detail.onSkip}
-        fixedConsultField={
-          consultVia === "window_consult"
-            ? "GREEN_REMODEL"
-            : consultVia === "mesh_screen"
-              ? "SAFETY_SCREEN"
-              : "WINDOW_QUOTE"
-        }
+        fixedConsultField={consultVia === "mesh_screen" ? "SAFETY_SCREEN" : "WINDOW_QUOTE"}
         onClose={() => {
           // X = 지도만 닫고 대화로 복귀 (접수는 유지 — 다시 열 수 있게 안내).
           detail.onClose();

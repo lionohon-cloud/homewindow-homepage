@@ -12,23 +12,13 @@ import {
  * 상담배정 제도 — W2 2단계 접수 팝업 (시군구 개편 2026-07-10).
  *
  * Step 1: 지도 시군구 선택 (구 9권역 버튼 → 지도 드릴다운 + 검색). 값 = TERRITORY 4자리 코드.
- * Step 2: 교체 희망 시기 4개 (260907 추가 — /request 랜딩퍼널과 같은 선택지).
- * Step 3: 상담분야 3개 (구 5개 → 창호 견적 문의 / 그린리모델링 및 무이자 문의 / 직접입력).
+ * Step 2: 상담분야 3개 (구 5개 → 창호 견적 문의 / 그린리모델링 및 무이자 문의 / 직접입력).
  *          직접입력은 자유 텍스트(consultFieldText, 코드는 ETC) 동반.
- *          분야가 이미 정해진 진입(AI상담 분기)은 이 단계를 생략한다.
  *
  * 코드값은 ERP 와 공유(ERP 는 과도기에 9권역·시군구 양쪽 수용). 라벨은 화면·시트 가독용.
- * - 완료 → onComplete({ region, consultField, consultFieldText?, replacementTiming? })
+ * - 완료 → onComplete({ region, consultField, consultFieldText? })
  * - 이탈(X/바깥 클릭/잘 모르겠어요) → onSkip (접수는 유지, 미지정)
  */
-
-/** 교체 희망 시기 — /request 랜딩퍼널(quote.html·region.html)과 같은 4개 선택지. 필수 아님. */
-export const REPLACEMENT_TIMING_OPTIONS: readonly string[] = [
-  "최대한 빠르게",
-  "3개월 이내",
-  "6개월 이후",
-  "아직 고민 중",
-] as const;
 
 /** 구 9권역 (과거 데이터 라벨 폴백용 — 신규 전송은 시군구 코드) */
 export const CONSULT_REGIONS: readonly { code: string; label: string }[] = [
@@ -43,11 +33,10 @@ export const CONSULT_REGIONS: readonly { code: string; label: string }[] = [
   { code: "JEJU", label: "제주" },
 ] as const;
 
-/** 상담분야 — 5개 → 3개 (사장님 확정 2026-07-10). 코드는 기존 FIELD_CODES 재사용(ERP 무변경). */
+/** 상담분야 — 260923 가맹전환으로 그린리모델링 제외(3개 → 2개 + 직접입력). 코드는 기존 FIELD_CODES 재사용(ERP 무변경). */
 export const CONSULT_FIELDS: readonly { code: string; label: string }[] = [
   { code: "WINDOW_QUOTE", label: "창호 견적 문의" },
   { code: "SAFETY_SCREEN", label: "방충망 상담" },
-  { code: "GREEN_REMODEL", label: "그린리모델링 및 무이자 문의" },
   { code: "ETC", label: "직접입력" },
 ] as const;
 
@@ -81,8 +70,6 @@ export interface ConsultDetailResult {
   meshReferralRequested?: boolean;
   /** 「직접입력」 자유 텍스트 (consultField='ETC' 일 때) */
   consultFieldText?: string;
-  /** 교체 희망 시기 (260907 추가). 건너뛰면 undefined. */
-  replacementTiming?: string;
 }
 
 interface ConsultRegionFieldModalProps {
@@ -95,8 +82,6 @@ interface ConsultRegionFieldModalProps {
   fixedConsultField?: string;
 }
 
-type Screen = "region" | "timing" | "field";
-
 export function ConsultRegionFieldModal({
   isOpen,
   onComplete,
@@ -104,10 +89,9 @@ export function ConsultRegionFieldModal({
   onClose,
   fixedConsultField,
 }: ConsultRegionFieldModalProps) {
-  const [screen, setScreen] = useState<Screen>("region");
+  const [step, setStep] = useState<1 | 2>(1);
   const [region, setRegion] = useState<string>("");
   const [regionName, setRegionName] = useState<string>("");
-  const [timing, setTiming] = useState<string>("");
   const [directMode, setDirectMode] = useState(false);
   const [directText, setDirectText] = useState("");
   const [meshConfirmMode, setMeshConfirmMode] = useState(false);
@@ -115,41 +99,34 @@ export function ConsultRegionFieldModal({
   if (!isOpen) return null;
 
   const reset = () => {
-    setScreen("region");
+    setStep(1);
     setRegion("");
     setRegionName("");
-    setTiming("");
     setDirectMode(false);
     setDirectText("");
     setMeshConfirmMode(false);
   };
 
   const handleRegionSelect = (sel: RegionSelection) => {
-    // 지역 다음엔 진입 경로와 무관하게 항상 교체 희망 시기를 한 번 묻는다.
-    setRegion(sel.territoryCode);
-    setRegionName(sel.label);
-    setScreen("timing");
-  };
-
-  const handleTimingChoice = (value: string) => {
-    setTiming(value);
-    // 방충망 확정 진입(AI상담 「방충망 문의」) — 재확인 1스텝 필수.
+    // 방충망 확정 진입(AI상담 「방충망 문의」) — 지역 선택 후 방충망 재확인 1스텝 필수.
     //   고객 선택을 제휴이관 대기 또는 창호 상담으로 명확히 나누기 위해 재확인한다.
+    //   step 을 2로 올려야 지도(step===1) 대신 재확인 화면이 렌더된다.
     if (fixedConsultField === "SAFETY_SCREEN") {
+      setRegion(sel.territoryCode);
+      setRegionName(sel.label);
       setMeshConfirmMode(true);
+      setStep(2);
       return;
     }
-    // 그 외 AI상담 진입 — 분야는 챗에서 이미 확정 → 시기까지 받았으면 바로 접수 (분야 선택 생략).
+    // 그 외 AI상담 진입 — 분야는 챗에서 이미 확정 → 지역만 찍으면 바로 접수 (2단계 생략).
     if (fixedConsultField) {
-      onComplete({
-        region,
-        consultField: fixedConsultField,
-        replacementTiming: value || undefined,
-      });
+      onComplete({ region: sel.territoryCode, consultField: fixedConsultField });
       reset();
       return;
     }
-    setScreen("field");
+    setRegion(sel.territoryCode);
+    setRegionName(sel.label);
+    setStep(2);
   };
 
   const handleField = (code: string) => {
@@ -162,7 +139,7 @@ export function ConsultRegionFieldModal({
       setMeshConfirmMode(true);
       return;
     }
-    onComplete({ region, consultField: code, replacementTiming: timing || undefined });
+    onComplete({ region, consultField: code });
     reset();
   };
 
@@ -172,18 +149,13 @@ export function ConsultRegionFieldModal({
       setMeshConfirmMode(false);
       return;
     }
-    onComplete({ ...result, replacementTiming: timing || undefined });
+    onComplete(result);
     reset();
   };
 
   const handleDirectSubmit = () => {
     const text = directText.trim();
-    onComplete({
-      region,
-      consultField: "ETC",
-      consultFieldText: text || undefined,
-      replacementTiming: timing || undefined,
-    });
+    onComplete({ region, consultField: "ETC", consultFieldText: text || undefined });
     reset();
   };
 
@@ -207,14 +179,13 @@ export function ConsultRegionFieldModal({
         {/* 헤더 */}
         <div className="border-b border-[#e5e5e5] p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            {screen !== "region" && (
+            {(step === 2 || directMode || meshConfirmMode) && (
               <button
                 type="button"
                 onClick={() => {
                   if (meshConfirmMode) setMeshConfirmMode(false);
                   else if (directMode) setDirectMode(false);
-                  else if (screen === "field") setScreen("timing");
-                  else setScreen("region");
+                  else setStep(1);
                 }}
                 className="w-8 h-8 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="이전 단계"
@@ -223,15 +194,13 @@ export function ConsultRegionFieldModal({
               </button>
             )}
             <h3 className="text-[17px] md:text-[18px] font-bold text-[#2A2A2A]">
-              {screen === "region"
+              {step === 1
                 ? "시공 지역을 선택해 주세요"
                 : directMode
                   ? "어떤 내용이 궁금하세요?"
                   : meshConfirmMode
                     ? "방충망 상담 안내"
-                    : screen === "timing"
-                      ? "교체 희망 시기가 어떻게 되시나요?"
-                      : "어떤 상담이 필요하세요?"}
+                    : "어떤 상담이 필요하세요?"}
             </h3>
           </div>
           <button
@@ -246,7 +215,7 @@ export function ConsultRegionFieldModal({
 
         {/* 본문 */}
         <div className="p-3 sm:p-5 overflow-y-auto">
-          {screen === "region" ? (
+          {step === 1 ? (
             <>
               <p className="text-[12.5px] text-[#999] -mt-1 mb-2.5">
                 지도에서 지역을 누르면 상세 지역이 나와요. 정확히 안 맞아도 괜찮아요!
@@ -297,33 +266,6 @@ export function ConsultRegionFieldModal({
                 </button>
               ))}
             </div>
-          ) : screen === "timing" ? (
-            <>
-              {regionName && (
-                <p className="text-[12.5px] text-[#999] -mt-1 mb-2.5">
-                  {regionName} 지역이시군요!
-                </p>
-              )}
-              <div className="grid grid-cols-2 gap-2">
-                {REPLACEMENT_TIMING_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => handleTimingChoice(option)}
-                    className="w-full min-h-[52px] px-4 py-3 border-2 border-[#e5e5e5] rounded-xl text-[14px] font-semibold text-[#2A2A2A] bg-white hover:border-[#D22727] hover:bg-[#fff8f8] transition-colors cursor-pointer"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => handleTimingChoice("")}
-                className="block mx-auto mt-3 text-[12.5px] text-[#bbb] underline cursor-pointer hover:text-[#999]"
-              >
-                선택 안 함 · 건너뛰기
-              </button>
-            </>
           ) : (
             <>
               {regionName && (
@@ -355,11 +297,7 @@ export function ConsultRegionFieldModal({
         {/* 하단 안내 문구 */}
         <div className="px-5 pb-5 pt-1 shrink-0">
           <p className="text-center text-[13px] text-[#D22727] font-bold">
-            {screen === "region"
-              ? "거의 다 되었습니다."
-              : screen === "timing" && !meshConfirmMode
-                ? "조금만 더 진행하면 끝나요"
-                : "마지막 질문입니다"}
+            {step === 1 ? "거의 다 되었습니다." : "마지막 질문입니다"}
           </p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 import { useVisualViewport } from "@/lib/useVisualViewport";
 import { ConsultAlert } from "./ConsultAlert";
+import { PRIVACY_CONSENT_LABEL, PrivacyConsentModal } from "./PrivacyConsent";
 
 /**
  * 화면에 보이는 입력칸에 포커스한다.
@@ -217,7 +218,7 @@ export function BottomBar({ compact = false }: { compact?: boolean } = {}) {
                 className="w-3.5 h-3.5 cursor-pointer accent-[#D22727]"
               />
               <span className="text-[11px] text-[#888]">
-                상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
+                {PRIVACY_CONSENT_LABEL}{" "}
                 <button
                   type="button"
                   onClick={() => setShowPrivacy(true)}
@@ -373,7 +374,7 @@ export function BottomBar({ compact = false }: { compact?: boolean } = {}) {
                   className="w-4 h-4 cursor-pointer accent-[#D22727] mt-0.5 shrink-0"
                 />
                 <span className="text-[12px] text-[#666] leading-relaxed">
-                  상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
+                  {PRIVACY_CONSENT_LABEL}{" "}
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setShowPrivacy(true); }}
@@ -402,27 +403,8 @@ export function BottomBar({ compact = false }: { compact?: boolean } = {}) {
         </div>
       )}
 
-      {/* ── 개인정보처리방침 모달 ── */}
-      {showPrivacy && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPrivacy(false)} />
-          <div className="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
-            <div className="bg-white border-b border-[#e5e5e5] p-6 flex items-center justify-between shrink-0">
-              <h3 className="text-[20px] font-bold text-[#333]">개인정보처리방침</h3>
-              <button
-                onClick={() => setShowPrivacy(false)}
-                className="w-9 h-9 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4 text-[#666]" />
-              </button>
-            </div>
-            <div className="p-6 overflow-y-auto text-[14px] leading-[1.8] text-[#666]">
-              <p>회사는 상담 서비스 제공을 위해 연락처(휴대전화번호)·상담 지역·상담분야를 수집합니다. 수집된 정보는 창호 교체 상담 및 견적 안내 목적으로만 이용되며, 상담 완료 후 3개월 이내 파기됩니다. 고객의 동의 없이 제3자에게 제공하지 않습니다.</p>
-              <p className="text-[#999] text-[13px] mt-4">공고일자: 2024년 1월 1일 · 시행일자: 2024년 1월 1일</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 260923 가맹전환 — 개인정보 동의 상세 (항목별 체크) */}
+      <PrivacyConsentModal open={showPrivacy} onClose={() => setShowPrivacy(false)} agreed={agreed} onAgreeChange={setAgreed} />
 
       {/* ── 완료/오류 알림 ── */}
       {/* 260917 번호인증 실험 — 인증창과 같은 틀의 공통 알림창 */}

@@ -8,6 +8,7 @@ import { ConsultRegionFieldModal } from "./ConsultRegionFieldModal";
 import { HoneypotField } from "@/lib/HoneypotField";
 import { useVisualViewport } from "@/lib/useVisualViewport";
 import { ConsultAlert } from "./ConsultAlert";
+import { PRIVACY_CONSENT_LABEL, PrivacyConsentModal } from "./PrivacyConsent";
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -274,7 +275,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom", entry }
                           className="w-4 h-4 cursor-pointer accent-[#D22727] disabled:cursor-not-allowed"
                         />
                         <span className="text-[11px] md:text-[13px] text-[#666]">
-                          상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
+                          {PRIVACY_CONSENT_LABEL}{" "}
                           <button
                             type="button"
                             onClick={handleViewPrivacy}
@@ -386,7 +387,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom", entry }
                   className="w-4 h-4 cursor-pointer accent-[#D22727] mt-0.5 shrink-0"
                 />
                 <span className="text-[12px] text-[#666] leading-relaxed">
-                  상담을 위한 연락처·지역·상담분야 수집에 동의합니다.{" "}
+                  {PRIVACY_CONSENT_LABEL}{" "}
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); handleViewPrivacy(); }}
@@ -414,141 +415,8 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom", entry }
         </div>
       )}
 
-      {/* Privacy Policy Modal */}
-      <AnimatePresence>
-        {showPrivacy && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowPrivacy(false)}
-              className="absolute inset-0 bg-black/50"
-            />
-
-            {/* Privacy Modal */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="relative z-10 bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-2xl max-h-[80vh] flex flex-col"
-            >
-              {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-[#e5e5e5] p-6 flex items-center justify-between">
-                <h3 className="text-[20px] font-bold text-[#333]">
-                  개인정보처리방침
-                </h3>
-                <button
-                  onClick={() => setShowPrivacy(false)}
-                  className="w-9 h-9 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer"
-                  aria-label="개인정보처리방침 닫기"
-                >
-                  <X className="w-4 h-4 text-[#666]" />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="p-6 overflow-y-auto">
-                <div className="space-y-6 text-[14px] leading-[1.8] text-[#666]">
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">1. 수집하는 개인정보 항목</h4>
-                    <p>회사는 상담 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다:</p>
-                    <ul className="list-disc list-inside ml-2 mt-2 space-y-1">
-                      <li>필수항목: 연락처(휴대전화번호), 상담 지역, 상담분야</li>
-                    </ul>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">2. 개인정보의 수집 및 이용목적</h4>
-                    <p>수집한 개인정보는 다음의 목적으로 이용됩니다:</p>
-                    <ul className="list-disc list-inside ml-2 mt-2 space-y-1">
-                      <li>창호 교체 상담 서비스 제공</li>
-                      <li>견적 안내 및 시공 일정 협의</li>
-                      <li>고객 문의 응대 및 사후관리</li>
-                    </ul>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">3. 개인정보의 보유 및 이용기간</h4>
-                    <p>
-                      회사는 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다.
-                      단, 관련 법령에 따라 보존할 필요가 있는 경우에는 해당 기간 동안 보관합니다.
-                    </p>
-                    <ul className="list-disc list-inside ml-2 mt-2 space-y-1">
-                      <li>상담 신청 정보: 상담 완료 후 3개월</li>
-                      <li>계약 정보: 계약 종료 후 5년 (전자상거래법)</li>
-                    </ul>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">4. 개인정보의 제3자 제공</h4>
-                    <p>
-                      회사는 고객의 개인정보를 원칙적으로 외부에 제공하지 않습니다.
-                      다만, 아래의 경우에는 예외로 합니다:
-                    </p>
-                    <ul className="list-disc list-inside ml-2 mt-2 space-y-1">
-                      <li>고객이 사전에 동의한 경우</li>
-                      <li>법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
-                    </ul>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">5. 개인정보 처리의 위탁</h4>
-                    <p>
-                      회사는 서비스 향상을 위해 개인정보를 외부 전문업체에 위탁할 수 있으며,
-                      위탁 시 관련 법령에 따라 안전하게 관리됩니다.
-                    </p>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">6. 정보주체의 권리·의무 및 행사방법</h4>
-                    <p>
-                      고객은 언제든지 등록되어 있는 자신의 개인정보를 조회하거나 수정, 삭제, 처리정지를 요청할 수 있습니다.
-                      개인정보 보호 관련 문의는 고객센터를 통해 가능합니다.
-                    </p>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">7. 개인정보 자동 수집 장치의 설치·운영 및 거부</h4>
-                    <p>
-                      회사는 쿠키 등 인터넷 서비스 이용 시 자동 생성되는 개인정보를 수집하는 장치를 운영하지 않습니다.
-                    </p>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">8. 개인정보 보호책임자</h4>
-                    <p>
-                      회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및
-                      피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
-                    </p>
-                    <div className="mt-3 p-4 bg-[#f8f8f8] rounded-lg">
-                      <p className="font-medium text-[#333]">개인정보 보호책임자</p>
-                      <p className="mt-1">고객센터를 통해 문의하실 수 있습니다.</p>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="font-bold text-[#333] mb-2">9. 개인정보 처리방침 변경</h4>
-                    <p>
-                      이 개인정보 처리방침은 시행일로부터 적용되며, 법령 및 방침에 따른 변경내용의 추가, 삭제 및 정정이 있는 경우에는
-                      변경사항의 시행 7일 전부터 공지사항을 통하여 고지할 것입니다.
-                    </p>
-                  </section>
-
-                  <section className="pt-4 border-t border-[#e5e5e5]">
-                    <p className="text-[#999] text-[13px]">
-                      공고일자: 2024년 1월 1일<br />
-                      시행일자: 2024년 1월 1일
-                    </p>
-                  </section>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* 260923 가맹전환 — 개인정보 동의 상세 (항목별 체크) */}
+      <PrivacyConsentModal open={showPrivacy} onClose={() => setShowPrivacy(false)} agreed={agreed} onAgreeChange={setAgreed} />
 
       {/* 260917 번호인증 실험 — 인증창과 같은 틀의 공통 알림창 */}
       <ConsultAlert open={showAlert} message={alertMessage} onClose={() => setShowAlert(false)} zIndex="z-[110]" />

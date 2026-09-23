@@ -145,7 +145,7 @@ export function GlassTypeSection() {
           viewport={{ once: true, margin: "-200px" }}
           className="px-6 md:px-10 mb-12"
         >
-          <p className="text-[#999] text-[16px] font-medium mb-3">단열 유리 <span className="text-[14px] text-[#bbb]">*아르곤 가스는 등급별 상이</span></p>
+          <p className="text-[#999] text-[16px] font-medium mb-3">단열 유리 <span className="text-[14px] text-[#bbb]">*아르곤 가스는 선택 사양</span></p>
           <h2 className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep">단열을 위한 고성능 유리<br/><span className="text-[#d22727]">전 제품 적용</span></h2>
           <p className="text-[#999] text-[16px] md:text-[18px] leading-[26px] break-keep">아르곤 가스, TPS 단열 간봉의 결합. 사계절 내내 쾌적한 온도를 유지합니다.</p>
         </motion.div>
@@ -360,7 +360,7 @@ export function GlassTypeSection() {
           >
             <p className="text-[#999] text-[16px] font-medium mb-3">수퍼더블로이 유리</p>
             <h2 className="text-[28px] md:text-[36px] font-extrabold text-[#333] leading-[1.3] mb-5 break-keep">프리미엄의 완성<br/><span className="text-[#d22727]">LX 수퍼더블로이</span></h2>
-            <div className="mb-5"><span className="inline-block bg-white border-1 border-[#aaa] text-[#d22727] text-[12px] md:text-[13px] px-3 py-1.5 rounded-full"><span className="font-semibold">프레스티지 기본 적용</span></span></div>
+            <div className="mb-5"><span className="inline-block bg-white border-1 border-[#aaa] text-[#d22727] text-[12px] md:text-[13px] px-3 py-1.5 rounded-full"><span className="font-semibold">선택 사양</span></span></div>
             <p className="text-[#999] text-[16px] md:text-[18px] leading-[26px] break-keep">
               두 겹의 은(Silver) 코팅으로 단열의 한계를 뛰어넘었습니다. 여름엔 더 시원하고 겨울엔 더 따뜻한 프리미엄의 차이를 경험해 보십시오.
             </p>

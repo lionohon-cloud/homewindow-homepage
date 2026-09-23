@@ -159,3 +159,6 @@
 @media (prefers-reduced-motion: reduce) {
   .hw-sash-shadow { animation: none; transform: translateX(-50%) scaleX(.97); }
 }
+
+/* 260923 — 팝업이 뜰 때 body 스크롤을 잠가도 스크롤바 자리가 그대로 남아 화면이 흔들리지 않게 */
+html { scrollbar-gutter: stable; }
