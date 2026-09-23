@@ -381,8 +381,8 @@ export function Component() {
 
           <Article no={13} title={ARTICLES[12]}>
             <p>
-              이 개인정보처리방침은 {EFFECTIVE_DATE}부터 적용합니다. 내용이 바뀌면 시행 7일 전부터 홈페이지 공지사항으로
-              알립니다.
+              이 개인정보처리방침은 {EFFECTIVE_DATE}부터 적용합니다. 내용이 바뀌면 시행 7일 전부터 이 페이지에 변경
+              내용과 시행일을 게시해 알립니다.
             </p>
           </Article>
 
