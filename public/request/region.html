@@ -97,8 +97,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </ul>
 
   <p class="disclaim">
-    수집 항목은 연락처·상담 지역·상담분야입니다. 창호 교체 상담 및 견적 안내 목적으로만 이용하며,
-    상담 완료 후 3개월 이내 파기합니다.
+    수집 항목은 연락처·상담 지역·상담 내용입니다. 접수된 상담은 고객님이 선택하신 지역을 담당하는
+    청암홈윈도우 가맹점에 제공되어 방문 상담·견적·시공에 활용되며, 서비스 종료 시 또는 동의 철회 시까지 보관합니다.
   </p>
 
 </main>
@@ -106,7 +106,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="ctafix">
   <div class="ctafix-in">
     <p class="consent-mini">
-      버튼을 누르면 개인정보 수집·이용에 동의하는 것으로 봅니다.
+      버튼을 누르면 개인정보 수집·이용 및 제3자(가맹점) 제공에 동의하는 것으로 봅니다.
       <button type="button" id="open-policy">전문 보기</button>
     </p>
     <button type="button" class="btn-primary" id="send">상담 신청하기</button>
@@ -149,10 +149,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </button>
     </div>
     <div class="modal-body">
-      <p>회사는 상담 서비스 제공을 위해 연락처(휴대전화번호)·상담 지역·상담분야를 수집합니다.
-      수집된 정보는 창호 교체 상담 및 견적 안내 목적으로만 이용되며, 상담 완료 후 3개월 이내 파기됩니다.
-      고객의 동의 없이 제3자에게 제공하지 않습니다.</p>
-      <p class="dates">공고일자 2024년 1월 1일 · 시행일자 2024년 1월 1일</p>
+      <p><strong>[필수] 개인정보 수집·이용 동의</strong><br>
+      수집 항목: 휴대전화번호, 상담 지역, 상담 내용(평형·교체범위·희망시기 등)<br>
+      이용 목적: 상담 신청 접수, 견적 안내, 상담 진행을 위한 연락<br>
+      보유·이용기간: 서비스 종료 시까지(삭제를 요청하시면 지체 없이 파기)</p>
+      <p><strong>[필수] 개인정보 제3자 제공 동의</strong><br>
+      제공받는 자: 고객님이 선택하신 지역을 담당하는 청암홈윈도우 가맹점<br>
+      제공 목적: 방문 상담·실측·견적, 계약 체결, 시공 및 A/S 진행<br>
+      제공 항목: 휴대전화번호, 상담 지역, 상담 내용<br>
+      보유·이용기간: 서비스 종료 시까지(삭제를 요청하시면 지체 없이 파기)</p>
+      <p>가맹점은 회사와 별개의 사업자이며, 계약·시공·A/S는 제공받은 가맹점이 직접 진행합니다.
+      위 동의를 거부하실 수 있으나, 거부하시면 상담 신청이 접수되지 않습니다.
+      <a href="/privacy">개인정보처리방침 전체 보기</a></p>
+      <p class="dates">공고일자 2026년 9월 23일 · 시행일자 2026년 9월 23일</p>
     </div>
   </div>
 </div>
@@ -364,7 +373,7 @@ $('send').addEventListener('click', async ()=>{
     상담권역: zPicked || '미정 · 통화 시 확인', 단지명:'',
     연락처:$('i-tel').value, 인증토큰:V.token(), 교체시기:segValue('i-when'),
     헤드라인:qs('ab'), 방식:'2안(단계 분리)',
-    동의방식:'상담 신청하기 버튼 클릭', 동의문구버전:'2024-01-01',
+    동의방식:'상담 신청하기 버튼 클릭', 동의문구버전:'2026-09-23',
     접수시각:dt.toISOString()
   };
 
