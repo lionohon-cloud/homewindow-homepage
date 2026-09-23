@@ -10,7 +10,7 @@ import { BottomBar } from "../components/BottomBar";
  */
 
 /** 시행일 = 홈페이지에 게시하는 날. 소급 금지 — 배포 전에 반드시 실제 날짜로 바꿀 것 */
-const EFFECTIVE_DATE = "2026년 ○월 ○일";
+const EFFECTIVE_DATE = "2026년 9월 23일";
 
 type Row = ReactNode[];
 
