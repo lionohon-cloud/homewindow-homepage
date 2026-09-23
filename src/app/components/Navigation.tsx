@@ -278,9 +278,9 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                     );
                   })}
 
-                  {/* 가맹점 문의 (/partners, 260921 "홈윈도우 파트너스" 에서 문구 변경) — 메뉴 항목 옆 텍스트 링크 */}
+                  {/* 가맹점 문의 — 별도 정적 사이트(public/franchise)라 SPA 라우터가 아니라 하드 네비게이션으로 이동한다 */}
                   <button
-                    onClick={() => navigate("/partners")}
+                    onClick={() => { window.location.href = "/franchise"; }}
                     className="flex items-center gap-1.5 text-[#1f6fff] hover:underline transition cursor-pointer"
                   >
                     <Handshake className="w-4 h-4" />
@@ -472,12 +472,12 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   <span className="text-[15px] font-semibold">FAQ</span>
                 </motion.button>
 
-                {/* 가맹점 문의 (별도 페이지) — 톤다운 (회색 + 파란 점) */}
+                {/* 가맹점 문의 — 별도 정적 사이트(public/franchise)라 SPA 라우터가 아니라 하드 네비게이션으로 이동한다 */}
                 <motion.button
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: (sections.length + 2) * 0.03, duration: 0.3 }}
-                  onClick={() => goToRoute('/partners')}
+                  onClick={() => { setIsMobileMenuOpen(false); window.location.href = "/franchise"; }}
                   className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#333] active:bg-[#f8f8f8] mt-2 border-t border-[#eee] pt-5 flex items-center gap-2"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1f6fff]" />
