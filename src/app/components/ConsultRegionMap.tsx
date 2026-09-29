@@ -16,6 +16,24 @@ import {
  * - 모바일 폴백: 검색창(시군구명) 병행 — 작은 시군구 탭 난이도 보완.
  */
 
+/**
+ * 지도·검색 인덱스가 모두 실패했을 때 쓰는 최소 폴백 — 지도 타일에 의존하지 않는
+ * 정적 9권역 버튼. 시군구 개편 이전 코드값이지만 ERP TERRITORY_MASTER 는 과도기라
+ * 9권역 코드도 그대로 수용한다(전화번호는 무조건 확보되는 게 우선이라, 지역은
+ * 이렇게라도 대략적으로는 꼭 받는다 — 260929 "지역 필수화" 지시).
+ */
+const MAP_LOAD_FAILURE_FALLBACK_REGIONS: readonly { code: string; label: string }[] = [
+  { code: "SEOUL_GYEONGGI_N", label: "서울·경기북부" },
+  { code: "SEOUL_GYEONGGI_S", label: "경기남부" },
+  { code: "INCHEON", label: "인천" },
+  { code: "GYEONGNAM", label: "경남" },
+  { code: "CHUNGCHEONG", label: "충청·대전·세종" },
+  { code: "GYEONGBUK", label: "경북" },
+  { code: "GANGWON", label: "강원" },
+  { code: "JEOLLA", label: "전라" },
+  { code: "JEJU", label: "제주" },
+];
+
 interface GeoFeature {
   type: string;
   properties: { name: string; code: string };
@@ -316,10 +334,25 @@ export function ConsultRegionMap({ onSelect }: ConsultRegionMapProps) {
   };
 
   if (loadErr) {
-    // 지도 로드 실패 폴백 — 검색만으로도 진행 가능해야 하나 인덱스도 실패한 상황 → 안내.
+    // 지도·검색 인덱스가 모두 실패한 상황 — 지역은 반드시 받아야 하므로(건너뛰기 없음)
+    // 지도 타일에 기대지 않는 대략적 9권역 버튼으로 최소한의 지역을 받는다.
     return (
-      <div className="text-center py-8 text-[13px] text-[#999]">
-        지도를 불러오지 못했어요. 새로고침하거나 「잘 모르겠어요」로 건너뛰어 주세요.
+      <div className="py-4">
+        <p className="text-center text-[13px] text-[#999] mb-3">
+          지도를 불러오지 못했어요. 새로고침해 보시거나, 아래에서 가까운 권역을 골라주세요.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {MAP_LOAD_FAILURE_FALLBACK_REGIONS.map(({ code, label }) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => onSelect({ territoryCode: code, label })}
+              className="min-h-[46px] px-3 py-2 border-2 border-[#e5e5e5] rounded-xl text-[13.5px] font-semibold text-[#2A2A2A] bg-white hover:border-[#D22727] hover:bg-[#fff8f8] transition-colors cursor-pointer"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }

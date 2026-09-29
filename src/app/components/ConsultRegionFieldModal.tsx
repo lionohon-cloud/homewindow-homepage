@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ConsultRegionMap, type RegionSelection } from "./ConsultRegionMap";
 import { TERRITORY_LABELS } from "@/lib/regionMap/territoryMapping";
 import {
@@ -17,7 +17,10 @@ import {
  *
  * 코드값은 ERP 와 공유(ERP 는 과도기에 9권역·시군구 양쪽 수용). 라벨은 화면·시트 가독용.
  * - 완료 → onComplete({ region, consultField, consultFieldText? })
- * - 이탈(X/바깥 클릭/잘 모르겠어요) → onSkip (접수는 유지, 미지정)
+ * - 260929 "지역 필수화" 지시 — 전화번호와 지역은 무조건 확보해야 하므로, X·바깥 클릭·
+ *   「건너뛰기」로 지역 미지정 이탈하는 경로를 없앴다. 지역을 고를 때까지 모달이 안 닫힌다.
+ *   (onSkip/onClose prop은 과거 이탈 경로의 흔적 — 더 이상 이 컴포넌트 안에서 트리거되지
+ *   않지만, 호출부(useConsultDetail)의 타입을 그대로 두기 위해 인터페이스는 유지한다.)
  */
 
 /** 구 9권역 (과거 데이터 라벨 폴백용 — 신규 전송은 시군구 코드) */
@@ -75,8 +78,9 @@ export interface ConsultDetailResult {
 interface ConsultRegionFieldModalProps {
   isOpen: boolean;
   onComplete: (result: ConsultDetailResult) => void;
+  /** 260929 이후 컴포넌트 내부에서는 더 이상 호출하지 않음(지역 미지정 이탈 경로 제거) — 호출부 타입 호환용으로만 유지. */
   onSkip: () => void;
-  /** X·바깥 클릭 — 모달만 닫기 (사장님 지시 2026-07-10). 미지정 시 기존처럼 onSkip. */
+  /** 260929 이후 컴포넌트 내부에서는 더 이상 호출하지 않음 — 호출부 타입 호환용으로만 유지. */
   onClose?: () => void;
   /** 분야가 이미 정해진 진입(AI상담 분기) — 2단계(분야 선택) 생략, 지역 선택 즉시 완료. */
   fixedConsultField?: string;
@@ -159,21 +163,10 @@ export function ConsultRegionFieldModal({
     reset();
   };
 
-  const handleClose = () => {
-    // X·바깥 클릭 = 모달만 닫기 (onClose 미지정 소비처는 기존 onSkip 폴백).
-    reset();
-    (onClose ?? onSkip)();
-  };
-
-  const handleSkip = () => {
-    // 「잘 모르겠어요·건너뛰기」 = 지역 미지정으로 접수 마무리 (기존 동작 유지).
-    reset();
-    onSkip();
-  };
-
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+      {/* 260929 — 지역 확정 전에는 바깥 클릭으로 닫히지 않는다(지역 필수화). onClick 없음. */}
+      <div className="absolute inset-0 bg-black/50" />
       {/* 모바일 = 전체화면 (사장님 지시 2026-07-10 — 지도 찍기 쉽게), sm 이상 = 기존 팝업 */}
       <div className="relative z-10 bg-white rounded-none sm:rounded-2xl shadow-2xl w-full h-[100dvh] sm:h-auto max-w-none sm:max-w-[560px] max-h-[100dvh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         {/* 헤더 */}
@@ -203,14 +196,7 @@ export function ConsultRegionFieldModal({
                     : "어떤 상담이 필요하세요?"}
             </h3>
           </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="w-9 h-9 bg-[#f5f5f5] hover:bg-[#e5e5e5] rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0"
-            aria-label="닫기"
-          >
-            <X className="w-4 h-4 text-[#666]" />
-          </button>
+          {/* 260929 — 닫기(X) 버튼 제거: 지역을 고를 때까지 모달을 닫을 수 없다(지역 필수화). */}
         </div>
 
         {/* 본문 */}
@@ -221,13 +207,6 @@ export function ConsultRegionFieldModal({
                 지도에서 지역을 누르면 상세 지역이 나와요. 정확히 안 맞아도 괜찮아요!
               </p>
               <ConsultRegionMap onSelect={handleRegionSelect} />
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="block mx-auto mt-2 text-[12.5px] text-[#bbb] underline cursor-pointer hover:text-[#999]"
-              >
-                잘 모르겠어요 · 건너뛰기
-              </button>
             </>
           ) : directMode ? (
             <div className="flex flex-col gap-2.5">
