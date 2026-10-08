@@ -9,7 +9,7 @@
  *   - 읽기 권한: vendors 는 익명이 아닌 로그인 사용자만 읽을 수 있다 →
  *     SYSTEM_AUTH_EMAIL / SYSTEM_AUTH_PASSWORD 가 설정돼 있어야 한다(없으면 익명 → 권한 오류 → 500).
  *
- * 응답은 화이트리스트로만 만든다: name · no · rep(두 번째 글자 가림) · bizNo · region · area.
+ * 응답은 화이트리스트로만 만든다: name · no · rep(두 번째 글자 가림) · bizNo · region · area · photo(프로필 사진 주소).
  *   상세 주소(동·호수)·연락처·계좌·이메일·메모 등은 내보내지 않는다.
  *   주소는 시·도 + 시·군까지만 잘라서 region/area 로 바꾼 뒤 버린다.
  * 5분 캐시.
@@ -26,6 +26,7 @@ interface PublicFranchise {
   bizNo?: string;
   region?: string;
   area?: string;
+  photo?: string;
 }
 
 const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
@@ -106,6 +107,8 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
         bizNo: str(f.businessNumber),
         region: loc?.region ?? str(f.region),
         area: loc?.area,
+        // 업체 마스터에서 올린 프로필 사진(정사각형으로 잘려 저장된 Storage 다운로드 주소)
+        photo: str(f.profilePhotoUrl),
       };
       return item;
     })
