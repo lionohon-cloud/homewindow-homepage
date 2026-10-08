@@ -1,10 +1,10 @@
 /**
  * GET /api/franchise/list — 홈페이지 가맹점 지도·목록·인증서용 공개 조회 (261008).
  *
- * 데이터 출처: ERP 업체 마스터(Firestore `vendors`) 중 종류(type)가 'franchise'(가맹점)인 업체.
- *   시공후기(api/review/list.ts)와 같은 방식으로 ERP Firestore 를 직접 읽는다.
- *   - 'franchise' 코드값은 ERP 쪽 PR(업체 종류 「가맹점」 추가) 반영 후 생긴다. 그 전에는 0건 →
- *     화면(FranchiseMap)은 블록을 숨긴다.
+ * 데이터 출처: ERP 업체 마스터(Firestore `vendors`, 화면 /admin/vendors). 시공후기(api/review/list.ts)와
+ *   같은 방식으로 ERP Firestore 를 직접 읽는다.
+ *   가져오는 업체 = 업체 마스터에서 「홈페이지 노출」 체크(`showOnHomepage == true`)한 업체만 (261008 사장님 결정).
+ *   업체 종류(대리점·가맹점 등)와 무관하다. ERP 에 이 칸이 생기기 전에는 0건 → 화면은 블록을 숨긴다.
  *   - 읽기 권한: vendors 는 익명이 아닌 로그인 사용자만 읽을 수 있다 →
  *     SYSTEM_AUTH_EMAIL / SYSTEM_AUTH_PASSWORD 가 설정돼 있어야 한다(없으면 익명 → 권한 오류 → 500).
  *
@@ -14,7 +14,7 @@
  * 5분 캐시.
  */
 import { jsonResponse, errorResponse, corsHeaders } from '../../_shared/cors';
-import { getRestSession, restQueryByField, decodeFields } from '../../_shared/firestoreRest';
+import { getRestSession, decodeFields, type RestDocument, type RestSession } from '../../_shared/firestoreRest';
 import type { FirebaseEnv } from '../../_shared/firebaseEnv';
 
 interface PublicFranchise {
@@ -25,6 +25,28 @@ interface PublicFranchise {
   bizNo?: string;
   region?: string;
   area?: string;
+}
+
+/** vendors 에서 boolean 칸이 true 인 문서만 (restQueryByField 는 문자열 비교만 지원해서 따로 둔다) */
+async function queryVendorsFlag(session: RestSession, field: string, limit: number): Promise<RestDocument[]> {
+  const url = `https://firestore.googleapis.com/v1/projects/${session.projectId}/databases/(default)/documents:runQuery`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${session.idToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: 'vendors' }],
+        where: { fieldFilter: { field: { fieldPath: field }, op: 'EQUAL', value: { booleanValue: true } } },
+        limit,
+      },
+    }),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error(`runQuery 실패 [${res.status}] vendors/${field}: ${t.slice(0, 200)}`);
+  }
+  const data = (await res.json()) as Array<{ document?: RestDocument }>;
+  return data.map((r) => r.document).filter((d): d is RestDocument => !!d);
 }
 
 const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
@@ -82,7 +104,7 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
 
   let docs;
   try {
-    docs = await restQueryByField(session, 'vendors', 'type', 'franchise', 100);
+    docs = await queryVendorsFlag(session, 'showOnHomepage', 200);
   } catch (e) {
     console.error('[franchise/list] vendors 조회 실패:', e);
     return errorResponse('가맹점 목록을 불러오지 못했습니다', 500);
