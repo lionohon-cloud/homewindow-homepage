@@ -35,6 +35,7 @@ const VIEW = [80, 0, 480, 632] as const;
 const PIN_SCALE = 1.3;
 const PIN_SCALE_ON = 1.7; // 선택된 핀
 const PIN_H = 34;          // 핀 높이(배율 1 기준, 끝~머리 위)
+const PIN_GAP = 19;        // 같은 지역 핀이 겹칠 때 뒤 번호를 미는 가로 간격(번호가 보일 만큼)
 
 /** 위경도 → 화면 좌표 (메르카토르 → 40° 기울기 → 화면 맞춤). 시안 build() 와 같은 계산 */
 function project(m: MapData, lng: number, lat: number): [number, number] {
@@ -117,7 +118,14 @@ export function FranchiseMap() {
         return { f, x, y };
       })
       .filter((p): p is { f: Franchise; x: number; y: number } => !!p)
-      .sort((a, b) => a.y - b.y); // 먼(북쪽) 핀부터 → 가까운 핀이 위에
+      // 같은 시·군 가맹점은 좌표가 똑같아 핀이 포개진다 → 앞 번호는 제자리, 뒤 번호를 오른쪽으로 조금씩 밀어
+      // 뒤에 살짝 겹쳐 보이게 한다(번호가 보일 만큼)
+      .map((p, i, all) => {
+        const before = all.slice(0, i).filter((q) => Math.abs(q.x - p.x) < 1 && Math.abs(q.y - p.y) < 1).length;
+        return before ? { ...p, x: p.x + before * PIN_GAP, stack: before } : { ...p, stack: 0 };
+      })
+      // 먼(북쪽) 핀부터 → 가까운 핀이 위에. 겹친 핀은 앞 번호가 위에
+      .sort((a, b) => a.y - b.y || b.stack - a.stack);
   }, [map, franchises]);
 
   const selectedPin = pins.find((p) => p.f.id === selected) ?? null;
