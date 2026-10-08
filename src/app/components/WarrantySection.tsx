@@ -4,6 +4,7 @@ import warrantyMark from "@/assets/warranty-mark-15y.png";
 import serviceMap from "figma:asset/b1e625139de58ae38ac57e9487f92a224a0cd168.png";
 import { useState } from "react";
 import { WarrantyModal } from "./WarrantyModal";
+import { FranchiseMap } from "./FranchiseMap";
 
 // 260923 가맹전환 — 사무소·공장 지도/주소는 일단 숨김 (본사 거점 노출이 가맹 계약 구조와 안 맞음). 다시 켤 땐 true
 const SHOW_SERVICE_MAP = false;
@@ -270,6 +271,11 @@ export function WarrantySection() {
           </motion.div>
           </>)}
         </div>
+      </div>
+
+      {/* 260928 — 숨겨 둔 사무소 지도 자리에 가맹점 지도 + 목록. 다른 섹션과 같은 폭(max-w-screen-md) */}
+      <div className="max-w-screen-md mx-auto px-6 md:px-10">
+        <FranchiseMap />
       </div>
 
       {/* Warranty Modal */}
