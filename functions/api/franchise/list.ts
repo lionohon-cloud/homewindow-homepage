@@ -4,7 +4,7 @@
  * 데이터 출처: ERP 업체 마스터(Firestore `vendors`, 화면 /admin/vendors). 시공후기(api/review/list.ts)와
  *   같은 방식으로 ERP Firestore 를 직접 읽는다.
  *   가져오는 업체 = 종류(type)가 'franchise'(가맹점)인 업체 전부 — 업체 마스터의 「가맹점」 탭에 보이는 목록과 같다
- *   (261008 사장님 결정). 비활성(active === false)·계약종료(contractStatus === 'canceled')는 홈페이지에서 뺀다.
+ *   (261008 한승우 과장 결정). 비활성(active === false)·계약종료(contractStatus === 'canceled')는 홈페이지에서 뺀다.
  *   'franchise' 종류는 ERP PR(가맹점 종류 + 탭) 반영 후 생긴다 — 그 전에는 0건 → 화면은 블록을 숨긴다.
  *   - 읽기 권한: vendors 는 익명이 아닌 로그인 사용자만 읽을 수 있다 →
  *     SYSTEM_AUTH_EMAIL / SYSTEM_AUTH_PASSWORD 가 설정돼 있어야 한다(없으면 익명 → 권한 오류 → 500).
@@ -40,7 +40,7 @@ const maskName = (v?: string) => {
 };
 
 /** 사업자등록번호 표시 형식 맞추기 — ERP 에 하이픈 없이(7802002548) 저장된 것도 780-20-02548 로.
- *  숫자가 10자리가 아니면 손대지 않는다. ERP 데이터는 그대로 둔다(261012 사장님 결정). */
+ *  숫자가 10자리가 아니면 손대지 않는다. ERP 데이터는 그대로 둔다(261012 한승우 과장 결정). */
 const formatBizNo = (v?: string) => {
   if (!v) return undefined;
   const d = v.replace(/\D/g, '');
