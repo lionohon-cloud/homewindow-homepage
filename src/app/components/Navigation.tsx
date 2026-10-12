@@ -10,6 +10,7 @@ import {
   useConsultBarOpen,
 } from "@/lib/consultBar";
 import { useDday } from "@/lib/dday";
+import { scrollToSection as scrollToEl } from "@/lib/scrollToSection";
 import logo from "@/assets/logo-gnb.svg";
 
 interface NavigationProps {
@@ -198,11 +199,8 @@ export function Navigation({ onMenuClick }: NavigationProps) {
     }
     const element = document.getElementById(id);
     if (element) {
-      const offsetTop = element.offsetTop;
-      window.scrollTo({
-        top: offsetTop,
-        behavior: "smooth"
-      });
+      // 260928 — 가는 도중 위쪽 이미지가 불러와져 목표가 밀려도 끝까지 따라간다 (가끔 원데이에서 멈추던 문제)
+      scrollToEl(element);
       // 모바일 메뉴 닫기
       setIsMobileMenuOpen(false);
       // 네비게이션 중복 방지

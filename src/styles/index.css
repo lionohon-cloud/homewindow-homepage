@@ -162,3 +162,35 @@
 
 /* 260923 — 팝업이 뜰 때 body 스크롤을 잠가도 스크롤바 자리가 그대로 남아 화면이 흔들리지 않게 */
 html { scrollbar-gutter: stable; }
+
+/* 260928 가맹점 지도 — 핀 바닥 붉은 빛: 숨쉬기 + 퍼지는 파동 (핀마다 --d 로 시작 시점을 어긋나게) */
+.fm-pin .fm-glow, .fm-pin .fm-ripple { transform-box: fill-box; transform-origin: center; }
+.fm-pin .fm-glow { animation: fm-breathe 2.6s ease-in-out infinite; animation-delay: var(--d); }
+.fm-pin .fm-ripple { opacity: 0; animation: fm-ripple 2.6s ease-out infinite; animation-delay: var(--d); }
+@keyframes fm-breathe { 0%, 100% { transform: scale(.85); opacity: .55; } 50% { transform: scale(1.1); opacity: .9; } }
+@keyframes fm-ripple { 0% { transform: scale(.4); opacity: .8; } 100% { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .fm-pin .fm-glow, .fm-pin .fm-ripple { animation: none; } }
+.fm-scroll::-webkit-scrollbar { width: 6px; }
+.fm-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+/* 260928 가맹점 지도 — 지도가 화면에 들어오면(.fm-in) 1호점부터 차례로 핀이 떨어져 꽂힌다 */
+.fm-pin .fm-drop, .fm-pin .fm-ground { opacity: 0; }
+.fm-in .fm-pin .fm-drop { animation: fm-drop .55s cubic-bezier(.3, 1.5, .5, 1) both; animation-delay: calc(var(--i) * 110ms + 150ms); }
+.fm-in .fm-pin .fm-ground { transform-box: fill-box; transform-origin: center; animation: fm-land .5s ease-out both; animation-delay: calc(var(--i) * 110ms + 470ms); }
+@keyframes fm-drop { 0% { opacity: 0; transform: translateY(-46px); } 55% { opacity: 1; } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes fm-land { 0% { opacity: 0; transform: scale(.2); } 100% { opacity: 1; transform: scale(1); } }
+/* 등장이 끝난 뒤(.fm-done)에는 꺼 둔다 — 핀 순서가 바뀌어도 다시 재생되지 않게 */
+.fm-done .fm-pin .fm-drop, .fm-done .fm-pin .fm-ground { animation: none; opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .fm-pin .fm-drop, .fm-pin .fm-ground { opacity: 1; }
+  .fm-in .fm-pin .fm-drop, .fm-in .fm-pin .fm-ground { animation: none; }
+}
+
+/* 260928 가맹점 지도 — 모바일 핀 정보 플레이트 등장 */
+.fm-plate { animation: fm-plate .22s ease-out both; }
+@keyframes fm-plate { from { opacity: 0; margin-top: 6px; } to { opacity: 1; margin-top: 0; } }
+
+/* 261002 가맹점 인증서 등장 */
+.fm-cert { animation: fm-cert .28s cubic-bezier(.2, .9, .3, 1.15) both; }
+@keyframes fm-cert { from { opacity: 0; transform: scale(.94) translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fm-cert { animation: none; } }
