@@ -39,6 +39,14 @@ const maskName = (v?: string) => {
   return ch.join('');
 };
 
+/** 사업자등록번호 표시 형식 맞추기 — ERP 에 하이픈 없이(7802002548) 저장된 것도 780-20-02548 로.
+ *  숫자가 10자리가 아니면 손대지 않는다. ERP 데이터는 그대로 둔다(261012 사장님 결정). */
+const formatBizNo = (v?: string) => {
+  if (!v) return undefined;
+  const d = v.replace(/\D/g, '');
+  return d.length === 10 ? `${d.slice(0, 3)}-${d.slice(3, 5)}-${d.slice(5)}` : v;
+};
+
 const SIDO_SHORT: [RegExp, string][] = [
   [/^서울/, '서울'], [/^부산/, '부산'], [/^대구/, '대구'], [/^인천/, '인천'], [/^광주/, '광주'],
   [/^대전/, '대전'], [/^울산/, '울산'], [/^세종/, '세종'], [/^경기/, '경기'], [/^강원/, '강원'],
@@ -104,7 +112,7 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
         name,
         no: noMatch ? Number(noMatch[1]) : undefined,
         rep: maskName(str(f.ceoName)),
-        bizNo: str(f.businessNumber),
+        bizNo: formatBizNo(str(f.businessNumber)),
         region: loc?.region ?? str(f.region),
         area: loc?.area,
         // 업체 마스터에서 올린 프로필 사진(정사각형으로 잘려 저장된 Storage 다운로드 주소)
