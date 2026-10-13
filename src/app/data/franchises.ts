@@ -4,7 +4,7 @@
  * 실제 운영: 시공후기처럼 ERP 업체 마스터(vendors, type=franchise) → `/api/franchise/list` 로 공개 필드만 받는다.
  * 응답이 없으면(개발 서버 등) 아래 SAMPLE 을 쓴다. SAMPLE 은 예시값이라 운영에 나가면 안 된다.
  *
- * 261002 공개 항목 정리 (사장님 결정):
+ * 261002 공개 항목 정리 (한승우 과장 결정):
  *  - 연락처·주소·대표자는 싣지 않는다.
  *    · 가맹점 번호가 노출되면 고객이 본사를 거치지 않고 직접 연락 → 본사 DB 수집 구조와 어긋남
  *    · 자택·아파트로 사업자를 낸 가맹점이 많아 주소 공개가 부담
@@ -43,7 +43,7 @@ export const SAMPLE_FRANCHISES: Franchise[] = [
   { id: "sample-15", name: "청암홈윈도우 15호점", no: 15, bizNo: "000-00-00015", region: "부산", area: "부산광역시", rep: "권혁진" },
 ];
 
-/** 대표자명 두 번째 글자 가리기 — 홍길동 → 홍○동, 김수 → 김○ (261008 사장님 지시) */
+/** 대표자명 두 번째 글자 가리기 — 홍길동 → 홍○동, 김수 → 김○ (261008 한승우 과장 지시) */
 export function maskName(name?: string): string {
   if (!name) return "";
   const ch = [...name.trim()];
