@@ -105,6 +105,9 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
       if (f.active === false || f.contractStatus === 'canceled') return null;
       const name = str(f.name);
       if (!name) return null;
+      // 사업자등록번호가 아직 없는 업체(계약 진행 중 등)는 홈페이지에 내보내지 않는다 (261013 한승우 과장 결정)
+      const bizNo = formatBizNo(str(f.businessNumber));
+      if (!bizNo) return null;
       const loc = areaFromAddress(str(f.address));
       const noMatch = name.match(/(\d+)\s*호점/);
       const item: PublicFranchise = {
@@ -112,7 +115,7 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
         name,
         no: noMatch ? Number(noMatch[1]) : undefined,
         rep: maskName(str(f.ceoName)),
-        bizNo: formatBizNo(str(f.businessNumber)),
+        bizNo,
         region: loc?.region ?? str(f.region),
         area: loc?.area,
         // 업체 마스터에서 올린 프로필 사진(정사각형으로 잘려 저장된 Storage 다운로드 주소)
