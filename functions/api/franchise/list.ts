@@ -4,7 +4,9 @@
  * 데이터 출처: ERP 업체 마스터(Firestore `vendors`, 화면 /admin/vendors). 시공후기(api/review/list.ts)와
  *   같은 방식으로 ERP Firestore 를 직접 읽는다.
  *   가져오는 업체 = 종류(type)가 'franchise'(가맹점)인 업체 전부 — 업체 마스터의 「가맹점」 탭에 보이는 목록과 같다
- *   (261008 한승우 과장 결정). 비활성(active === false)·계약종료(contractStatus === 'canceled')는 홈페이지에서 뺀다.
+ *   (261008 한승우 과장 결정). 그중 계약상태가 「계약완료」(contractStatus === 'active')이고 활성인 업체만 내보낸다
+ *   — 전자계약 서명이 끝나지 않은 지점(계약대기)은 숨김 (261029 한승우 과장 결정). 서명이 끝나면 업체 마스터에서
+ *   계약상태를 「계약완료」로 바꿔야 홈페이지에 나온다.
  *   'franchise' 종류는 ERP PR(가맹점 종류 + 탭) 반영 후 생긴다 — 그 전에는 0건 → 화면은 블록을 숨긴다.
  *   - 읽기 권한: vendors 는 익명이 아닌 로그인 사용자만 읽을 수 있다 →
  *     SYSTEM_AUTH_EMAIL / SYSTEM_AUTH_PASSWORD 가 설정돼 있어야 한다(없으면 익명 → 권한 오류 → 500).
@@ -102,7 +104,8 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
     .map((d) => {
       const f = decodeFields(d.fields) as Record<string, unknown>;
       // 비활성·계약종료 업체는 숨긴다
-      if (f.active === false || f.contractStatus === 'canceled') return null;
+      // 계약완료(active)만 — 계약대기(pending)·계약취소(canceled)·비활성은 숨긴다
+      if (f.active === false || f.contractStatus !== 'active') return null;
       const name = str(f.name);
       if (!name) return null;
       // 사업자등록번호가 아직 없는 업체(계약 진행 중 등)는 홈페이지에 내보내지 않는다 (261013 한승우 과장 결정)
