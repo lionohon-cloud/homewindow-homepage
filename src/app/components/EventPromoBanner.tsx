@@ -1,8 +1,10 @@
 import { motion } from "motion/react";
 /* 260917 10월 이벤트 이미지로 교체 (원본: 홈윈도우 업무\2. 온라인 마케팅\홈페이지\260825 9월 이벤트\
-   "260825 9월 이벤트-4.png" · "260825 9월 이벤트 mo-4.png" → webp). 9월판 파일은 지우지 않고 남겨 뒀다. */
-import pcBg from "../../assets/event/promo-2610-pc-bg.webp";
-import moImg from "../../assets/event/promo-2610-mo.webp";
+   "260825 9월 이벤트-4.png" · "260825 9월 이벤트 mo-4.png" → webp). 9월판 파일은 지우지 않고 남겨 뒀다.
+   261030 상시 이벤트판(promo-always-*) — 10월판에서 손글씨 "10월엔" 과 모바일 맨 아래 날짜 줄만 지웠다.
+   (작업 폴더: 코워크 생성 / 01. 홈페이지 / 261030 11월 이벤트 연장) 10월판 파일은 남겨 뒀다. */
+import pcBg from "../../assets/event/promo-always-pc-bg.webp";
+import moImg from "../../assets/event/promo-always-mo.webp";
 import { ShortsPlayer } from "./tempered/ShortsPlayer";
 
 /**
@@ -116,10 +118,9 @@ function PcText() {
       {/* 하단 안내 — 띠(y 695~777) 아래. 모바일처럼 띠 기준 가운데 정렬이고,
           띠와의 간격은 모바일과 같은 비율(높이의 3.7% ≈ 34px)로 띄웠다.
           띠 중심 x = (828+1884)/2 = 1356 → 49.93% */}
-      {/* 260917 모바일 이미지 문구와 같게 — 마감 10/31, 시공 완료 조건은 빠졌다 */}
-      <T cx={49.93} cy={90.6} size={0.85} cls="text-[#434343]">
-        본 이벤트는 2026년 10월 31일 까지 계약하신 고객에 한하여 적용됩니다.
-      </T>
+      {/* 260917 모바일 이미지 문구와 같게 — 마감 10/31, 시공 완료 조건은 빠졌다.
+          261030 상시 이벤트 — 기한 안내 줄은 뺐다(모바일 이미지에서도 지움).
+          기한이 다시 생기면 cx={49.93} cy={90.6} size={0.85} text-[#434343] 로 되살린다. */}
     </>
   );
 }
@@ -138,14 +139,13 @@ const MO_VIDEO_BOX = { left: 6.03, top: 52.17, width: 88.06, height: 30.83 };
    글자를 다시 코드로 얹어야 하면 이벤트판(260827 원본) EventPromoBanner.tsx 의 MoText 를 가져오면 된다.
    이미지에 적힌 내용은 스크린리더·검색엔진이 읽도록 alt 로 옮겼다. */
 const MO_ALT =
-  "10월엔 유리만 강화한 게 아닙니다. 유리도 강화하고 혜택도 강화했습니다. " +
+  "유리만 강화한 게 아닙니다. 유리도 강화하고 혜택도 강화했습니다. " +
   "일반유리를 강화유리로, 강화유리 무상 업그레이드. " +
-  "선착순 EVENT 200세대 한정, 계약금 10% 추가 할인. " +
-  "본 이벤트는 2026년 10월 31일 까지 계약하신 고객에 한하여 적용됩니다.";
+  "선착순 EVENT 200세대 한정, 계약금 10% 추가 할인.";
 
 export function EventPromoBanner() {
   return (
-    <section className="w-full bg-[#f2f8fe] overflow-hidden md:flex md:justify-center" aria-label="10월 한정 강화유리 프로모션">
+    <section className="w-full bg-[#f2f8fe] overflow-hidden md:flex md:justify-center" aria-label="강화유리 프로모션">
       {/* PC — 가로형. 2716px 에서 멈추고 그 이상은 양옆이 섹션 배경으로 남는다.
           배경색이 이미지 가장자리색이라 이어 붙은 것처럼 보인다. */}
       <motion.div

@@ -410,9 +410,16 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   className="ml-auto shrink-0 inline-flex items-center gap-1.5 bg-[#d22727] rounded-full px-2 min-[350px]:px-2.5 py-1 text-[10px] min-[350px]:text-[11px] font-bold text-white whitespace-nowrap cursor-pointer active:opacity-80 transition-opacity"
                   aria-label="강화유리 이벤트 보기"
                 >
-                  {/* 260917 이벤트버전 — 추석맞이 할인 → 강화유리 무상 업그레이드 이벤트 (마감 10/31) */}
-                  강화유리 이벤트 마감
-                  <span className="font-extrabold tabular-nums">{dday}</span>
+                  {/* 260917 이벤트버전 — 추석맞이 할인 → 강화유리 무상 업그레이드 이벤트 (마감 10/31)
+                      261030 상시 이벤트로 — 종료일이 없으면 D-day 대신 "진행중" */}
+                  {dday ? (
+                    <>
+                      강화유리 이벤트 마감
+                      <span className="font-extrabold tabular-nums">{dday}</span>
+                    </>
+                  ) : (
+                    "강화유리 이벤트 진행중"
+                  )}
                 </button>
               </div>
 

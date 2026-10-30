@@ -505,9 +505,9 @@ export function WhyBasicSection() {
               <br className="md:hidden" /> 강화유리로 무상 업그레이드
             </p>
           </div>
-          {/* 260917 조건은 박스 밖 아래 캡션으로 뺐다 */}
+          {/* 260917 조건은 박스 밖 아래 캡션으로 뺐다 (261030 상시 이벤트 — 날짜 뺌) */}
           <p data-promo-caption className="mt-3 text-center text-[12px] md:text-[13px] text-[#999] break-keep">
-            LX 제품군 한정 · 10월 31일까지 계약 시
+            LX 제품군 한정
           </p>
         </motion.div>
 

@@ -69,12 +69,13 @@ export const STORY_E: ScrollStory = {
      상시버전 CTA 는 "지금 견적서에서 강화유리를 확인하세요." — 행사가 끝나면 되돌리고 promo 를 지운다. */
   cta: "무상 업그레이드 상담 신청하기",
   promo: {
-    /* 260917 마감 9/30 → 10/31 로 새로 세팅 — "9월 한정" 은 빼고 날짜는 note 에 */
-    badge: "10월 한정 이벤트 마감",
+    /* 260917 마감 9/30 → 10/31 로 새로 세팅 — "9월 한정" 은 빼고 날짜는 note 에
+       261030 상시 이벤트로 — 달·날짜를 뺐다. 종료일이 생기면 badge 뒤에 D-day 가 다시 붙는다 */
+    badge: "강화유리 이벤트 진행중",
     line: "일반유리 가격에 강화유리로 무상 업그레이드",
     /* 혜택 줄은 한 단계 가볍게, 이 낱말만 굵게 — 제목 → 혜택 → 버튼 순으로 읽히게 */
     lineEmphasis: "무상 업그레이드",
-    note: "LX 제품군 한정 · 10월 31일까지 계약 시",
+    note: "LX 제품군 한정",
   },
 };
 
@@ -395,7 +396,7 @@ export function StoryScene({
                 >
                   {/* 260917 앞 점(블릿) 제거 */}
                   {story.promo.badge}
-                  <span className="font-extrabold tabular-nums">{dday}</span>
+                  {dday && <span className="font-extrabold tabular-nums">{dday}</span>}
                 </span>
               )}
             </div>
