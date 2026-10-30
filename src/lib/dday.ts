@@ -6,8 +6,9 @@
  */
 
 /** 강화유리 무상 업그레이드 프로모션 종료일. 이 날짜가 지나면 배지가 "종료" 로 바뀐다.
-    260917 이벤트 새로 세팅 — 9/30 → 10월 마지막 날(10/31) */
-export const PROMO_END = "2026-10-31";
+    260917 이벤트 새로 세팅 — 9/30 → 10월 마지막 날(10/31)
+    261030 11월까지 연장 — 10/31 → 11/30 */
+export const PROMO_END = "2026-11-30";
 
 /** "D-29" · "D-DAY" · "종료" */
 export function useDday(targetDate: string = PROMO_END): string {

@@ -1,8 +1,11 @@
 import { motion } from "motion/react";
 /* 260917 10월 이벤트 이미지로 교체 (원본: 홈윈도우 업무\2. 온라인 마케팅\홈페이지\260825 9월 이벤트\
-   "260825 9월 이벤트-4.png" · "260825 9월 이벤트 mo-4.png" → webp). 9월판 파일은 지우지 않고 남겨 뒀다. */
-import pcBg from "../../assets/event/promo-2610-pc-bg.webp";
-import moImg from "../../assets/event/promo-2610-mo.webp";
+   "260825 9월 이벤트-4.png" · "260825 9월 이벤트 mo-4.png" → webp). 9월판 파일은 지우지 않고 남겨 뒀다.
+   261030 11월 연장판(가을 단풍·주황 톤)으로 교체. PC 배경은 2000×669 로 작아졌고 도형 자리도 달라져
+   아래 좌표를 새 배경에서 다시 쟀다. 10월판(promo-2610-*)도 지우지 않고 남겨 뒀다.
+   원본: 코워크 생성\01. 홈페이지\261030 11월 이벤트 연장\ */
+import pcBg from "../../assets/event/promo-2611-pc-bg.webp";
+import moImg from "../../assets/event/promo-2611-mo.webp";
 import { ShortsPlayer } from "./tempered/ShortsPlayer";
 
 /**
@@ -72,41 +75,44 @@ function T({ cy, l, cx, size, cls = "", children }: Spot) {
      노란 태그, 파란 띠, 흰 카드)을 색으로 찾아 그 상자의 중심·왼끝에 글자를 앉혔다.
      아래 %는 배경 2716×908 에 대한 실측치다. */
 
-/** 배경에서 색으로 찾아낸 영상 자리 (2716×908 기준 %) */
-const PC_VIDEO_BOX = { left: 49.19, top: 29.19, width: 20.29, height: 43.17 };
+/** 배경에서 색으로 찾아낸 영상 자리 (261030 11월판 2000×669 기준 %) */
+const PC_VIDEO_BOX = { left: 50.1, top: 36.17, width: 17.8, height: 34.23 };
 
 function PcText() {
   return (
     <>
       {/* 유리 비교 카드 위의 라벨 두 개 */}
-      <T cx={33.12} cy={35.08} size={0.61} cls="font-bold text-black">
+      {/* 261030 11월판 좌표 (2000×669 실측: 회색 칩 x669~725, 주황 칩 x884~942, y259~280) */}
+      <T cx={34.85} cy={40.28} size={0.56} cls="font-bold text-black">
         일반유리
       </T>
-      <T cx={44.57} cy={35.08} size={0.61} cls="font-bold text-white">
+      <T cx={45.65} cy={40.28} size={0.56} cls="font-bold text-white">
         강화유리
       </T>
 
-      {/* 카드 하단 파란 알약 */}
-      <T cx={39.95} cy={65.75} size={1.04} cls="font-extrabold text-white">
+      {/* 카드 하단 알약 (11월판 주황, x689~965 y419~455) */}
+      <T cx={41.35} cy={65.32} size={0.96} cls="font-extrabold text-white">
         강화유리 무상 업그레이드
       </T>
 
       {/* 노란 말풍선 태그 */}
-      <T cx={40.85} cy={76.32} size={0.72} cls="font-extrabold text-[#014ec5]">
+      {/* 11월판 노란 태그 x786~892 y481~503, 글자는 파랑 → 주황 톤에 맞춘 진한 주황 */}
+      <T cx={41.95} cy={73.54} size={0.66} cls="font-extrabold text-[#c2410c]">
         선착순 EVENT
       </T>
 
       {/* 파란 띠 — 쿠폰 아이콘 오른쪽부터. 노란 태그와 왼끝을 맞춘다.
           "200세대 한정 | 계약금" 은 흰색, "10% 추가 할인" 은 옅은 노랑(#fffbbd). */}
-      <T l={38.14} cy={81.06} size={1.66} cls="font-extrabold text-white">
+      {/* 11월판 띠 x645~1360 y491~548 — 노란 태그 왼끝(x786)에 맞춘다 */}
+      <T l={39.3} cy={77.65} size={1.53} cls="font-extrabold text-white">
         200세대 한정
-        <span className="mx-[1.1cqw] font-normal opacity-60" style={{ fontSize: "1.3cqw" }}>
+        <span className="mx-[1cqw] font-normal opacity-60" style={{ fontSize: "1.2cqw" }}>
           |
         </span>
         계약금{" "}
         <span className="text-[#fffbbd]">
-          <span style={{ fontSize: "2.15cqw" }}>10</span>
-          <span className="ml-[0.12cqw]" style={{ fontSize: "1.3cqw" }}>
+          <span style={{ fontSize: "1.98cqw" }}>10</span>
+          <span className="ml-[0.12cqw]" style={{ fontSize: "1.2cqw" }}>
             %
           </span>{" "}
           추가 할인
@@ -117,8 +123,9 @@ function PcText() {
           띠와의 간격은 모바일과 같은 비율(높이의 3.7% ≈ 34px)로 띄웠다.
           띠 중심 x = (828+1884)/2 = 1356 → 49.93% */}
       {/* 260917 모바일 이미지 문구와 같게 — 마감 10/31, 시공 완료 조건은 빠졌다 */}
-      <T cx={49.93} cy={90.6} size={0.85} cls="text-[#434343]">
-        본 이벤트는 2026년 10월 31일 까지 계약하신 고객에 한하여 적용됩니다.
+      {/* 261030 11월 연장 — 띠 아래(띠 중심 x 50.13%) */}
+      <T cx={50.13} cy={86.6} size={0.78} cls="text-[#434343]">
+        본 이벤트는 2026년 11월 30일까지 계약하신 고객에 한하여 적용됩니다.
       </T>
     </>
   );
@@ -132,20 +139,20 @@ function PcText() {
 const PROMO_VIDEO = "https://www.youtube.com/watch?v=tuxuvYdPZaY";
 
 /** 영상이 들어갈 흰 카드 자리 — 배경(896×1200)에서 실측한 값 */
-const MO_VIDEO_BOX = { left: 6.03, top: 52.17, width: 88.06, height: 30.83 };
+const MO_VIDEO_BOX = { left: 9.38, top: 50.92, width: 81.47, height: 32.5 }; // 261030 11월판 실측
 
 /* 260917 — 모바일 이미지에 글자가 구워져 나와 글자를 얹는 MoText 는 뺐다.
    글자를 다시 코드로 얹어야 하면 이벤트판(260827 원본) EventPromoBanner.tsx 의 MoText 를 가져오면 된다.
    이미지에 적힌 내용은 스크린리더·검색엔진이 읽도록 alt 로 옮겼다. */
 const MO_ALT =
-  "10월엔 유리만 강화한 게 아닙니다. 유리도 강화하고 혜택도 강화했습니다. " +
+  "성원에 힘입어 한 달 더. 강화유리 무상 업그레이드 11월까지 계속됩니다. " +
   "일반유리를 강화유리로, 강화유리 무상 업그레이드. " +
   "선착순 EVENT 200세대 한정, 계약금 10% 추가 할인. " +
-  "본 이벤트는 2026년 10월 31일 까지 계약하신 고객에 한하여 적용됩니다.";
+  "본 이벤트는 2026년 11월 30일까지 계약하신 고객에 한하여 적용됩니다.";
 
 export function EventPromoBanner() {
   return (
-    <section className="w-full bg-[#f2f8fe] overflow-hidden md:flex md:justify-center" aria-label="10월 한정 강화유리 프로모션">
+    <section className="w-full bg-[#fbe3c6] overflow-hidden md:flex md:justify-center" aria-label="11월까지 연장 강화유리 프로모션">
       {/* PC — 가로형. 2716px 에서 멈추고 그 이상은 양옆이 섹션 배경으로 남는다.
           배경색이 이미지 가장자리색이라 이어 붙은 것처럼 보인다. */}
       <motion.div
@@ -158,8 +165,8 @@ export function EventPromoBanner() {
           src={pcBg}
           alt=""
           aria-hidden="true"
-          width={2716}
-          height={908}
+          width={2000}
+          height={669}
           className="block w-full h-auto"
           loading="lazy"
           decoding="async"

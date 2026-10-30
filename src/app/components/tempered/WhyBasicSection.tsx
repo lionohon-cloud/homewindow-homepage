@@ -507,7 +507,7 @@ export function WhyBasicSection() {
           </div>
           {/* 260917 조건은 박스 밖 아래 캡션으로 뺐다 */}
           <p data-promo-caption className="mt-3 text-center text-[12px] md:text-[13px] text-[#999] break-keep">
-            LX 제품군 한정 · 10월 31일까지 계약 시
+            LX 제품군 한정 · 11월 30일까지 계약 시
           </p>
         </motion.div>
 
