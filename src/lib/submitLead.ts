@@ -16,6 +16,7 @@ import {
   buildErpUtm,
   buildErpInflowChannel,
 } from './channelMap';
+import { requestConsultType } from './consultType';
 import {
   regionLabel,
   consultFieldLabel,
@@ -76,9 +77,13 @@ export async function submitLead(params: {
   const phone = verifyResult.phone;
   const verification = takeVerification(phone);
 
+  // ── 2026-11 상담 방법 (방문상담/일반상담) ─────────────────
+  // 시트는 행 추가만 되므로 접수 전에 묻는다. 닫거나 벗어나면 '' 로 접수는 그대로 진행.
+  const consultType = await requestConsultType();
+
   // 로컬 시연(TEST_MODE)은 실제 ERP·구글시트로 보내지 않는다 (테스트 번호가 실제 고객 DB 에 쌓이지 않게).
   if (VERIFY_TEST_MODE) {
-    console.info('[번호인증 실험] 인증 완료 접수 (전송 안 함)', { phone: normalizePhone(phone), entryForm, verified: true });
+    console.info('[번호인증 실험] 인증 완료 접수 (전송 안 함)', { phone: normalizePhone(phone), entryForm, verified: true, consultType });
     sessionStorage.setItem('hw_just_submitted', '1');
     return { ok: true, docId: `TEST-${Date.now()}` };
   }
@@ -108,6 +113,8 @@ export async function submitLead(params: {
     region: '',                           // 지역 라벨 (Call2 미반영 → 빈값)
     // 상담분야 라벨 — AI상담 분기는 접수 시점에 이미 확정 → 시트에도 기록.
     consult_field: consultField ? consultFieldLabel(consultField) : '',
+    // 상담 방법 — 견적 퍼널과 같은 열. ERP 로는 아직 보내지 않는다(ERP 스키마 반영 후 연결).
+    consult_type: consultType,
     timestamp: new Date().toISOString(),
   };
 

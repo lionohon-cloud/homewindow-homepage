@@ -32,7 +32,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="phead">
       <p class="phead-label">예상 견적</p>
       <h1>연락처를 남겨주세요</h1>
-      <p class="sub"><b id="zone-note"></b>이 단지 시공 사례를 확인한 뒤 연락드립니다.</p>
+      <p class="sub">번호 인증 후 견적 요청이 접수됩니다.</p>
     </div>
 
     <div class="cd locked rise">
@@ -47,9 +47,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
 
       <div class="lk-msg">
-        <p id="lock-title">견적은 연락처 확인 후 안내드립니다</p>
-        <small>평형과 창 개수에 따라 금액이 달라집니다.<br>
-        방문이나 실측 없이 통화만으로 예상 견적 범위를 먼저 받아보실 수 있습니다.</small>
+        <p id="lock-title">정확한 견적은<br>무료 방문 상담 후 안내드립니다</p>
+        <small>평형과 창 개수에 따라 금액이 달라집니다.</small>
       </div>
     </div>
 
@@ -73,6 +72,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="err">인증번호가 맞지 않습니다.</div>
       </div>
 
+      <div class="field" id="f-when">
+        <label id="lb-when">교체 희망 시기 <span>*</span></label>
+        <div class="seg grid2" id="i-when" role="radiogroup" aria-labelledby="lb-when">
+          <button type="button" data-v="최대한 빠르게">최대한 빠르게</button>
+          <button type="button" data-v="3개월 이내">3개월 이내</button>
+          <button type="button" data-v="6개월 이후">6개월 이후</button>
+          <button type="button" data-v="아직 고민 중">아직 고민 중</button>
+        </div>
+        <div class="err">교체 희망 시기를 선택해 주세요.</div>
+      </div>
+
       <div class="field">
         <label id="lb-pyeong">평형</label>
         <div class="seg row4" id="i-pyeong" role="radiogroup" aria-labelledby="lb-pyeong">
@@ -83,23 +93,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" style="margin-bottom:0">
         <label id="lb-scope">교체 범위</label>
         <div class="seg grid2" id="i-scope" role="radiogroup" aria-labelledby="lb-scope">
           <button type="button" data-v="거실 발코니 창">거실 발코니 창</button>
           <button type="button" data-v="방 창문만">방 창문만</button>
           <button type="button" data-v="집 전체">집 전체</button>
           <button type="button" data-v="아직 모르겠음">아직 모르겠음</button>
-        </div>
-      </div>
-
-      <div class="field" style="margin-bottom:0">
-        <label id="lb-when">교체 희망 시기</label>
-        <div class="seg grid2" id="i-when" role="radiogroup" aria-labelledby="lb-when">
-          <button type="button" data-v="최대한 빠르게">최대한 빠르게</button>
-          <button type="button" data-v="3개월 이내">3개월 이내</button>
-          <button type="button" data-v="6개월 이후">6개월 이후</button>
-          <button type="button" data-v="아직 고민 중">아직 고민 중</button>
         </div>
       </div>
     </div>
@@ -165,12 +165,12 @@ if(!d){
   $('ctafix').classList.remove('hidden');
 
   const g = gen(d);
-  $('lock-title').innerHTML = '<em>'+esc(g.name)+'</em> 견적은<br>연락처 확인 후 안내드립니다';
-  $('zone-note').textContent = g.zone + ' 담당 매니저가 ';
+  $('lock-title').innerHTML = '<em>'+esc(g.name)+'</em> 견적은<br>무료 방문 상담 후 안내드립니다';
   track('step3_quote_view', {danji:g.name, zone:g.zone, grade:g.grade});
 
   /* initSeg/segValue 는 app.js 공용부로 옮겼다(260907, 교체 희망 시기 추가하며 region.html 도 쓰게 됨) */
   initSeg('i-pyeong'); initSeg('i-scope'); initSeg('i-when');
+  $('i-when').addEventListener('click', ()=>$('f-when').classList.remove('bad'));
 
   const V = initTelVerify();
 
@@ -208,6 +208,13 @@ if(!d){
       else setTimeout(()=>$('i-code').focus(), 420);
       return;
     }
+    /* 교체 희망 시기는 필수입니다 */
+    if(!segValue('i-when')){
+      track('step3_timing_missing');
+      $('f-when').classList.add('bad');
+      window.scrollTo({top:$('f-when').getBoundingClientRect().top+window.scrollY-100, behavior:'smooth'});
+      return;
+    }
 
     const dt=new Date();
     const payload={
@@ -224,16 +231,18 @@ if(!d){
     };
 
     submitting = true;
-    setSubmitState($('send'), true, '');
-    try{
-      const result = await submitLead(payload);
-      track('lead', {danji:g.name, zone:g.zone, headline:qs('ab')});
-      goStep('thanks.html', {no:result.receiptNo, dj:encodeURIComponent(g.name)});
-    }catch(e){
-      submitting = false;
-      setSubmitState($('send'), false, e && e.message ? e.message : '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-      track('lead_submit_fail', {path:PATH});
-    }
+    setSubmitState($('send'), false, '');
+    askConsult(payload, {
+      done: (result, type)=>{
+        track('lead', {danji:g.name, zone:g.zone, headline:qs('ab'), consult:type});
+        goStep('thanks.html', {no:result && result.receiptNo, dj:encodeURIComponent(g.name)});
+      },
+      fail: e=>{
+        submitting = false;
+        setSubmitState($('send'), false, e && e.message ? e.message : '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+        track('lead_submit_fail', {path:PATH});
+      }
+    });
   });
 
   $('back').onclick=()=>{ location.href='danji.html?d='+encodeURIComponent(qs('d'))+(qs('ab')?'&ab='+qs('ab'):''); };

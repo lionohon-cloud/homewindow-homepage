@@ -43,6 +43,8 @@ export interface LeadSheetRow {
   referrer: string;
   region: string;
   consult_field: string;
+  /** 상담 방법 — '방문상담' | '일반상담' | ''. 기존 열 뒤에 붙인다(2026-11 추가). */
+  consult_type: string;
   timestamp: string;
 }
 

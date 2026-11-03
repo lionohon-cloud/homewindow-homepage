@@ -134,6 +134,51 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const qs = k => new URLSearchParams(location.search).get(k) || '';
 
+/* ── 로컬 테스트 ──
+   localhost·사설 IP 로 띄웠을 때만 문자 인증과 접수를 흉내 냅니다.
+   로컬 개발 서버(vite)에는 Pages Functions 가 없어 인증번호를 받을 수 없기 때문입니다.
+   인증번호는 화면 위쪽 검은 띠에 보여주고, 접수 본문은 콘솔에만 찍고 서버로 보내지 않습니다.
+   운영 도메인(homewindow.kr)과 Pages 미리보기 도메인에서는 켜지지 않습니다. */
+const LOCAL_TEST = /^(localhost|127\.0\.0\.1|\[::1\]|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/
+  .test(location.hostname);
+if(LOCAL_TEST){
+  const realFetch = window.fetch.bind(window);
+  let testCode = '';
+  const reply = obj => new Response(JSON.stringify(obj), {status:200, headers:{'Content-Type':'application/json'}});
+  const banner = html => {
+    let el = document.getElementById('local-test-banner');
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'local-test-banner';
+      el.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9999;'
+        + 'padding:8px 14px;border-radius:999px;background:#111827;color:#fff;white-space:nowrap;'
+        + 'font:600 13px/1.4 "Pretendard Variable",Pretendard,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = html;
+  };
+  window.fetch = async (input, init) => {
+    const url = String(input && input.url || input);
+    const body = () => { try{ return JSON.parse(init && init.body || '{}'); }catch(e){ return {}; } };
+    if(url.includes('/api/request/sms/send')){
+      testCode = String(Math.floor(Math.random()*900000 + 100000));
+      banner('로컬 테스트 · 인증번호 <b style="letter-spacing:.12em">' + testCode + '</b>');
+      return reply({ok:true});
+    }
+    if(url.includes('/api/request/sms/verify')){
+      if(body().code !== testCode) return reply({ok:false, code:'CODE_MISMATCH'});
+      banner('로컬 테스트 · 인증 완료');
+      return reply({ok:true, token:'local-test-token-' + Date.now()});
+    }
+    if(url.includes('/api/request/lead')){
+      console.log('[로컬 테스트] 접수 본문 — 서버로 보내지 않음', body());
+      banner('로컬 테스트 · 접수는 서버로 보내지 않았습니다');
+      return reply({ok:true, docId:'LOCAL-TEST', receiptNo:'TEST-' + String(Date.now()).slice(-6)});
+    }
+    return realFetch(input, init);
+  };
+}
+
 /* ── 단지 정보를 주소에 실어 나르기 ──
    페이지가 나뉘어도 서버 없이 값이 넘어갑니다.
    순서: 단지명, 상담권역, 법정동, 준공연도, 세대수, 동수, 최고층, 복도유형, 난방방식, 단지분류, 시공사 */
@@ -668,4 +713,84 @@ function bindModal(modalId, openId, closeId){
   c.addEventListener('click', ()=>m.classList.add('hidden'));
   m.addEventListener('click', e=>{ if(e.target===m) m.classList.add('hidden'); });
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') m.classList.add('hidden'); });
+}
+
+/* ── 상담 방법 (견적 받기를 누르면 화면 위에 띄웁니다) ──
+   카드를 고르는 순간 상담 방법을 실어 접수합니다. 구글시트 연동이 행 추가만 되고
+   이미 들어간 행을 고칠 수 없어서, 고른 값을 처음 접수에 함께 실어야 시트에 남습니다.
+   고르지 않고 화면을 벗어나면(앱 전환·뒤로 가기·창 닫기) 상담 방법 없이 바로 접수해
+   리드를 잃지 않습니다. */
+const CONSULT_LABEL = {visit:'방문상담', call:'일반상담'};
+
+/* 화면이 사라지는 중에도 끝까지 전송되도록 sendBeacon 을 씁니다 */
+function beaconLead(payload){
+  try{
+    const body = JSON.stringify(Object.assign({}, payload, {flowId:FLOW_ID, utm:ATTRIBUTION}));
+    /* 로컬 테스트는 fetch 를 가로채 처리하므로 beacon 대신 fetch 로 보냅니다 */
+    if(!LOCAL_TEST && navigator.sendBeacon && navigator.sendBeacon(LEAD_API, new Blob([body], {type:'application/json'}))) return;
+    fetch(LEAD_API, {method:'POST', headers:{'Content-Type':'application/json'}, body, keepalive:true}).catch(()=>{});
+  }catch(e){}
+}
+
+function askConsult(payload, on){
+  const m = document.createElement('div');
+  m.className = 'modal consult-modal';
+  m.setAttribute('role', 'dialog');
+  m.setAttribute('aria-modal', 'true');
+  m.setAttribute('aria-labelledby', 'consult-h');
+  m.innerHTML =
+    '<div class="modal-box"><div class="cs-body">'+
+      '<p class="cs-step">마지막 단계예요</p>'+
+      '<h3 id="consult-h">상담 방법을 선택해 주세요</h3>'+
+      '<p class="cs-sub">정확한 견적은 방문이 필요해요.</p>'+
+      '<div class="pick stack">'+
+        '<button type="button" class="pick-btn" data-c="visit">'+
+          '<span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11L12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg></span>'+
+          '<span class="pk-txt"><b>집에 와서 직접 봐주세요</b><small>무료 방문 실측으로<br>현장에서 정확한 견적을 알려드려요</small></span>'+
+        '</button>'+
+        '<button type="button" class="pick-btn" data-c="call">'+
+          '<span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.1A8 8 0 1 1 20 12z"/><path d="M9.8 9.6a2.3 2.3 0 0 1 4.4.9c0 1.5-2.2 1.9-2.2 3"/><path d="M12 16.2h.01"/></svg></span>'+
+          '<span class="pk-txt"><b>궁금한 것부터 물어볼게요</b><small>샷시교체가 처음이라<br>먼저 시공 방법이나 상담이 필요해요</small></span>'+
+        '</button>'+
+      '</div>'+
+    '</div></div>';
+  document.body.appendChild(m);
+  document.body.style.overflow = 'hidden';
+  track('consult_view', {path:PATH});
+
+  let busy = false, left = false;
+  const leave = ()=>{
+    if(document.visibilityState !== 'hidden' || busy || left) return;
+    left = true;
+    beaconLead(payload);
+    track('consult_leave', {path:PATH});
+  };
+  document.addEventListener('visibilitychange', leave);
+  const close = ()=>{
+    document.removeEventListener('visibilitychange', leave);
+    m.remove();
+    document.body.style.overflow = '';
+  };
+
+  const btns = m.querySelectorAll('.pick-btn');
+  btns.forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      if(busy) return;
+      busy = true;
+      const type = CONSULT_LABEL[b.dataset.c];
+      m.classList.add('busy');
+      b.classList.add('on');
+      btns.forEach(x=>{ x.disabled = true; });
+      track('consult_select', {type:b.dataset.c, path:PATH});
+      /* 화면을 벗어날 때 이미 상담 방법 없이 접수됐다면 다시 보내지 않습니다 */
+      if(left){ on.done(null, type); return; }
+      try{
+        on.done(await submitLead(Object.assign({}, payload, {상담방식:type})), type);
+      }catch(e){
+        close();
+        on.fail(e);
+      }
+    });
+  });
+  btns[0].focus({preventScroll:true});
 }

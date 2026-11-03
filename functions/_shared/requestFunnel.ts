@@ -66,6 +66,12 @@ function submittedAt(value: unknown): string {
   return normalized;
 }
 
+/** 상담 방법. 모르는 값은 버리고 빈칸으로 둔다 — 접수 자체를 막지 않는다. */
+export const CONSULT_TYPES = ['방문상담', '일반상담'] as const;
+function consultType(value: unknown): string {
+  return typeof value === 'string' && (CONSULT_TYPES as readonly string[]).includes(value) ? value : '';
+}
+
 const UTM_LIMITS: Record<string, number> = {
   inflowMedia: 100,
   inflowChannelText: 100,
@@ -288,6 +294,7 @@ export function buildLeadSheetRow(input: unknown): LeadSheetRow {
     referrer: pick('referrer'),
     region: '', // 시트 열 구성을 기존 홈페이지와 동일하게 유지하기 위한 자리다.
     consult_field: '',
+    consult_type: consultType(body['상담방식']),
     timestamp: submittedAt(body['접수시각']),
   };
 }
