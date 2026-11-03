@@ -252,8 +252,9 @@ test('상담 방법은 정해진 두 값만 시트에 싣고, 없거나 모르�
   assert.equal(buildLeadSheetRow(rawLead({ 상담방식: 'visit' })).consult_type, '');
 });
 
-test('상담 방법은 ERP 스키마에 반영되기 전까지 ERP 로 보내지 않는다', () => {
-  const snap = normalizeLead(rawLead({ 상담방식: '방문상담' })).requestFunnelSnap as Record<string, unknown>;
-  assert.equal('consultType' in snap, false);
-  assert.equal(JSON.stringify(snap).includes('방문상담'), false);
+test('상담 방법은 ERP requestFunnelSnap.consultType 으로 보내고, 없거나 모르는 값은 키를 뺀다', () => {
+  assert.equal(normalizeLead(rawLead({ 상담방식: '방문상담' })).requestFunnelSnap.consultType, '방문상담');
+  assert.equal(normalizeLead(rawLead({ 상담방식: '일반상담' })).requestFunnelSnap.consultType, '일반상담');
+  assert.equal('consultType' in normalizeLead(rawLead()).requestFunnelSnap, false);
+  assert.equal('consultType' in normalizeLead(rawLead({ 상담방식: 'visit' })).requestFunnelSnap, false);
 });

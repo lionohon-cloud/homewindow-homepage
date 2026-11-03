@@ -180,6 +180,8 @@ export interface ErpLeadPayload {
     areaPyeong?: string;
     replacementScope?: string;
     replacementTiming?: string;
+    /** 상담 방법 '방문상담' | '일반상담' — ERP 는 string(100) 으로 받는다 (cahwindow-Quote#6471). */
+    consultType?: string;
     headlineVariant?: string;
     consentMethod: string;
     consentVersion: string;
@@ -237,6 +239,9 @@ export function normalizeLead(input: unknown): ErpLeadPayload {
   for (const [key, value] of Object.entries(optionalNumbers)) {
     if (value !== null) snapshot[key as keyof typeof optionalNumbers] = value;
   }
+
+  const consult = consultType(body['상담방식']);
+  if (consult) snapshot.consultType = consult;
 
   const address = [region, legalDong, complexName].filter(Boolean).join(' ').slice(0, 300);
   return {
