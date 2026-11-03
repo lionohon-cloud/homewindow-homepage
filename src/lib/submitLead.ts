@@ -113,7 +113,7 @@ export async function submitLead(params: {
     region: '',                           // 지역 라벨 (Call2 미반영 → 빈값)
     // 상담분야 라벨 — AI상담 분기는 접수 시점에 이미 확정 → 시트에도 기록.
     consult_field: consultField ? consultFieldLabel(consultField) : '',
-    // 상담 방법 — 견적 퍼널과 같은 열. ERP 로는 아직 보내지 않는다(ERP 스키마 반영 후 연결).
+    // 상담 방법 — 견적 퍼널과 같은 열.
     consult_type: consultType,
     timestamp: new Date().toISOString(),
   };
@@ -163,6 +163,8 @@ export async function submitLead(params: {
     aiChatSummary: aiChat?.summary?.slice(0, 500) || undefined,
     // 접수 시점 확정 분야 (AI상담 분기) — ERP 가 FIELD_CODES 로 검증 후 저장.
     consultField: consultField || undefined,
+    // 상담 방법 (방문상담/일반상담) — ERP 최상위 consultType (cahwindow-Quote#6471). 고르지 않았으면 키 생략.
+    consultType: consultType || undefined,
     // AI 방충망 분기는 Call2 전에 이탈해도 제휴이관 대기 표식이 남아야 한다.
     meshReferralRequested: consultField === 'SAFETY_SCREEN' ? true : undefined,
     // createdAt은 ERP 서버에서 serverTimestamp() 설정
