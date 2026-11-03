@@ -58,12 +58,11 @@ const no = qs('no'), nm = decodeURIComponent(qs('n')||''),
 const IS_REGION = PATH !== 'apt';
 if(IS_REGION){
   $('done-h').textContent = '상담 신청이 접수되었습니다';
-  $('done-msg').innerHTML = (nm?esc(nm)+'님, 상담 신청이 접수되었습니다.<br>':'상담 신청이 접수되었습니다.<br>')
-    + (zn ? '<b>'+esc(zn)+'</b> 담당 매니저가 영업일 기준 1일 이내에 연락드리겠습니다.'
-          : '담당 매니저가 통화로 지역을 확인한 뒤 예상 견적 범위를 안내해 드리겠습니다.');
+  $('done-msg').innerHTML = (nm?esc(nm)+'님, ':'') + (zn?'<b>'+esc(zn)+'</b> ':'')
+    + '상담 신청이 접수되었습니다.<br>정확한 견적은 무료 방문 상담 후 안내드립니다.';
 }else{
   $('done-msg').innerHTML = (nm?esc(nm)+'님, ':'') + (dj?'<b>'+esc(dj)+'</b> ':'')
-    + '견적 요청이 접수되었습니다.<br>영업일 기준 1일 이내에 연락드려 예상 견적 범위를 안내해 드리겠습니다.';
+    + '견적 요청이 접수되었습니다.<br>정확한 견적은 무료 방문 상담 후 안내드립니다.';
 }
 if(no){
   $('done-no').textContent = '접수번호 '+no;

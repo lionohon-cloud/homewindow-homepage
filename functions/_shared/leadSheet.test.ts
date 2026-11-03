@@ -17,7 +17,7 @@ const SHEET_KEYS = [
   'phone', 'channel_media', 'entry_form',
   'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
   'visit_id', 'landing_path', 'referrer',
-  'region', 'consult_field', 'timestamp',
+  'region', 'consult_field', 'consult_type', 'timestamp',
 ];
 
 function rawLead(overrides: Record<string, unknown> = {}) {
@@ -243,4 +243,17 @@ test('KV 바인딩이 없어도 전송은 한 번 수행한다', async () => {
 
   // 중복을 막을 수단이 없으므로 재시도하지 않는다.
   assert.equal(calls, 1);
+});
+
+test('상담 방법은 정해진 두 값만 시트에 싣고, 없거나 모르는 값은 빈칸이다', () => {
+  assert.equal(buildLeadSheetRow(rawLead({ 상담방식: '방문상담' })).consult_type, '방문상담');
+  assert.equal(buildLeadSheetRow(rawLead({ 상담방식: '일반상담' })).consult_type, '일반상담');
+  assert.equal(buildLeadSheetRow(rawLead()).consult_type, '');
+  assert.equal(buildLeadSheetRow(rawLead({ 상담방식: 'visit' })).consult_type, '');
+});
+
+test('상담 방법은 ERP 스키마에 반영되기 전까지 ERP 로 보내지 않는다', () => {
+  const snap = normalizeLead(rawLead({ 상담방식: '방문상담' })).requestFunnelSnap as Record<string, unknown>;
+  assert.equal('consultType' in snap, false);
+  assert.equal(JSON.stringify(snap).includes('방문상담'), false);
 });

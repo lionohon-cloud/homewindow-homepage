@@ -97,6 +97,20 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 .main.fill{padding-top:64px}
 .main.fill .pick{margin-top:auto;margin-bottom:auto;transform:translateY(-22px)}
 
+/* 상담 방법 — 한 줄 설명이 붙는 세로 카드 */
+.pick.stack{grid-template-columns:1fr;gap:10px}
+.pick.stack .pick-btn{display:flex;align-items:center;gap:14px;padding:18px;text-align:left}
+.pk-ico{
+  flex:0 0 auto;width:44px;height:44px;border-radius:var(--r-xl);
+  background:var(--brand-light);display:grid;place-items:center;
+}
+.pk-ico svg{width:23px;height:23px;fill:none;stroke:var(--brand);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pk-txt{min-width:0}
+/* 버튼 안 글자는 본문 행간을 물려받지 않아 직접 잡아 줍니다 */
+.pick.stack .pick-btn b{display:block;font-size:17px;font-weight:700;line-height:1.4}
+.pick.stack .pick-btn small{display:block;margin-top:5px;font-size:13px;font-weight:500;line-height:1.6;color:var(--muted);word-break:keep-all}
+.pick.stack .pick-btn:active small{color:var(--brand)}
+
 .pick{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .pick-btn{
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
@@ -346,6 +360,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 .field .err{display:none;margin-top:6px;font-size:12px;font-weight:500;color:var(--brand)}
 .field.bad input{border-color:var(--brand);background:var(--brand-light)}
 .field.bad .err{display:block}
+.field.bad .seg button{border-color:var(--brand)}
 
 /* ---------- 연락처 문자 인증 ---------- */
 .tel-row{display:flex;gap:8px}
@@ -583,6 +598,16 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
   @keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
   .modal-body{max-height:52vh}
 }
+
+/* 상담 방법 — 접수 직후 띄우는 선택 창 */
+.cs-body{padding:26px 20px 22px}
+.cs-step{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--brand)}
+.consult-modal .pick-btn:disabled{cursor:default}
+.consult-modal .pick-btn.on{background:var(--brand-light);border-color:var(--brand)}
+.consult-modal.busy .pick-btn:not(.on){opacity:.45}
+.cs-body h3{margin:0;font-size:20px;font-weight:700;line-height:1.4;word-break:keep-all}
+.cs-sub{margin:6px 0 20px;font-size:14px;color:var(--muted);line-height:1.65;word-break:keep-all}
+@media (max-width:560px){.cs-body{padding-bottom:calc(22px + env(safe-area-inset-bottom))}}
 
 /* ---------- 진입 애니메이션 ---------- */
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}

@@ -31,7 +31,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="phead">
     <p class="phead-label">간편 상담 접수</p>
     <h1>어디에 시공하시나요?</h1>
-    <p class="sub">시·군·구까지만 고르시면 됩니다. 상세 주소나 동·호수는 받지 않습니다.</p>
+    <p class="sub">시공하실 지역을 선택해 주세요.</p>
   </div>
 
   <div class="cd cd-pad rise">
@@ -71,13 +71,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     <div class="field" id="f-when" style="margin-bottom:0">
-      <label id="lb-when">교체 희망 시기</label>
+      <label id="lb-when">교체 희망 시기 <span>*</span></label>
       <div class="seg grid2" id="i-when" role="radiogroup" aria-labelledby="lb-when">
         <button type="button" data-v="최대한 빠르게">최대한 빠르게</button>
         <button type="button" data-v="3개월 이내">3개월 이내</button>
         <button type="button" data-v="6개월 이후">6개월 이후</button>
         <button type="button" data-v="아직 고민 중">아직 고민 중</button>
       </div>
+      <div class="err">교체 희망 시기를 선택해 주세요.</div>
     </div>
   </div>
 
@@ -88,7 +89,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </li>
     <li>
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#FDEAEA"/><path d="M4.5 8l2.5 2.5 4.5-5" stroke="#D22727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>방문이나 실측 없이 통화만으로 예상 견적 범위를 먼저 안내해 드립니다.</span>
+      <span>전국 어디든 무료 방문 상담 후 정확한 견적을 안내해 드립니다.</span>
     </li>
     <li>
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#FDEAEA"/><path d="M4.5 8l2.5 2.5 4.5-5" stroke="#D22727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -331,6 +332,7 @@ $('zhits').addEventListener('click', e=>{
 $('zone-btn').addEventListener('click', zOpen);
 
 initSeg('i-when');
+$('i-when').addEventListener('click', ()=>$('f-when').classList.remove('bad'));
 const V = initTelVerify();
 
 $('i-tel').addEventListener('input', e=>{
@@ -366,6 +368,13 @@ $('send').addEventListener('click', async ()=>{
     else setTimeout(()=>$('i-code').focus(), 420);
     return;
   }
+  /* 교체 희망 시기는 필수입니다 */
+  if(!segValue('i-when')){
+    track('region_timing_missing');
+    $('f-when').classList.add('bad');
+    window.scrollTo({top:$('f-when').getBoundingClientRect().top+window.scrollY-100, behavior:'smooth'});
+    return;
+  }
 
   const dt = new Date();
   const payload = {
@@ -378,16 +387,18 @@ $('send').addEventListener('click', async ()=>{
   };
 
   submitting = true;
-  setSubmitState($('send'), true, '');
-  try{
-    const result = await submitLead(payload);
-    track('lead', {path:PATH, zone: zPicked || '미정', headline:qs('ab')});
-    goStep('thanks.html', {no:result.receiptNo, z:encodeURIComponent(zPicked)});
-  }catch(e){
-    submitting = false;
-    setSubmitState($('send'), false, e && e.message ? e.message : '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-    track('lead_submit_fail', {path:PATH});
-  }
+  setSubmitState($('send'), false, '');
+  askConsult(payload, {
+    done: (result, type)=>{
+      track('lead', {path:PATH, zone: zPicked || '미정', headline:qs('ab'), consult:type});
+      goStep('thanks.html', {no:result && result.receiptNo, z:encodeURIComponent(zPicked)});
+    },
+    fail: e=>{
+      submitting = false;
+      setSubmitState($('send'), false, e && e.message ? e.message : '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      track('lead_submit_fail', {path:PATH});
+    }
+  });
 });
 
 $('back').addEventListener('click', ()=>{
