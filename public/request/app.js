@@ -166,7 +166,8 @@ if(LOCAL_TEST){
       return reply({ok:true});
     }
     if(url.includes('/api/request/sms/verify')){
-      if(body().code !== testCode) return reply({ok:false, code:'CODE_MISMATCH'});
+      const master = String(body().tel).replace(/\D/g,'') === '01099999999' && body().code === '99';
+      if(body().code !== testCode && !master) return reply({ok:false, code:'CODE_MISMATCH'});
       banner('로컬 테스트 · 인증 완료');
       return reply({ok:true, token:'local-test-token-' + Date.now()});
     }
@@ -629,7 +630,9 @@ function initTelVerify(){
   check.addEventListener('click', async ()=>{
     const v = code.value.replace(/\D/g,'');
     codeF.classList.remove('bad');
-    if(v.length !== 6){ codeF.classList.add('bad'); code.focus(); return; }
+    /* 마스터키 — 010-9999-9999 는 인증번호 99 로 통과합니다 (서버 sms/verify 의 테스트 우회와 같은 값) */
+    const master = digits() === '01099999999' && v === '99';
+    if(v.length !== 6 && !master){ codeF.classList.add('bad'); code.focus(); return; }
     if(left <= 0){ say('인증번호가 만료되었습니다. 다시 받아주세요.'); return; }
 
     check.disabled = true;
