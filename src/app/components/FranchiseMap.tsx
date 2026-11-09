@@ -338,7 +338,15 @@ function CertModal({ f, onClose }: { f: Franchise | null; onClose: () => void })
         className="relative shadow-2xl rounded-md bg-white font-['Nanum_Myeongjo','Noto_Serif_KR','Batang','AppleMyungjo',serif]"
         style={{ aspectRatio: "1333 / 2000", width: "100%", containerType: "inline-size" }}
       >
-        <img src={certBg} alt="청암홈윈도우 가맹점 인증서" className="absolute inset-0 w-full h-full rounded-md" />
+        {/* 261109 본사 도장을 양식 이미지에 합쳐 구웠다(도장 원본은 저장소에 없음, 지름 150px).
+            쉽게 저장되지 않게 우클릭·끌어서 저장을 막는다 */}
+        <img
+          src={certBg}
+          alt="청암홈윈도우 가맹점 인증서"
+          className="absolute inset-0 w-full h-full rounded-md select-none pointer-events-none"
+          draggable={false}
+        />
+        <div className="absolute inset-0" onContextMenu={(e) => e.preventDefault()} />
 
         {/* 상호 · 대표자 · 사업자등록번호 (양식의 세로 구분선 오른쪽) */}
         <p className={field} style={{ top: "43.8%", fontSize: "3.7cqw" }}>{f.name}</p>
