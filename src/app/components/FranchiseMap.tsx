@@ -165,7 +165,8 @@ export function FranchiseMap() {
   };
 
   return (
-    <div className="mt-12 md:mt-16" aria-label="전국 가맹점">
+    /* id: 개인정보처리방침 「가맹점 목록 보기」 링크가 여기로 온다 (261116) */
+    <div id="franchise-list" className="mt-12 md:mt-16 scroll-mt-20" aria-label="전국 가맹점">
 
       <div className="grid md:grid-cols-[1.08fr_.92fr] gap-8 md:gap-5 md:items-stretch">
       {/* 지도 */}
