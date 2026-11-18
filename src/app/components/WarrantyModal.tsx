@@ -148,7 +148,7 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                           벽체와 창틀 사이의 틈에 의한 누수 발생
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
+                          1년
                         </td>
                       </tr>
                       <tr>
@@ -156,7 +156,7 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                           창짝의 기울어짐(수평불량)에 의한 누수
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
+                          1년
                         </td>
                       </tr>
                       <tr>
@@ -164,7 +164,7 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                           시공시 발생한 실리콘 및 몰딩 작업의 불량
                         </td>
                         <td className="border border-gray-300 px-2 py-3 text-center text-[14px] text-gray-900">
-                          2년
+                          1년
                         </td>
                       </tr>
 
@@ -264,7 +264,7 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                           벽체와 창틀 사이의 틈에 의한 누수 발생
                         </div>
                         <div className="text-center">
-                          <div className="text-[14px] font-bold text-gray-900">2년</div>
+                          <div className="text-[14px] font-bold text-gray-900">1년</div>
                           <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
@@ -275,7 +275,7 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                           창짝의 기울어짐(수평불량)에 의한 누수
                         </div>
                         <div className="text-center">
-                          <div className="text-[14px] font-bold text-gray-900">2년</div>
+                          <div className="text-[14px] font-bold text-gray-900">1년</div>
                           <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
@@ -284,7 +284,7 @@ export function WarrantyModal({ isOpen, onClose }: WarrantyModalProps) {
                       <div className="p-4 space-y-3">
                         <div className="text-[14px] text-gray-700 text-center">시공시 발생한 실리콘 및 몰딩 작업의 불량</div>
                         <div className="text-center">
-                          <div className="text-[14px] font-bold text-gray-900">2년</div>
+                          <div className="text-[14px] font-bold text-gray-900">1년</div>
                           <div className="text-[12px] text-gray-600 mt-1">보증기간</div>
                         </div>
                       </div>
