@@ -276,14 +276,14 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                     );
                   })}
 
-                  {/* 가맹점 문의 — 별도 정적 사이트(public/franchise)라 SPA 라우터가 아니라 하드 네비게이션으로 이동한다 */}
+                  {/* 대리점 문의 — 별도 정적 사이트(public/franchise)라 SPA 라우터가 아니라 하드 네비게이션으로 이동한다 */}
                   <button
                     onClick={() => { window.location.href = "/franchise"; }}
                     className="flex items-center gap-1.5 text-[#1f6fff] hover:underline transition cursor-pointer"
                   >
                     <Handshake className="w-4 h-4" />
                     <span className="font-semibold whitespace-nowrap text-[14.5px]">
-                      가맹점 문의
+                      대리점 문의
                     </span>
                   </button>
                 </div>
@@ -477,7 +477,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   <span className="text-[15px] font-semibold">FAQ</span>
                 </motion.button>
 
-                {/* 가맹점 문의 — 별도 정적 사이트(public/franchise)라 SPA 라우터가 아니라 하드 네비게이션으로 이동한다 */}
+                {/* 대리점 문의 — 별도 정적 사이트(public/franchise)라 SPA 라우터가 아니라 하드 네비게이션으로 이동한다 */}
                 <motion.button
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -486,7 +486,7 @@ export function Navigation({ onMenuClick }: NavigationProps) {
                   className="w-full text-left px-6 py-4 border-l-4 border-transparent text-[#333] active:bg-[#f8f8f8] mt-2 border-t border-[#eee] pt-5 flex items-center gap-2"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1f6fff]" />
-                  <span className="text-[15px] font-semibold">가맹점 문의</span>
+                  <span className="text-[15px] font-semibold">대리점 문의</span>
                 </motion.button>
               </div>
             </motion.div>
