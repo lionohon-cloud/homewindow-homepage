@@ -10,6 +10,7 @@ import {
   normalizePhone,
   requestPhoneVerification,
   takeVerification,
+  PHONE_VERIFY_PAUSED,
 } from './phoneVerify';
 import {
   getChannelMedia,
@@ -70,12 +71,17 @@ export async function submitLead(params: {
   // 접수 전에 본인확인. 어느 폼이든 여기를 지나므로 폼마다 팝업을 달지 않는다.
   // 팝업을 닫으면 접수하지 않고 멈춘다(cancelled). 미인증 이탈 고객을 따로 저장할지는 미정.
   // 260921 — 팝업 안 "전화번호 수정"으로 고쳤을 수 있으니, 이후로는 반드시 이 결과의 phone(고친 번호)을 쓴다.
-  const verifyResult = await requestPhoneVerification(rawPhone);
-  if (!verifyResult.verified) {
-    return { ok: false, docId: null, cancelled: true };
+  // 261123 — PHONE_VERIFY_PAUSED(문자 장애 중)면 팝업 없이 입력한 번호 그대로 접수한다(토큰 없음).
+  let phone = rawPhone;
+  let verification: ReturnType<typeof takeVerification> = null;
+  if (!PHONE_VERIFY_PAUSED) {
+    const verifyResult = await requestPhoneVerification(rawPhone);
+    if (!verifyResult.verified) {
+      return { ok: false, docId: null, cancelled: true };
+    }
+    phone = verifyResult.phone;
+    verification = takeVerification(phone);
   }
-  const phone = verifyResult.phone;
-  const verification = takeVerification(phone);
 
   // ── 2026-11 상담 방법 (방문상담/일반상담) ─────────────────
   // 시트는 행 추가만 되므로 접수 전에 묻는다. 닫거나 벗어나면 '' 로 접수는 그대로 진행.

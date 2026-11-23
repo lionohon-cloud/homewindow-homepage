@@ -152,15 +152,22 @@ export function normalizeSmsVerify(input: unknown): SmsVerifyPayload {
  */
 export const REQUEST_FUNNEL_CHANNEL_LABEL = '홈페이지 견적 퍼널';
 
+/** 261123 문자 발송(팝빌) 장애로 본인확인을 잠시 멈춘다. true 면 인증토큰 없이 접수를 받는다.
+ *  ERP 는 requestFunnelSnap 이 있으면 인증토큰을 요구하므로, 토큰이 없을 땐 퍼널 답변을 consultFieldText 글로 옮겨 보낸다.
+ *  장애가 풀리면 false 로 되돌리고 public/request/app.js 의 SMS_VERIFY_PAUSED 도 같이 되돌릴 것. */
+export const SMS_VERIFY_PAUSED = true;
+
 export interface ErpLeadPayload {
   phone: string;
   intakeRequestId: string;
-  phoneVerificationToken: string;
+  phoneVerificationToken?: string;
+  consultFieldText?: string;
+  consultType?: string;
   address: string;
   inflowChannel: { type: 'auto'; code: 'WEB_FORM'; label: '홈페이지 견적 퍼널' };
   consultField: 'WINDOW_REPLACE';
   utm: Record<string, string>;
-  requestFunnelSnap: {
+  requestFunnelSnap?: {
     residenceType: string;
     path: string;
     region: string;
@@ -199,10 +206,10 @@ export function normalizeLead(input: unknown): ErpLeadPayload {
     throw new RequestInputError('경로 형식이 올바르지 않습니다.');
   }
   const complexName = text(body['단지명'], '단지명', 150, path === 'apt');
-  const token = text(body['인증토큰'], '인증토큰', 4096, true);
-  if (token.length < 16) throw new RequestInputError('인증토큰 형식이 올바르지 않습니다.');
+  const token = text(body['인증토큰'], '인증토큰', 4096, !SMS_VERIFY_PAUSED);
+  if (token && token.length < 16) throw new RequestInputError('인증토큰 형식이 올바르지 않습니다.');
 
-  const snapshot: ErpLeadPayload['requestFunnelSnap'] = {
+  const snapshot: NonNullable<ErpLeadPayload['requestFunnelSnap']> = {
     residenceType,
     path,
     region,
@@ -244,15 +251,31 @@ export function normalizeLead(input: unknown): ErpLeadPayload {
   if (consult) snapshot.consultType = consult;
 
   const address = [region, legalDong, complexName].filter(Boolean).join(' ').slice(0, 300);
-  return {
+  const base = {
     phone: phoneDigits(body['연락처']),
     intakeRequestId: flowId(body.flowId),
-    phoneVerificationToken: token,
     address,
     inflowChannel: { type: 'auto', code: 'WEB_FORM', label: REQUEST_FUNNEL_CHANNEL_LABEL },
     consultField: 'WINDOW_REPLACE',
     utm: normalizeUtm(body.utm),
-    requestFunnelSnap: snapshot,
+  } as const;
+  if (token) return { ...base, phoneVerificationToken: token, requestFunnelSnap: snapshot };
+
+  // 인증 중단 기간(토큰 없음) — 퍼널 답변을 사람이 읽을 글로 남긴다.
+  const LABELS: Record<string, string> = {
+    residenceType: '거주형태', region: '상담권역', legalDong: '법정동', complexName: '단지명',
+    completionYear: '준공연도', buildingAge: '연차', householdCount: '세대수', buildingCount: '동수',
+    maxFloor: '최고층', corridorType: '복도유형', heatingType: '난방방식', builder: '시공사',
+    windowGeneration: '창호세대', windowTypeEstimate: '창호종류', insulationEstimate: '단열성능',
+    areaPyeong: '평형', replacementScope: '교체범위', replacementTiming: '교체시기', consultType: '상담방식',
+  };
+  const lines = Object.entries(LABELS)
+    .filter(([k]) => snapshot[k as keyof typeof snapshot] !== undefined && snapshot[k as keyof typeof snapshot] !== '')
+    .map(([k, label]) => `${label}: ${snapshot[k as keyof typeof snapshot]}`);
+  return {
+    ...base,
+    ...(snapshot.consultType ? { consultType: snapshot.consultType } : {}),
+    consultFieldText: `[견적 퍼널 · 문자 인증 중단 기간 접수]\n${lines.join('\n')}`.slice(0, 2000),
   };
 }
 

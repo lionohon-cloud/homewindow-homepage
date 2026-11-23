@@ -26,6 +26,10 @@
  *  배포 빌드에는 넣지 않으므로 기본은 실제 문자인증 API 를 쓴다. */
 export const VERIFY_TEST_MODE = import.meta.env.VITE_PHONE_VERIFY_TEST === "1";
 
+/** 261123 문자 발송(팝빌) 장애로 본인확인을 잠시 멈춘다 — true 면 인증 팝업 없이 번호만 받아 접수한다.
+ *  장애가 풀리면 false 로 되돌리면 된다(대리점 페이지·견적 퍼널도 같이 되돌릴 것). */
+export const PHONE_VERIFY_PAUSED = true;
+
 export const CODE_LENGTH = 2; // 260917 결정 — 4 → 2자리. ERP 발급 자릿수와 반드시 같아야 한다.
 export const CODE_TTL_MS = 3 * 60 * 1000;
 export const MAX_TRIES = 5;

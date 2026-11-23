@@ -504,8 +504,16 @@ function renderNotes(el, g){
      #f-code > #i-code + #check-code + #code-note
    ============================================================ */
 function initTelVerify(){
+  /* 261123 문자 발송(팝빌) 장애로 본인확인을 잠시 멈춘다 — true 면 인증번호 버튼·칸을 숨기고 번호만 받는다.
+     서버(functions/_shared/requestFunnel.ts SMS_VERIFY_PAUSED)와 같이 되돌릴 것. */
+  const SMS_VERIFY_PAUSED = true;
   const telF = $('f-tel'), tel = $('i-tel'), send = $('send-code');
   const codeF = $('f-code'), code = $('i-code'), check = $('check-code'), note = $('code-note');
+  if(SMS_VERIFY_PAUSED){
+    if(send) send.style.display = 'none';
+    if(codeF) codeF.classList.add('hidden');
+    return {isVerified:()=>true, token:()=>'', pendingField:()=>null, promptSend:()=>{}};
+  }
   if(!telF || !tel || !send || !codeF) return {isVerified:()=>true, token:()=>'', pendingField:()=>null};
 
   const label = telF.querySelector('label');
