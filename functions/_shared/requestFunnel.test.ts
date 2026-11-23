@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   RequestInputError,
+  SMS_VERIFY_PAUSED,
   forwardErp,
   normalizeLead,
   normalizeSmsSend,
@@ -118,7 +119,7 @@ test('region/house lead omits empty optional snapshot fields for the strict ERP 
 
 test('flowId and phone verification token are mandatory', () => {
   assert.throws(() => normalizeLead(rawLead({ flowId: '' })), RequestInputError);
-  assert.throws(() => normalizeLead(rawLead({ 인증토큰: '' })), RequestInputError);
+  if (!SMS_VERIFY_PAUSED) assert.throws(() => normalizeLead(rawLead({ 인증토큰: '' })), RequestInputError);
   assert.throws(() => normalizeLead(rawLead({ flowId: 'not-a-uuid' })), RequestInputError);
 });
 
@@ -188,4 +189,15 @@ test('ERP forward keeps payload/status and sends client IP only as a header', as
   assert.equal(headers.get('authorization'), 'Bearer server-secret');
   assert.equal(headers.get('x-request-client-ip'), '203.0.113.7');
   assert.deepEqual(JSON.parse(String(captured.init?.body)), { phone: '01012345678' });
+});
+
+test('261123 인증 중단 중에는 토큰 없이 받고, 퍼널 답변을 글로 넘기며 requestFunnelSnap 은 빼야 한다(ERP 가 토큰을 요구하므로)', () => {
+  if (!SMS_VERIFY_PAUSED) return;
+  const r = normalizeLead(rawLead({ 인증토큰: '' }));
+  assert.equal(r.phoneVerificationToken, undefined);
+  assert.equal(r.requestFunnelSnap, undefined);
+  assert.match(r.consultFieldText ?? '', /문자 인증 중단 기간 접수/);
+  assert.match(r.consultFieldText ?? '', /상담권역:/);
+  const withToken = normalizeLead(rawLead({}));
+  assert.ok(withToken.requestFunnelSnap);
 });

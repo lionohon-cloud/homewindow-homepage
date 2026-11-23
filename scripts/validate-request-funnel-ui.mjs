@@ -91,7 +91,8 @@ async function fakeFetch(url, init) {
 const flowId = '018f47a0-e5d2-4fe2-8f54-57562212f99f';
 const initTelVerify = new Function(
   '$', 'fetch', 'track', 'SMS_API', 'FLOW_ID', 'document', 'setInterval', 'clearInterval',
-  `${initSource}; return initTelVerify;`,
+  // 261123 인증 중단 스위치가 켜져 있어도 인증 흐름 자체는 계속 검사한다
+  `${initSource.replace('const SMS_VERIFY_PAUSED = true', 'const SMS_VERIFY_PAUSED = false')}; return initTelVerify;`,
 )(
   (id) => elements.get(id) || null,
   fakeFetch,
