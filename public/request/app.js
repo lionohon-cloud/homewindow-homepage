@@ -615,6 +615,18 @@ function initTelVerify(){
     send.textContent = '재전송';
 
     if(!r.ok){
+      /* 261123 문자 발송 장애(SEND_FAILED·5xx·연결 실패) — 고객을 막지 않고 인증 없이 번호만으로 진행한다.
+         서버가 장애를 기록해 두어(30분) 접수(/api/request/lead)가 토큰 없이도 받아 준다. 번호 오류·과다 요청은 종전대로. */
+      const outage = r.code !== 'INVALID_TEL' && r.code !== 'RATE_LIMIT' && (r.code === 'SEND_FAILED' || !r.status || r.status >= 500);
+      if(outage){
+        verified = true; token = '';
+        codeF.classList.add('hidden');
+        send.textContent = '번호 확인';
+        send.disabled = true;
+        if(note){ note.textContent = '문자 발송이 원활하지 않아 번호만으로 접수합니다.'; }
+        track('sms_bypass', {});
+        return;
+      }
       send.textContent = prev;
       showTelError(errText(r));
       syncSend();

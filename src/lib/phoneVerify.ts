@@ -94,7 +94,8 @@ async function post(path: "send" | "verify", body: Record<string, unknown>) {
 export type SendResult =
   | { ok: true; expiresAt: number }
   | { ok: false; reason: "cooldown"; waitMs: number; expiresAt: number }
-  | { ok: false; reason: "limit" | "failed"; message: string };
+  | { ok: false; reason: "limit" | "failed"; message: string }
+  | { ok: false; reason: "bypass" };
 
 export async function sendCode(phone: string): Promise<SendResult> {
   const now = Date.now();
@@ -131,7 +132,10 @@ export async function sendCode(phone: string): Promise<SendResult> {
     if (r.code === "INVALID_TEL") {
       return { ok: false, reason: "failed", message: "번호를 다시 확인해 주세요." };
     }
-    return { ok: false, reason: "failed", message: "문자 발송에 실패했어요. 잠시 후 다시 시도해 주세요." };
+    // 261123 문자 발송 장애(팝빌·ERP 5xx·연결 실패) — 고객을 막지 않고 인증 없이 번호만으로 접수한다.
+    // 서버(sms/send)가 장애를 기록하고 텔레그램으로 알린다. 토큰이 없으니 접수에는 인증 표시가 빠진다.
+    current?.resolve(true);
+    return { ok: false, reason: "bypass" };
   }
   sessions.set(phone, session);
   return { ok: true, expiresAt: session.expiresAt };

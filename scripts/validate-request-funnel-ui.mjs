@@ -103,25 +103,20 @@ const initTelVerify = new Function(
   () => {},
 );
 
-initTelVerify();
+const V = initTelVerify();
 assert.equal(send.disabled, false, 'valid phone should enable SMS send');
 
+// 261123 — 문자 발송 장애(SEND_FAILED·5xx)면 고객을 막지 않고 인증 없이 번호만으로 진행한다
 await send.click();
-assert.equal(telField.classList.contains('bad'), true, 'send failure must reveal the visible phone error');
-assert.equal(telError.textContent, '문자 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-assert.equal(telError.attributes.get('role'), 'alert');
-assert.equal(codeField.classList.contains('hidden'), true, 'verification field remains hidden after initial send failure');
-assert.equal(send.disabled, false, 'send button must be retryable after failure');
-assert.equal(send.textContent, '인증번호 받기');
-
-await send.click();
-assert.equal(telField.classList.contains('bad'), false, 'retry clears the previous visible error');
-assert.equal(telError.textContent, '연락처를 다시 확인해 주세요.');
-assert.equal(codeField.classList.contains('hidden'), false, 'successful retry reveals verification field');
-assert.equal(requests.length, 2);
+assert.equal(V.isVerified(), true, 'SMS outage must let the customer continue without verification');
+assert.equal(V.token(), '', 'no verification token during outage');
+assert.equal(codeField.classList.contains('hidden'), true, 'verification field stays hidden during outage');
+assert.equal(send.disabled, true, 'send button is locked once bypassed');
+assert.equal(telField.classList.contains('bad'), false, 'outage bypass must not show a phone error');
+assert.equal(requests.length, 1);
 assert.deepEqual(requests[0], {
   url: '/api/request/sms/send',
   body: { tel: '01012345678', flowId },
 });
 
-console.log('Request funnel SMS failure/retry UI is safe.');
+console.log('Request funnel SMS outage bypass UI is safe.');
