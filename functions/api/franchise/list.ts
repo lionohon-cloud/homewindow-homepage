@@ -11,7 +11,10 @@
  *   - 읽기 권한: vendors 는 익명이 아닌 로그인 사용자만 읽을 수 있다 →
  *     SYSTEM_AUTH_EMAIL / SYSTEM_AUTH_PASSWORD 가 설정돼 있어야 한다(없으면 익명 → 권한 오류 → 500).
  *
- * 응답은 화이트리스트로만 만든다: name · no · rep(두 번째 글자 가림) · bizNo · region · area · photo(프로필 사진 주소).
+ * 261123 대리점·가맹점 구분: 같은 'franchise' 종류(N호점) 안에서 업체의 계약 형태 storeKind 가 'dealer' 면 대리점,
+ *   그 밖(값 없음 포함)은 가맹점으로 내보낸다(kind). 인증서 그림·이름표가 이 값으로 갈린다.
+ *   storeKind 는 ERP 업체 마스터에 새로 생기는 칸 — 생기기 전에는 전부 가맹점(지금과 같음).
+ * 응답은 화이트리스트로만 만든다: name · no · kind · rep(두 번째 글자 가림) · bizNo · region · area · photo(프로필 사진 주소).
  *   상세 주소(동·호수)·연락처·계좌·이메일·메모 등은 내보내지 않는다.
  *   주소는 시·도 + 시·군까지만 잘라서 region/area 로 바꾼 뒤 버린다.
  * 5분 캐시.
@@ -24,6 +27,7 @@ interface PublicFranchise {
   id: string;
   name: string;
   no?: number;
+  kind: 'dealer' | 'franchise';
   rep?: string;
   bizNo?: string;
   region?: string;
@@ -97,7 +101,7 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
     docs = await restQueryByField(session, 'vendors', 'type', 'franchise', 200);
   } catch (e) {
     console.error('[franchise/list] vendors 조회 실패:', e);
-    return errorResponse('대리점 목록을 불러오지 못했습니다', 500);
+    return errorResponse('대리점·가맹점 목록을 불러오지 못했습니다', 500);
   }
 
   const items: PublicFranchise[] = docs
@@ -117,6 +121,7 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
         id: d.name.split('/').pop()!,
         name,
         no: noMatch ? Number(noMatch[1]) : undefined,
+        kind: f.storeKind === 'dealer' ? 'dealer' : 'franchise',
         rep: maskName(str(f.ceoName)),
         bizNo,
         region: loc?.region ?? str(f.region),

@@ -13,8 +13,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BadgeCheck, UserRound } from "lucide-react";
 import certBg from "@/assets/franchise-cert-bg.webp";
+import dealerCertBg from "@/assets/dealer-cert-bg.webp"; // 261123 대리점 인증서 (가맹점 양식에서 문구만 바꿈 — 01. 홈페이지/261123 대리점 명칭 변경/make_cert.py)
 import { useScrollLock } from "@/lib/useScrollLock";
 import { SAMPLE_FRANCHISES, maskName, type Franchise } from "../data/franchises";
+
+/** 261123 점포마다 대리점·가맹점이 섞여 있다 — ERP 계약 형태(storeKind)가 dealer 면 대리점, 아니면 가맹점 */
+const kindLabel = (f: Franchise) => (f.kind === "dealer" ? "대리점" : "가맹점");
 
 interface MapData {
   W: number;
@@ -99,7 +103,7 @@ export function FranchiseMap() {
   }, [inView, map]);
   const franchises = useFranchises();
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<string | null>(null); // 선택한 대리점 id
+  const [selected, setSelected] = useState<string | null>(null); // 선택한 가맹점 id
   const listRef = useRef<HTMLDivElement>(null);
   const [cert, setCert] = useState<Franchise | null>(null); // 인증서 모달
 
@@ -166,13 +170,13 @@ export function FranchiseMap() {
 
   return (
     /* id: 개인정보처리방침 「가맹점 목록 보기」 링크가 여기로 온다 (261116) */
-    <div id="franchise-list" className="mt-12 md:mt-16 scroll-mt-20" aria-label="전국 대리점">
+    <div id="franchise-list" className="mt-12 md:mt-16 scroll-mt-20" aria-label="전국 대리점·가맹점">
 
       <div className="grid md:grid-cols-[1.08fr_.92fr] gap-8 md:gap-5 md:items-stretch">
       {/* 지도 */}
       <div ref={mapBoxRef} className={`relative w-full max-w-[480px] mx-auto md:max-w-none ${inView ? "fm-in" : ""} ${dropDone ? "fm-done" : ""}`} style={{ aspectRatio: `${VIEW[2]} / ${VIEW[3]}` }}>
         {map && (
-          <svg viewBox={VIEW.join(" ")} className="w-full h-full overflow-visible" role="img" aria-label="전국 대리점 지도">
+          <svg viewBox={VIEW.join(" ")} className="w-full h-full overflow-visible" role="img" aria-label="전국 대리점·가맹점 지도">
             <defs>
               {/* 윗면 원근감: 먼 북쪽은 밝은 회색 → 가까운 남쪽(남해안·제주)은 흰색.
                   화면 좌표 기준(userSpaceOnUse) — 북쪽 끝 y≈30, 남해안 y≈470 */}
@@ -280,7 +284,7 @@ export function FranchiseMap() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate text-[15px] font-bold text-white">{f.name}</span>
-                  <BadgeCheck className="w-4 h-4 text-[#D22727] shrink-0" aria-label="인증 대리점" />
+                  <BadgeCheck className="w-4 h-4 text-[#D22727] shrink-0" aria-label={`인증 ${kindLabel(f)}`} />
                   {f.region && <span className="ml-auto pl-2 shrink-0 text-[12px] font-semibold text-[#888]">{f.region}</span>}
                 </div>
                 {f.bizNo && <p className="text-[12.5px] text-[#999] mt-0.5 tabular-nums whitespace-nowrap">사업자등록번호 {f.bizNo}</p>}
@@ -331,7 +335,7 @@ function CertModal({ f, onClose }: { f: Franchise | null; onClose: () => void })
 
   const field = "absolute left-[39%] right-[13.5%] -translate-y-1/2 text-left font-semibold text-[#495055] truncate";
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-[116px] md:pb-[150px]" role="dialog" aria-modal="true" aria-label="대리점 인증서">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-[116px] md:pb-[150px]" role="dialog" aria-modal="true" aria-label={`${kindLabel(f)} 인증서`}>
       <div className="absolute inset-0 bg-black/65" onClick={onClose} />
       {/* 인증서 + 아래 닫기 버튼 (폭은 화면 높이에 맞춰 줄어든다: 버튼 높이 46px 을 빼고 계산) */}
       <div className="relative fm-cert flex flex-col gap-2.5" style={{ width: "min(100%, 460px, calc((100vh - 2rem - 150px - 46px) * 0.6665))" }}>
@@ -342,8 +346,8 @@ function CertModal({ f, onClose }: { f: Franchise | null; onClose: () => void })
         {/* 261109 본사 도장을 양식 이미지에 합쳐 구웠다(도장 원본은 저장소에 없음, 지름 150px).
             쉽게 저장되지 않게 우클릭·끌어서 저장을 막는다 */}
         <img
-          src={certBg}
-          alt="청암홈윈도우 대리점 인증서"
+          src={f.kind === "dealer" ? dealerCertBg : certBg}
+          alt={`청암홈윈도우 ${kindLabel(f)} 인증서`}
           className="absolute inset-0 w-full h-full rounded-md select-none pointer-events-none"
           draggable={false}
         />

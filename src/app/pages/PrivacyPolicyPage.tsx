@@ -197,7 +197,7 @@ export function Component() {
               rows={[
                 [
                   <>
-                    청암홈윈도우 대리점
+                    청암홈윈도우 대리점·가맹점
                     <br />
                     <span className="text-[#888] font-normal">(고객 거주 지역 담당)</span>
                   </>,
@@ -218,17 +218,17 @@ export function Component() {
               ]}
             />
             {/* 261116 "배정 후 안내" 는 실제로 문자를 보내지 않아 지킬 수 없는 문구 → 홈페이지 가맹점 목록 공개로 바꿈.
-                목록(/api/franchise/list)은 ERP 업체 마스터의 계약완료 대리점과 자동으로 같아진다. */}
+                목록(/api/franchise/list)은 ERP 업체 마스터의 계약완료 대리점·가맹점과 자동으로 같아진다. */}
             <Note>
-              ※ 개인정보를 제공받는 대리점의 상호는 홈페이지{" "}
+              ※ 개인정보를 제공받는 대리점·가맹점의 상호는 홈페이지{" "}
               <a
                 href="/"
                 onClick={() => sessionStorage.setItem("hw_scroll_to", "franchise-list")}
                 className="underline text-[#D22727]"
               >
-                대리점 목록
+                대리점·가맹점 목록
               </a>
-              에서 확인하실 수 있으며, 이 중 고객님이 선택하신 지역을 담당하는 대리점에 제공됩니다.
+              에서 확인하실 수 있으며, 이 중 고객님이 선택하신 지역을 담당하는 대리점·가맹점에 제공됩니다.
             </Note>
             <Note>
               ※ 정보주체는 제3자 제공에 동의하지 않을 수 있습니다. 다만 동의하지 않으면 방문 상담과 시공 서비스 이용이 제한될 수

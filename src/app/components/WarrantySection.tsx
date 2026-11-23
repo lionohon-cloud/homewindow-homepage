@@ -62,7 +62,7 @@ export function WarrantySection() {
                 창호는 한 번 바꾸면 10년 이상을 씁니다. 타사 대비 <span className="text-[#eee] font-bold">평균 3배 이상 긴 보증 기간</span>으로 오래 안심하실 수 있습니다.
               </p>
               <p>
-                제품 보증은 청암홈윈도우 본사가 책임지고, <span className="text-[#eee] font-bold">시공과 A/S는 계약하신 지역 대리점</span>이 맡습니다. 시공 후 문제가 생기면 계약하신 대리점으로 문의해 주세요.
+                제품 보증은 청암홈윈도우 본사가 책임지고, <span className="text-[#eee] font-bold">시공과 A/S는 계약하신 지역 대리점·가맹점</span>이 맡습니다. 시공 후 문제가 생기면 계약하신 대리점·가맹점으로 문의해 주세요.
               </p>
             </motion.div>
           </div>
@@ -114,7 +114,7 @@ export function WarrantySection() {
             {/* ⚠️ 스케일 조절: overflow-hidden을 overflow-auto로 바꾸고, 아래 transform scale 값을 조절하세요 (예: 1.2, 1.5 등) */}
             <img
               src={serviceMap}
-              alt="전국 시공·A/S 대리점 네트워크 지도"
+              alt="전국 시공·A/S 대리점·가맹점 네트워크 지도"
               className="w-full h-auto object-contain"
               style={{ transform: "scale(1.2)" }}
               loading="lazy"
@@ -221,7 +221,7 @@ export function WarrantySection() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-[#999] text-[16px] leading-[26px] break-keep mb-6"
           >
-            제품 보증은 청암홈윈도우 본사가 책임지고, <span className="text-[#eee] font-bold">시공과 A/S는 계약하신 지역 대리점</span>이 맡습니다. 시공 후 문제가 생기면 계약하신 대리점으로 문의해 주세요.
+            제품 보증은 청암홈윈도우 본사가 책임지고, <span className="text-[#eee] font-bold">시공과 A/S는 계약하신 지역 대리점·가맹점</span>이 맡습니다. 시공 후 문제가 생기면 계약하신 대리점·가맹점으로 문의해 주세요.
           </motion.p>
 
           {SHOW_SERVICE_MAP && (<>
@@ -235,7 +235,7 @@ export function WarrantySection() {
           >
             <img
               src={serviceMap}
-              alt="전국 시공·A/S 대리점 네트워크 지도"
+              alt="전국 시공·A/S 대리점·가맹점 네트워크 지도"
               className="w-full h-auto object-contain mx-[0px] mt-[0px] mb-[-27px]"
               loading="lazy"
               decoding="async"

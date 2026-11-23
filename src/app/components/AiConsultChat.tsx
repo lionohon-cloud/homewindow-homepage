@@ -92,7 +92,7 @@ export function AiConsultChat() {
       setConsultVia("window_consult_quote");
       setBranch("consultPhone");
     } else if (intent === "window_consult") {
-      push({ role: "bot", text: "네! 창호 상담이시군요.\n연락처와 시공 지역을 남겨주시면 담당자가 확인 후 지역 대리점을 연결해 드릴게요." });
+      push({ role: "bot", text: "네! 창호 상담이시군요.\n연락처와 시공 지역을 남겨주시면 담당자가 확인 후 지역 대리점·가맹점을 연결해 드릴게요." });
       setConsultVia("window_consult");
       setBranch("consultPhone");
     } else if (intent === "mesh_screen") {

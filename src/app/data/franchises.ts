@@ -16,6 +16,7 @@ export interface Franchise {
   id: string;           // ERP 업체 문서 id (선택·키 용도)
   name: string;         // 상호 — ERP 업체 이름 그대로 (예: "청암홈윈도우 1호점")
   no?: number;          // 호점 번호 — 상호의 "N호점"에서 뽑음. 핀 숫자·정렬용 (없으면 핀에 •)
+  kind?: "dealer" | "franchise"; // 261123 계약 형태 — dealer=대리점, 그 밖(없음 포함)=가맹점. 인증서 그림·이름표가 갈림
   bizNo?: string;       // 사업자등록번호 (000-00-00000)
   region?: string;      // 카드에 보이는 지역 (주소의 시·도 + 시·군, 예: "경기 남양주")
   area?: string;        // 핀 위치용 지역명 (시·군 또는 광역시명 — franchise-map.json centers 키). 없으면 핀 없음
@@ -27,10 +28,10 @@ export interface Franchise {
 
 export const SAMPLE_FRANCHISES: Franchise[] = [
   { id: "sample-1", name: "청암홈윈도우 1호점", no: 1, bizNo: "000-00-00001", region: "경기 남양주", area: "남양주시", rep: "김민수" },
-  { id: "sample-2", name: "청암홈윈도우 2호점", no: 2, bizNo: "000-00-00002", region: "경기 의정부", area: "의정부시", rep: "이영호" },
+  { id: "sample-2", name: "청암홈윈도우 2호점", no: 2, kind: "dealer", bizNo: "000-00-00002", region: "경기 의정부", area: "의정부시", rep: "이영호" },
   { id: "sample-3", name: "청암홈윈도우 3호점", no: 3, bizNo: "000-00-00003", region: "경기 수원", area: "수원시", rep: "박지훈" },
   { id: "sample-4", name: "청암홈윈도우 4호점", no: 4, bizNo: "000-00-00004", region: "경기 부천", area: "부천시", rep: "최성민" },
-  { id: "sample-5", name: "청암홈윈도우 5호점", no: 5, bizNo: "000-00-00005", region: "인천", area: "인천광역시", rep: "정우진" },
+  { id: "sample-5", name: "청암홈윈도우 5호점", no: 5, kind: "dealer", bizNo: "000-00-00005", region: "인천", area: "인천광역시", rep: "정우진" },
   { id: "sample-6", name: "청암홈윈도우 6호점", no: 6, bizNo: "000-00-00006", region: "강원 동해", area: "동해시", rep: "강동원" },
   { id: "sample-7", name: "청암홈윈도우 7호점", no: 7, bizNo: "000-00-00007", region: "충북 충주", area: "충주시", rep: "조현우" },
   { id: "sample-8", name: "청암홈윈도우 8호점", no: 8, bizNo: "000-00-00008", region: "충북 청주", area: "청주시", rep: "윤재석" },

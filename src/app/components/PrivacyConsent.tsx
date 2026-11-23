@@ -154,7 +154,7 @@ export function PrivacyConsentModal({
           <Item checked={provide} onToggle={() => set(collect, !provide)} title="개인정보 제3자 제공 동의">
             <Row
               label="제공받는 자"
-              value="고객님이 선택하신 지역을 담당하는 청암홈윈도우 대리점 (방충망 단독 상담은 회사와 제휴한 방충망 전문업체)"
+              value="고객님이 선택하신 지역을 담당하는 청암홈윈도우 대리점·가맹점 (방충망 단독 상담은 회사와 제휴한 방충망 전문업체)"
             />
             <Row label="제공 목적" value="방문 상담·실측·견적, 계약 체결, 시공 및 A/S 진행" />
             <Row label="제공 항목" value={items} />
@@ -162,7 +162,7 @@ export function PrivacyConsentModal({
           </Item>
 
           <p className="shrink-0 text-[12.5px] leading-[1.7] text-[#999] break-keep px-1">
-            대리점은 회사와 별개의 사업자이며, 계약·시공·A/S는 제공받은 대리점이 직접 진행합니다. 위 동의를 거부하실 수
+            대리점·가맹점은 회사와 별개의 사업자이며, 계약·시공·A/S는 제공받은 대리점·가맹점이 직접 진행합니다. 위 동의를 거부하실 수
             있으나, 거부하시면 상담 신청이 접수되지 않습니다. 개인정보 열람·정정·삭제·처리정지는 회사 고객센터로 요청하실 수
             있습니다.{" "}
             <a href="/privacy" target="_blank" rel="noopener" className="text-[#D22727] underline font-medium">
