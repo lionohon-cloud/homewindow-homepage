@@ -7,6 +7,11 @@
  *   2) 텔레그램 봇(@Homewindow_Assistant_bot)으로 알린다 — 10분에 한 번만(KV 로 묶음).
  * 발송이 다시 성공하면 표시를 지우고 「복구」 알림을 한 번 보낸다.
  *
+ * 알림 경로 두 가지:
+ *   A) 기본 — 최근 장애·복구 시각을 KV `sms-outage:log` 에 남기고 GET /api/request/sms/status 로 공개한다.
+ *      한승우 과장 PC 의 텔레그램 알림 필터(05. 자동화 도구\텔레그램알림필터)가 1분마다 읽어 개인 봇으로 보낸다.
+ *      비밀 값이 필요 없다(시각·응답 코드만, 고객 정보 없음).
+ *   B) 선택 — 아래 환경변수를 넣으면 서버가 텔레그램으로 직접 보낸다.
  * 필요한 환경변수(Cloudflare Pages → 설정 → 환경 변수, 암호화):
  *   TELEGRAM_BOT_TOKEN  봇 토큰(BotFather 발급)
  *   TELEGRAM_CHAT_ID    알림 받을 대화방 id
@@ -15,6 +20,8 @@
 import type { AsEnv } from './env';
 
 const DOWN_KEY = 'sms-outage:down';
+const LOG_KEY = 'sms-outage:log';
+const LOG_TTL_SEC = 14 * 24 * 3600;
 const ALERT_KEY = 'sms-outage:alerted';
 const DOWN_TTL_SEC = 30 * 60;
 const ALERT_GAP_SEC = 10 * 60;
@@ -39,13 +46,44 @@ async function telegram(env: AsEnv, text: string): Promise<void> {
   }).catch(() => undefined);
 }
 
+export interface SmsOutageLog {
+  failAt?: string; // ISO — 이번 장애가 처음 감지된 시각
+  detail?: string;
+  recoverAt?: string; // ISO — 마지막 복구 시각
+}
+
+async function readLog(env: AsEnv): Promise<SmsOutageLog> {
+  const raw = env.REVIEW_RL ? await env.REVIEW_RL.get(LOG_KEY) : null;
+  try {
+    return raw ? (JSON.parse(raw) as SmsOutageLog) : {};
+  } catch {
+    return {};
+  }
+}
+
+async function writeLog(env: AsEnv, log: SmsOutageLog): Promise<void> {
+  if (env.REVIEW_RL) await env.REVIEW_RL.put(LOG_KEY, JSON.stringify(log), { expirationTtl: LOG_TTL_SEC });
+}
+
+/** 공개 상태 — 필터 프로그램이 읽는다 */
+export async function smsOutageStatus(env: AsEnv): Promise<SmsOutageLog & { down: boolean }> {
+  const [down, log] = await Promise.all([isSmsDown(env), readLog(env)]);
+  return { down, ...log };
+}
+
 const nowKst = () =>
   new Date(Date.now() + 9 * 3600_000).toISOString().replace('T', ' ').slice(0, 16);
 
 /** 발송 실패를 기록하고(장애 표시 30분) 필요하면 알린다 */
 export async function reportSmsOutage(env: AsEnv, detail: string): Promise<void> {
   const kv = env.REVIEW_RL;
+  const wasDown = kv ? (await kv.get(DOWN_KEY)) === '1' : false;
   if (kv) await kv.put(DOWN_KEY, '1', { expirationTtl: DOWN_TTL_SEC });
+  // 새 장애가 시작될 때만 시각을 새로 찍는다(필터는 failAt 이 바뀌면 한 번 알린다)
+  if (kv && !wasDown) {
+    const log = await readLog(env);
+    await writeLog(env, { ...log, failAt: new Date().toISOString(), detail: detail.slice(0, 200) });
+  }
   if (kv && (await kv.get(ALERT_KEY))) return; // 10분 안에 이미 알림
   if (kv) await kv.put(ALERT_KEY, '1', { expirationTtl: ALERT_GAP_SEC });
   await telegram(
@@ -62,5 +100,6 @@ export async function clearSmsOutage(env: AsEnv): Promise<void> {
   if (!kv || (await kv.get(DOWN_KEY)) !== '1') return;
   await kv.delete(DOWN_KEY);
   await kv.delete(ALERT_KEY);
+  await writeLog(env, { ...(await readLog(env)), recoverAt: new Date().toISOString() });
   await telegram(env, `✅ 홈페이지 문자 인증 발송 복구 (${nowKst()}) — 다시 인증을 받습니다.`);
 }
