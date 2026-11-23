@@ -14,6 +14,8 @@
  * 261123 대리점·가맹점 구분: 같은 'franchise' 종류(N호점) 안에서 업체의 계약 형태 storeKind 가 'dealer' 면 대리점,
  *   그 밖(값 없음 포함)은 가맹점으로 내보낸다(kind). 인증서 그림·이름표가 이 값으로 갈린다.
  *   storeKind 는 ERP 업체 마스터에 새로 생기는 칸 — 생기기 전에는 전부 가맹점(지금과 같음).
+ *   대리점은 N호점 체계가 아니고 개인사업자 상호를 그대로 쓸 수 있다 → 호점 번호(no)는 가맹점에서만 뽑는다
+ *   (번호 없으면 핀에 •, 목록은 번호 있는 점포 뒤에 이름순).
  * 응답은 화이트리스트로만 만든다: name · no · kind · rep(두 번째 글자 가림) · bizNo · region · area · photo(프로필 사진 주소).
  *   상세 주소(동·호수)·연락처·계좌·이메일·메모 등은 내보내지 않는다.
  *   주소는 시·도 + 시·군까지만 잘라서 region/area 로 바꾼 뒤 버린다.
@@ -116,12 +118,13 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
       const bizNo = formatBizNo(str(f.businessNumber));
       if (!bizNo) return null;
       const loc = areaFromAddress(str(f.address));
-      const noMatch = name.match(/(\d+)\s*호점/);
+      const kind = f.storeKind === 'dealer' ? 'dealer' : 'franchise';
+      const noMatch = kind === 'franchise' ? name.match(/(\d+)\s*호점/) : null;
       const item: PublicFranchise = {
         id: d.name.split('/').pop()!,
         name,
         no: noMatch ? Number(noMatch[1]) : undefined,
-        kind: f.storeKind === 'dealer' ? 'dealer' : 'franchise',
+        kind,
         rep: maskName(str(f.ceoName)),
         bizNo,
         region: loc?.region ?? str(f.region),
