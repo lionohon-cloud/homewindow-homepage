@@ -97,7 +97,7 @@ export const onRequestGet: PagesFunction<FirebaseEnv> = async ({ env }) => {
     docs = await restQueryByField(session, 'vendors', 'type', 'franchise', 200);
   } catch (e) {
     console.error('[franchise/list] vendors 조회 실패:', e);
-    return errorResponse('가맹점 목록을 불러오지 못했습니다', 500);
+    return errorResponse('대리점 목록을 불러오지 못했습니다', 500);
   }
 
   const items: PublicFranchise[] = docs
