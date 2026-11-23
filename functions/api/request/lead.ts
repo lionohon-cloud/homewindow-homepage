@@ -3,16 +3,19 @@ import { corsHeaders } from '../../_shared/cors';
 import { buildLeadSheetRow, normalizeLead } from '../../_shared/requestFunnel';
 import { handleRequestProxy } from '../../_shared/requestProxy';
 import { deliverLeadSheet, resolveGasLeadUrl } from '../../_shared/leadSheet';
+import { isSmsDown } from '../../_shared/smsOutage';
 
 export const onRequestOptions: PagesFunction<AsEnv> = async () =>
   new Response(null, { status: 204, headers: corsHeaders });
 
-export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env, waitUntil }) =>
-  handleRequestProxy(
+export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env, waitUntil }) => {
+  // 261123 문자 발송 장애 중(최근 30분 안에 발송 실패)이면 인증토큰 없는 접수도 받는다
+  const allowNoToken = await isSmsDown(env).catch(() => false);
+  return handleRequestProxy(
     request,
     env,
     '/api/external/inbound-customers',
-    normalizeLead,
+    (input) => normalizeLead(input, { allowNoToken }),
     ({ rawBody, erpResult }) => {
       // 같은 접수의 재시도를 ERP 가 이미 걸러 준 경우다. 시트에 두 행이 생기지 않도록 넘긴다.
       // merged 는 기존 고객 문서에 병합된 것일 뿐 이번 접수 자체는 신규이므로 걸러내지 않는다.
@@ -44,3 +47,4 @@ export const onRequestPost: PagesFunction<AsEnv> = async ({ request, env, waitUn
       );
     },
   );
+};

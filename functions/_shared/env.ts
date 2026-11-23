@@ -19,6 +19,10 @@ export interface AsEnv {
   // 프리뷰 환경에는 테스트 시트 주소를 넣어야 검증이 운영 시트를 건드리지 않는다.
   GAS_LEAD_WEBHOOK_URL?: string;
 
+  // 문자 인증 장애 알림 텔레그램 봇(@Homewindow_Assistant_bot) — smsOutage.ts. 없으면 알림만 건너뜀.
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_CHAT_ID?: string;
+
   // 시트 전송 중복 방지와 실패 사서함. 후기 rate limit 과 같은 네임스페이스를 함께 쓴다.
   REVIEW_RL?: KVNamespace;
 }

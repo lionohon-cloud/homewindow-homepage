@@ -99,6 +99,9 @@ function VerifyDialog({ req }: { req: VerifyRequest }) {
       // 방금 보낸 번호가 아직 유효 — 새로 보내지 않고 남은 시간·재발송 대기만 이어 간다
       setExpiresAt(r.expiresAt);
       setResendAt(Date.now() + r.waitMs);
+    } else if (r.reason === "bypass") {
+      // 261123 문자 발송 장애 — sendCode 가 이미 인증 없이 통과시켰다(팝업이 닫힌다). 더 할 일 없음.
+      return;
     } else {
       // 발송 실패·요청 과다 — 버튼이 "인증번호 다시 받기" 로 바뀐다
       setError(r.message);

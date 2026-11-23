@@ -189,3 +189,14 @@ test('ERP forward keeps payload/status and sends client IP only as a header', as
   assert.equal(headers.get('x-request-client-ip'), '203.0.113.7');
   assert.deepEqual(JSON.parse(String(captured.init?.body)), { phone: '01012345678' });
 });
+
+test('261123 문자 장애 중(allowNoToken)에만 토큰 없는 퍼널 접수를 받고, 답변은 글로 넘기며 snap 은 뺀다', () => {
+  assert.throws(() => normalizeLead(rawLead({ 인증토큰: '' })), RequestInputError);
+  const r = normalizeLead(rawLead({ 인증토큰: '' }), { allowNoToken: true });
+  assert.equal(r.phoneVerificationToken, undefined);
+  assert.equal(r.requestFunnelSnap, undefined);
+  assert.match(r.consultFieldText ?? '', /문자 발송 장애로 인증 없이 접수/);
+  assert.match(r.consultFieldText ?? '', /상담권역:/);
+  const withToken = normalizeLead(rawLead({}), { allowNoToken: true });
+  assert.ok(withToken.requestFunnelSnap, '토큰이 있으면 장애 중이어도 종전대로 snap 을 보낸다');
+});
