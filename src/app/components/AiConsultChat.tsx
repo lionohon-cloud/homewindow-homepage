@@ -169,13 +169,15 @@ export function AiConsultChat() {
       const { intent, reply } = (await res.json()) as { intent: string; reply: string };
       // 창호 교체·견적 상담은 확인 없이 바로 상담 접수로 (사장님 지시 2026-07-10 —
       //   견적 미리보기는 원하는 사람만. enterIntent 가 전문 멘트를 출력하므로 reply 생략).
-      if (intent === "window_consult_quote") {
+      // 261126 접수 간소화 — 방충망 문의 흐름(제휴업체 이관)을 막았다(사용자 지시). AI 가 mesh_screen 으로
+      //   분류해도 창호 교체·견적 상담과 똑같이 받는다(방충망 안내 멘트·제휴 이관 표식 없음).
+      if (intent === "window_consult_quote" || intent === "mesh_screen") {
         setTimeout(() => enterIntent("window_consult_quote"), 150);
         return;
       }
       push({ role: "bot", text: reply });
       // 확인 대기 — 사용자가 칩을 눌러야 진행 (바로 안 넘어감)
-      if (["window_estimate", "window_consult", "mesh_screen", "as", "inquiry"].includes(intent)) {
+      if (["window_estimate", "window_consult", "as", "inquiry"].includes(intent)) {
         setPendingIntent(intent as Intent);
       }
     } catch {
@@ -393,9 +395,8 @@ export function AiConsultChat() {
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("window_estimate")}>
               직접 견적 내보기
             </button>
-            <button type="button" className={chipCls} onClick={() => chooseFromMenu("mesh_screen")}>
-              방충망 문의
-            </button>
+            {/* 261126 접수 간소화 — 첫 화면 「방충망 문의」 버튼 제거(사용자 지시).
+                글로 "방충망만 하고 싶어요"처럼 물으면 AI 가 mesh_screen 으로 분류해 제휴업체 이관 흐름은 그대로 탄다. */}
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("as")}>
               AS 접수
             </button>

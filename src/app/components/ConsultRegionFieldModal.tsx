@@ -43,6 +43,11 @@ export const CONSULT_FIELDS: readonly { code: string; label: string }[] = [
   { code: "ETC", label: "직접입력" },
 ] as const;
 
+/** 261126 접수 간소화 — 상담분야를 묻지 않고 이 값으로 접수한다 (지역만 고르면 끝).
+ *  분야 단계를 되살리려면 ASK_CONSULT_FIELD 를 true 로. */
+export const DEFAULT_CONSULT_FIELD = "WINDOW_QUOTE";
+const ASK_CONSULT_FIELD = false;
+
 /** 구 5분야 라벨 (과거 데이터 표시 폴백) */
 const LEGACY_FIELD_LABELS: Record<string, string> = {
   WINDOW_QUOTE: "창호 견적",
@@ -123,8 +128,9 @@ export function ConsultRegionFieldModal({
       return;
     }
     // 그 외 AI상담 진입 — 분야는 챗에서 이미 확정 → 지역만 찍으면 바로 접수 (2단계 생략).
-    if (fixedConsultField) {
-      onComplete({ region: sel.territoryCode, consultField: fixedConsultField });
+    // 261126 — 일반 폼도 분야를 묻지 않는다(ASK_CONSULT_FIELD=false) → 기본 분야로 바로 접수.
+    if (fixedConsultField || !ASK_CONSULT_FIELD) {
+      onComplete({ region: sel.territoryCode, consultField: fixedConsultField ?? DEFAULT_CONSULT_FIELD });
       reset();
       return;
     }
@@ -276,7 +282,11 @@ export function ConsultRegionFieldModal({
         {/* 하단 안내 문구 */}
         <div className="px-5 pb-5 pt-1 shrink-0">
           <p className="text-center text-[13px] text-[#D22727] font-bold">
-            {step === 1 ? "거의 다 되었습니다." : "마지막 질문입니다"}
+            {step === 1
+              ? ASK_CONSULT_FIELD || fixedConsultField === "SAFETY_SCREEN"
+                ? "거의 다 되었습니다."
+                : "지역만 고르시면 접수가 끝납니다."
+              : "마지막 질문입니다"}
           </p>
         </div>
       </div>
