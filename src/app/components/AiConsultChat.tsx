@@ -393,9 +393,8 @@ export function AiConsultChat() {
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("window_estimate")}>
               직접 견적 내보기
             </button>
-            <button type="button" className={chipCls} onClick={() => chooseFromMenu("mesh_screen")}>
-              방충망 문의
-            </button>
+            {/* 261126 접수 간소화 — 첫 화면 「방충망 문의」 버튼 제거(사용자 지시).
+                글로 "방충망만 하고 싶어요"처럼 물으면 AI 가 mesh_screen 으로 분류해 제휴업체 이관 흐름은 그대로 탄다. */}
             <button type="button" className={chipCls} onClick={() => chooseFromMenu("as")}>
               AS 접수
             </button>
