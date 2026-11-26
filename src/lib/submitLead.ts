@@ -16,10 +16,10 @@ import {
   buildErpUtm,
   buildErpInflowChannel,
 } from './channelMap';
-import { requestConsultType } from './consultType';
 import {
   regionLabel,
   consultFieldLabel,
+  DEFAULT_CONSULT_FIELD,
 } from '@/app/components/ConsultRegionFieldModal';
 
 // 상담접수 GAS (ConsultationModal/HeroConsultSection/BottomBar/EstimateForm 공용)
@@ -57,7 +57,10 @@ export async function submitLead(params: {
    */
   consultField?: string;
 }): Promise<SubmitLeadResult> {
-  const { phone: rawPhone, entryForm, honeypot, aiChat, consultField } = params;
+  const { phone: rawPhone, entryForm, honeypot, aiChat } = params;
+  // 261126 접수 간소화 — 상담분야를 더 묻지 않는다. 정해 오지 않은 진입은 「창호 견적 문의」로 접수
+  //   (ERP 배지·가맹점 CRM 배정이 분야 없이 비지 않게 Call1 부터 싣는다).
+  const consultField = params.consultField ?? DEFAULT_CONSULT_FIELD;
 
   // Honeypot: 사람은 숨겨진 필드를 보지 못함. 값이 채워져 들어오면 봇으로 판단.
   // UX는 정상 제출처럼 보이게 하되 GAS/GA4로는 전송하지 않음.
@@ -77,9 +80,10 @@ export async function submitLead(params: {
   const phone = verifyResult.phone;
   const verification = takeVerification(phone);
 
-  // ── 2026-11 상담 방법 (방문상담/일반상담) ─────────────────
-  // 시트는 행 추가만 되므로 접수 전에 묻는다. 닫거나 벗어나면 '' 로 접수는 그대로 진행.
-  const consultType = await requestConsultType();
+  // ── 상담 방법 (방문상담/일반상담) ─────────────────────────
+  // 261126 접수 간소화(번호 인증 + 지역만) — 상담 방법 팝업을 더 띄우지 않는다. 빈 값이면 ERP 에 키가 안 실린다.
+  //   다시 묻게 하려면: import { requestConsultType } from './consultType' 후 await requestConsultType().
+  const consultType = '';
 
   // 로컬 시연(TEST_MODE)은 실제 ERP·구글시트로 보내지 않는다 (테스트 번호가 실제 고객 DB 에 쌓이지 않게).
   if (VERIFY_TEST_MODE) {
