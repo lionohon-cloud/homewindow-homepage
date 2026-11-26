@@ -56,6 +56,11 @@ export async function submitLead(params: {
    *   지도 팝업(Call2)을 닫거나 건너뛰어도 ERP 배지에 분야가 남도록 Call1 에 싣는다.
    */
   consultField?: string;
+  /**
+   * 261126 — 번호 인증이 끝나 접수를 보내기 직전에 부른다. 폼은 여기서 지역 창을 먼저 띄운다
+   * (useConsultDetail.openEarly). ERP 응답(3초 안팎)을 기다리며 화면이 멈춰 보이던 것을 없앤다.
+   */
+  onSending?: () => void;
 }): Promise<SubmitLeadResult> {
   const { phone: rawPhone, entryForm, honeypot, aiChat } = params;
   // 261126 접수 간소화 — 상담분야를 더 묻지 않는다. 정해 오지 않은 진입은 「창호 견적 문의」로 접수
@@ -79,6 +84,8 @@ export async function submitLead(params: {
   }
   const phone = verifyResult.phone;
   const verification = takeVerification(phone);
+  // 지역 창을 먼저 띄운다 — 아래 ERP 전송은 그대로 기다리고, 결과(docId)는 폼이 detail.settle 로 넘긴다
+  try { params.onSending?.(); } catch { /* 화면 쪽 오류가 접수를 막지 않게 */ }
 
   // ── 상담 방법 (방문상담/일반상담) ─────────────────────────
   // 261126 접수 간소화(번호 인증 + 지역만) — 상담 방법 팝업을 더 띄우지 않는다. 빈 값이면 ERP 에 키가 안 실린다.

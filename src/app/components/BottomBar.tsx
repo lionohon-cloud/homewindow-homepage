@@ -82,6 +82,7 @@ export function BottomBar({ compact = false }: { compact?: boolean } = {}) {
         phone,
         entryForm: `홈페이지 ${device} 하단바`,
         honeypot,
+        onSending: detail.openEarly,
       });
       // 260917 번호인증 실험 — 인증 팝업을 닫으면 오류 없이 멈춘다
       if (cancelled) return;
@@ -91,13 +92,10 @@ export function BottomBar({ compact = false }: { compact?: boolean } = {}) {
         setPhone3("");
         setShowMobilePopup(false);
         // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
-        if (docId) {
-          detail.open(docId);
-        } else {
-          navigate('/thanks');
-        }
+        detail.settle(docId);
       } else throw new Error();
     } catch {
+      detail.abort();
       setAlertMessage("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
       setShowAlert(true);
     } finally {

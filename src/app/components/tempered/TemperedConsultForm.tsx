@@ -51,6 +51,7 @@ export function TemperedConsultForm() {
         phone,
         entryForm: temperedEntryForm(ENTRY_WHERE.form),
         honeypot: honeypotRef.current?.value,
+        onSending: detail.openEarly,
       });
       // 260917 번호인증 실험 — 인증 팝업을 닫으면 오류 없이 멈춘다
       if (cancelled) return;
@@ -58,9 +59,9 @@ export function TemperedConsultForm() {
       setPhone1('010');
       setPhone2('');
       setPhone3('');
-      if (docId) detail.open(docId);
-      else navigate('/thanks');
+      detail.settle(docId);
     } catch {
+      detail.abort();
       setError('전송 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
