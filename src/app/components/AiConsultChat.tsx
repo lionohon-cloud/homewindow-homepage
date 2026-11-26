@@ -228,19 +228,18 @@ export function AiConsultChat() {
           consultVia === "mesh_screen"
               ? "SAFETY_SCREEN"
               : "WINDOW_QUOTE",
+        onSending: detail.openEarly,
       });
       // 260917 번호인증 실험 — 인증 팝업을 닫으면 다시 누를 수 있게 풀어 둔다
       if (cancelled) {
         setSubmitting(false);
         return;
       }
-      if (docId) {
-        detail.open(docId); // 지도(지역)+분야 팝업 → 접수 완료 시 /thanks
-      } else {
-        sessionStorage.setItem("hw_just_submitted", "1");
-        navigate("/thanks");
-      }
+      // 지도(지역) 팝업은 인증 직후 이미 떠 있다(onSending) → 접수 결과만 넘긴다. 완료 시 /thanks
+      if (!docId) sessionStorage.setItem("hw_just_submitted", "1");
+      detail.settle(docId);
     } catch {
+      detail.abort();
       push({ role: "bot", text: "접수 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요." });
       setSubmitting(false);
     }

@@ -115,6 +115,7 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom", entry }
         phone: phoneNumber,
         entryForm: `홈페이지 ${device} 상담모달${entry ? `-${entry}` : ""}`,
         honeypot: honeypotRef.current?.value,
+        onSending: detail.openEarly,
       });
 
       // 260917 번호인증 실험 — 인증 팝업을 닫으면 오류 없이 멈춘다
@@ -124,15 +125,12 @@ export function ConsultationModal({ isOpen, onClose, variant = "bottom", entry }
         setPhone3("");
         onClose();
         // 접수 확정 직후 2단계 팝업(지역·분야). docId 없으면 Call2 불가 → 기존 흐름.
-        if (docId) {
-          detail.open(docId);
-        } else {
-          navigate('/thanks');
-        }
+        detail.settle(docId);
       } else {
         throw new Error("전송 실패");
       }
     } catch (error) {
+      detail.abort();
       console.error("전송 오류:", error);
       setAlertMessage("전송 중 오류가 발생했습니다. 다시 시도해주세요.");
       setShowAlert(true);
