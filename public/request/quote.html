@@ -32,7 +32,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="phead">
       <p class="phead-label">예상 견적</p>
       <h1>연락처를 남겨주세요</h1>
-      <p class="sub">번호 인증 후 견적 요청이 접수됩니다.</p>
     </div>
 
     <div class="cd locked rise">
@@ -62,7 +61,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="err">연락처를 다시 확인해 주세요.</div>
       </div>
 
-      <div class="field hidden" id="f-code">
+      <div class="field hidden" id="f-code" style="margin-bottom:0">
         <label for="i-code">인증번호 <span>*</span></label>
         <div class="tel-row">
           <input id="i-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6자리" maxlength="6">
@@ -71,42 +70,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p class="code-note" id="code-note"></p>
         <div class="err">인증번호가 맞지 않습니다.</div>
       </div>
-
-      <div class="field" id="f-when">
-        <label id="lb-when">교체 희망 시기 <span>*</span></label>
-        <div class="seg grid2" id="i-when" role="radiogroup" aria-labelledby="lb-when">
-          <button type="button" data-v="최대한 빠르게">최대한 빠르게</button>
-          <button type="button" data-v="3개월 이내">3개월 이내</button>
-          <button type="button" data-v="6개월 이후">6개월 이후</button>
-          <button type="button" data-v="아직 고민 중">아직 고민 중</button>
-        </div>
-        <div class="err">교체 희망 시기를 선택해 주세요.</div>
-      </div>
-
-      <div class="field">
-        <label id="lb-pyeong">평형</label>
-        <div class="seg row4" id="i-pyeong" role="radiogroup" aria-labelledby="lb-pyeong">
-          <button type="button" data-v="20평대">20평대</button>
-          <button type="button" data-v="30평대">30평대</button>
-          <button type="button" data-v="40평대">40평대</button>
-          <button type="button" data-v="50평 이상">50평↑</button>
-        </div>
-      </div>
-
-      <div class="field" style="margin-bottom:0">
-        <label id="lb-scope">교체 범위</label>
-        <div class="seg grid2" id="i-scope" role="radiogroup" aria-labelledby="lb-scope">
-          <button type="button" data-v="거실 발코니 창">거실 발코니 창</button>
-          <button type="button" data-v="방 창문만">방 창문만</button>
-          <button type="button" data-v="집 전체">집 전체</button>
-          <button type="button" data-v="아직 모르겠음">아직 모르겠음</button>
-        </div>
-      </div>
     </div>
 
     <p class="disclaim">
       수집 항목은 연락처·상담 지역·상담 내용입니다. 접수된 상담은 고객님이 선택하신 지역을 담당하는
-      청암홈윈도우 가맹점에 제공되어 방문 상담·견적·시공에 활용되며, 서비스 종료 시 또는 동의 철회 시까지 보관합니다.
+      청암홈윈도우 대리점·가맹점에 제공되어 방문 상담·견적·시공에 활용되며, 서비스 종료 시 또는 동의 철회 시까지 보관합니다.
     </p>
   </div>
 
@@ -119,10 +87,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="ctafix hidden" id="ctafix">
   <div class="ctafix-in">
     <p class="consent-mini">
-      버튼을 누르면 개인정보 수집·이용 및 제3자(가맹점) 제공에 동의하는 것으로 봅니다.
+      버튼을 누르면 개인정보 수집·이용 및 제3자(대리점·가맹점) 제공에 동의하는 것으로 봅니다.
       <button type="button" id="open-policy">전문 보기</button>
     </p>
-    <button type="button" class="btn-primary" id="send">견적 받기</button>
+    <button type="button" class="btn-primary" id="send">무료 견적 받기</button>
     <button type="button" class="btn-text" id="back">단지 정보 다시 보기</button>
   </div>
 </div>
@@ -141,11 +109,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       이용 목적: 상담 신청 접수, 견적 안내, 상담 진행을 위한 연락<br>
       보유·이용기간: 서비스 종료 시까지(삭제를 요청하시면 지체 없이 파기)</p>
       <p><strong>[필수] 개인정보 제3자 제공 동의</strong><br>
-      제공받는 자: 고객님이 선택하신 지역을 담당하는 청암홈윈도우 가맹점<br>
+      제공받는 자: 고객님이 선택하신 지역을 담당하는 청암홈윈도우 대리점·가맹점<br>
       제공 목적: 방문 상담·실측·견적, 계약 체결, 시공 및 A/S 진행<br>
       제공 항목: 휴대전화번호, 상담 지역, 상담 내용<br>
       보유·이용기간: 서비스 종료 시까지(삭제를 요청하시면 지체 없이 파기)</p>
-      <p>가맹점은 회사와 별개의 사업자이며, 계약·시공·A/S는 제공받은 가맹점이 직접 진행합니다.
+      <p>대리점·가맹점은 회사와 별개의 사업자이며, 계약·시공·A/S는 제공받은 대리점·가맹점이 직접 진행합니다.
       위 동의를 거부하실 수 있으나, 거부하시면 상담 신청이 접수되지 않습니다.
       <a href="/privacy">개인정보처리방침 전체 보기</a></p>
       <p class="dates">공고일자 2026년 9월 23일 · 시행일자 2026년 9월 23일</p>
@@ -167,10 +135,6 @@ if(!d){
   const g = gen(d);
   $('lock-title').innerHTML = '<em>'+esc(g.name)+'</em> 견적은<br>무료 방문 상담 후 안내드립니다';
   track('step3_quote_view', {danji:g.name, zone:g.zone, grade:g.grade});
-
-  /* initSeg/segValue 는 app.js 공용부로 옮겼다(260907, 교체 희망 시기 추가하며 region.html 도 쓰게 됨) */
-  initSeg('i-pyeong'); initSeg('i-scope'); initSeg('i-when');
-  $('i-when').addEventListener('click', ()=>$('f-when').classList.remove('bad'));
 
   const V = initTelVerify();
 
@@ -208,13 +172,6 @@ if(!d){
       else setTimeout(()=>$('i-code').focus(), 420);
       return;
     }
-    /* 교체 희망 시기는 필수입니다 */
-    if(!segValue('i-when')){
-      track('step3_timing_missing');
-      $('f-when').classList.add('bad');
-      window.scrollTo({top:$('f-when').getBoundingClientRect().top+window.scrollY-100, behavior:'smooth'});
-      return;
-    }
 
     const dt=new Date();
     const payload={
@@ -224,25 +181,23 @@ if(!d){
       복도유형:g.corr, 난방방식:g.heat, 시공사:g.builder,
       창호세대:g.grade, 창호종류:g.era?g.era.type:'', 단열성능:g.era?g.era.uval:'',
       연락처:$('i-tel').value, 인증토큰:V.token(),
-      평형:segValue('i-pyeong'), 교체범위:segValue('i-scope'), 교체시기:segValue('i-when'),
       헤드라인:qs('ab'), 방식:'2안(단계 분리)',
-      동의방식:'견적 받기 버튼 클릭', 동의문구버전:'2026-09-23',
+      동의방식:'무료 견적 받기 버튼 클릭', 동의문구버전:'2026-09-23',
       접수시각:dt.toISOString()
     };
 
+    /* 261126 양 우선: 상담 방법 창 없이 연락처 인증 후 바로 접수합니다 */
     submitting = true;
-    setSubmitState($('send'), false, '');
-    askConsult(payload, {
-      done: (result, type)=>{
-        track('lead', {danji:g.name, zone:g.zone, headline:qs('ab'), consult:type});
-        goStep('thanks.html', {no:result && result.receiptNo, dj:encodeURIComponent(g.name)});
-      },
-      fail: e=>{
-        submitting = false;
-        setSubmitState($('send'), false, e && e.message ? e.message : '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-        track('lead_submit_fail', {path:PATH});
-      }
-    });
+    setSubmitState($('send'), true, '');
+    try{
+      const result = await submitLead(payload);
+      track('lead', {danji:g.name, zone:g.zone, headline:qs('ab')});
+      goStep('thanks.html', {no:result && result.receiptNo, dj:encodeURIComponent(g.name)});
+    }catch(e){
+      submitting = false;
+      setSubmitState($('send'), false, e && e.message ? e.message : '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      track('lead_submit_fail', {path:PATH});
+    }
   });
 
   $('back').onclick=()=>{ location.href='danji.html?d='+encodeURIComponent(qs('d'))+(qs('ab')?'&ab='+qs('ab'):''); };

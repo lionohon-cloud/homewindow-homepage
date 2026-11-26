@@ -10,56 +10,212 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-MZ3X36RJ');</script>
 <!-- End Google Tag Manager -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
 <title>창호 교체 상담 · 청암홈윈도우</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="app.css">
+<style>
+/* 261126 첫 화면 개편(시안 2-1) — 광고에서 바로 들어온 고객에게 단지 정보 예시·강점을 먼저 보여주고, 하단 버튼 → 시트에서 집 형태를 고름 */
+:root{--bg:#F5F6F8;--ink2:#4B5563}
+/* 색 계층: 흰 바탕 + 얇은 회색 테두리 카드. 빨강(--brand)은 숫자·선택 상태·주요 버튼에만 */
+body{--page:#fff;--hero:#fff;--navbg:rgba(255,255,255,.94);--navsolid:rgba(255,255,255,.97);--surface:#fff;--surface-bd:#E8E8EB;
+  --well:#F6F6F7;--tile:#fff;--tile-bd:#EBEBEE;--line:#F0F0F2;--cta:var(--brand);--cta-press:var(--brand-dark)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+
+
+/* 히어로 — 연한 브랜드 배경 위 일러스트 */
+.hero{background:var(--hero);padding:6px 24px 30px;text-align:center}
+/* 261126 파이어플라이 일러스트(GPT Image 2.5 Sunburst) — 배경을 순백으로 맞춰 multiply 로 페이지 바탕에 녹임 */
+.art-wrap{position:relative;width:max-content;margin:14px auto 22px}
+.art{display:block;width:210px;height:auto;mix-blend-mode:multiply} /* 261126 세 동 단지, 크기 줄임 */
+.art-wrap::after{content:"";position:absolute;left:50%;bottom:-9px;width:78%;height:16px;margin-left:-39%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(17,24,39,.16),rgba(17,24,39,0))} /* 261126 떠다니는 효과 끔 — 그림자는 고정 */
+.hero h2{margin:4px 0 0;font-size:28px;line-height:1.3;font-weight:800;letter-spacing:-.03em;word-break:keep-all}
+.hero h2 em{font-style:normal;color:var(--brand)}
+.hero p{margin:12px auto 0;max-width:300px;font-size:14.5px;line-height:1.65;color:var(--ink2);word-break:keep-all}
+
+/* 본문 카드 공통 */
+.body{padding:0 16px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--surface-bd);border-radius:22px;padding:22px 20px}
+.card h3{margin:0;font-size:18px;font-weight:800;line-height:1.4;letter-spacing:-.02em;word-break:keep-all}
+.card h3 em{font-style:normal;color:var(--brand)}
+.card .desc{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;word-break:keep-all}
+
+/* 예시 결과 — 반원 게이지 */
+.ex-tag{float:right;margin-top:3px;font-size:12px;font-weight:600;color:var(--faint)}
+.gauge-box{position:relative;width:230px;margin:18px auto 0;text-align:center}
+.gauge-box svg{width:230px;height:128px;display:block}
+.g-track{fill:none;stroke:var(--well);stroke-width:12;stroke-linecap:round}
+.g-val{fill:none;stroke:url(#gg);stroke-width:12;stroke-linecap:round;stroke-dasharray:314;stroke-dashoffset:314;animation:arc 1.3s .5s cubic-bezier(.2,.8,.2,1) forwards}
+.g-num{position:absolute;left:0;right:0;bottom:4px}
+.g-num b{display:block;font-size:34px;font-weight:800;color:var(--brand);letter-spacing:-.03em;line-height:1}
+.g-num span{display:block;margin-top:6px;font-size:13px;font-weight:700;color:var(--text)}
+.g-scale{display:flex;justify-content:space-between;width:230px;margin:6px auto 0;font-size:11px;color:var(--faint)}
+/* 261126 등급 칸 — 한 줄로 묶은 음각 스위치: 움푹 들어간 회색 홈 안에서 해당 등급만 흰 손잡이로 떠오름 */
+.steps5{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:16px;padding:3px;border-radius:12px;background:#EFF0F2;box-shadow:inset 0 1px 2px rgba(17,24,39,.10),inset 0 0 0 1px rgba(17,24,39,.03)}
+.steps5 i{height:28px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:600;color:#9A9CA1;background:transparent}
+.steps5 i.on{background:#fff;color:#374151;font-weight:800;box-shadow:0 1px 3px rgba(17,24,39,.14),0 0 0 .5px rgba(17,24,39,.06)}
+.spec{margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:13px}
+.spec dt{color:var(--muted)}
+.spec dd{margin:0;text-align:right;font-weight:600}
+
+/* 왜 여기서 — 흰 카드에 빨강은 포인트로만 (261126 빨강을 면으로 깔면 부담스럽다는 의견 반영) */
+.banner{background:var(--surface);border:1px solid var(--surface-bd);border-radius:22px;padding:22px 20px 20px}
+.banner small{font-size:12.5px;font-weight:600;color:var(--muted)}
+.banner h3{margin:6px 0 0;font-size:20px;font-weight:800;line-height:1.4;letter-spacing:-.02em;color:var(--text)}
+.perks{margin:10px 0 0;padding:0;list-style:none}
+/* 261126 회색 상자 대신 구분선 목록 — 흰 카드 안에 면을 한 겹 더 깔지 않음 */
+.perks li{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.perks li:first-child{border-top:0}
+.perks .pi{flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:var(--well);display:grid;place-items:center}
+.perks .pi svg{width:20px;height:20px;fill:none;stroke:var(--ink2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.perks b{display:block;font-size:15.5px;font-weight:600;color:var(--text)}
+.perks b em{font-style:normal;font-weight:800;color:var(--brand)}
+.perks span{display:block;margin-top:2px;font-size:12.5px;color:var(--muted);word-break:keep-all}
+
+.legal{margin:6px 4px 0;font-size:11.5px;color:var(--faint);line-height:1.6;text-align:center}
+.legal a{color:var(--muted);font-weight:700;text-decoration:none}
+
+/* 하단 고정 버튼 */
+.cta{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,transparent 0%,var(--page) 30%)}
+.cta button{display:block;width:100%;margin:0 auto;height:56px;border:0;border-radius:16px;background:var(--cta);color:#fff;
+  font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;transition:transform .12s,background .15s}
+.cta button:active{transform:scale(.98);background:var(--cta-press)}
+
+/* 아래에서 올라오는 선택 시트 */
+.dim{position:fixed;inset:0;z-index:50;background:rgba(17,24,39,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+.dim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:var(--maxw);margin:0 auto;background:#fff;border-radius:26px 26px 0 0;
+  padding:12px 20px calc(20px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.sheet.on{transform:none}
+.grab{width:40px;height:4px;border-radius:99px;background:#E3E5E8;margin:0 auto 18px}
+.sheet h4{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.sheet .s-sub{margin:6px 0 18px;font-size:13.5px;color:var(--muted)}
+.opt{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:10px;padding:16px;border:1.5px solid #EEF0F3;border-radius:18px;background:#fff;
+  font-family:inherit;text-align:left;color:var(--text);cursor:pointer;transition:border-color .15s,background .15s,transform .12s}
+.opt:active,.opt:focus-visible{outline:0;border-color:var(--brand);background:#FFF6F6}
+.opt:active{transform:scale(.98)}
+.opt:active b,.opt:focus-visible b{color:var(--brand)}
+.opt:active .oi svg,.opt:focus-visible .oi svg{stroke:var(--brand)}
+/* 261126 PC 마우스 올림 — 테두리를 빨강으로, 바깥 1px 링을 더해 굵게(자리 밀림 없음) */
+@media (hover:hover){.opt:hover{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}.opt:hover .go{border-color:var(--brand)}}
+.opt .oi{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:var(--well);display:grid;place-items:center}
+.opt .oi svg{width:24px;height:24px;fill:none;stroke:var(--ink2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.opt b{display:block;font-size:17px;font-weight:800}
+.opt small{display:block;margin-top:3px;font-size:13px;color:var(--muted);word-break:keep-all}
+.opt .go{margin-left:auto;width:9px;height:9px;border-right:2px solid #C4C8CE;border-bottom:2px solid #C4C8CE;transform:rotate(-45deg)}
+
+
+.rise{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+.d1{animation-delay:.08s}.d2{animation-delay:.16s}.d3{animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes float{50%{transform:translateY(-7px)}}
+@keyframes arc{to{stroke-dashoffset:63}}
+@keyframes twinkle{50%{opacity:.25;transform:scale(.7)}}
+.tw{transform-box:fill-box;transform-origin:center;animation:twinkle 1.8s ease-in-out infinite}
+.tw2{animation-delay:.6s}
+@media (prefers-reduced-motion:reduce){.rise,.float,.tw,.art-wrap::after{animation:none}.g-val{animation:none;stroke-dashoffset:63}.sheet,.dim{transition:none}}
+</style>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MZ3X36RJ"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-
 <header class="hdr">
   <div class="hdr-in">
     <img class="logo" src="lx-logo.svg" width="220" height="21" alt="LX Z:IN 공식대리점 청암홈윈도우">
   </div>
 </header>
 
-<main class="main fill">
+<div class="wrap">
 
-  <div class="phead lead-in">
-    <h1>거주 형태가<br>어떻게 되시나요?</h1>
-    <p class="sub">형태에 따라 확인하는 내용이 달라집니다.</p>
+
+  <section class="hero">
+    <div class="art-wrap">
+      <img class="art" id="art" src="hero-complex.webp" width="640" height="562" alt="아파트 세 동 중 창 하나가 새로 바뀐 일러스트">
+    </div>
+    <h2 class="rise d1">우리 집 샷시,<br><em>몇 년째</em> 쓰고 있을까?!</h2>
+    <p class="rise d2">아파트 이름만 넣으면 준공 연도와 창호 사양부터 보여드려요. 정확한 견적은 무료 방문 상담으로 안내드립니다.</p>
+  </section>
+
+  <div class="body">
+
+    <section class="card rise d3" aria-labelledby="ex-h">
+      <span class="ex-tag">예시</span>
+      <h3 id="ex-h">이렇게 <em>단지 정보</em>를<br>먼저 확인할 수 있어요</h3>
+      <p class="desc">서울 OO아파트 · 2002년 준공 · 최고 19층</p>
+      <div class="gauge-box" aria-hidden="true">
+        <svg viewBox="0 0 230 128">
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F7B4B4"/><stop offset="1" stop-color="#D22727"/></linearGradient></defs>
+          <path class="g-track" d="M15 115 A100 100 0 0 1 215 115"/>
+          <path class="g-val" d="M15 115 A100 100 0 0 1 215 115"/>
+        </svg>
+        <div class="g-num"><b>24년</b><span>준공 후 지난 기간</span></div>
+      </div>
+      <div class="g-scale" aria-hidden="true"><span>0년</span><span>30년+</span></div>
+      <div class="steps5" aria-hidden="true"><i>신축</i><i>준신축</i><i class="on">노후</i><i>장기 노후</i></div>
+      <dl class="spec">
+        <dt>창호 종류</dt><dd>알루미늄 이중창</dd>
+        <dt>유리 사양</dt><dd>복층유리 12~16mm</dd>
+        <dt>단열 성능</dt><dd>약 3.4 W/m²K</dd>
+      </dl>
+    </section>
+
+    <section class="banner" aria-labelledby="why-h">
+      <small>같은 LX 공식대리점이라도 품질은 다르니까</small>
+      <h3 id="why-h">청암홈윈도우에서<br>바꾸면 이렇게 달라요</h3>
+      <ul class="perks">
+        <li><span class="pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.3 2.3 4.2-4.5"/></svg></span>
+          <span><b><em>15년</em> 무상보증</b><span>창의 뼈대인 프로파일을 15년 동안 보증</span></span></li>
+        <li><span class="pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20.5V10l5 3V10l5 3V6.5h7v14z"/><path d="M3.5 20.5h17M16 10h1.5M16 13.5h1.5M7 17h1.5M11 17h1.5"/></svg></span>
+          <span><b><em>3만 8천 평</em> 자동화 공장</b><span>LX 공식대리점 중 전국 1위 규모(주거용)</span></span></li>
+        <li><span class="pi" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="1.5"/><path d="M12 3.5v17M4 12h16"/><path d="M7 7.5l2-2M15 7.5l2-2"/></svg></span>
+          <span><b><em>강화유리 무상</em> 업그레이드</b><span>LX Z:IN 창호 선택 시, 일반유리 가격 그대로</span></span></li>
+      </ul>
+    </section>
+
+
+    <p class="legal">전국 어디든 무료 방문 상담 후 정확한 견적을 안내드립니다.<br>급하시면 바로 연락 주세요 <a href="tel:1661-4830">1661-4830</a></p>
   </div>
+</div>
 
-  <div class="pick">
-    <button type="button" class="pick-btn" data-t="apt">아파트</button>
-    <button type="button" class="pick-btn" data-t="house">주택/상가</button>
-  </div>
+<div class="cta"><button type="button" id="open">우리집 예상 견적 받기</button></div>
 
-  <div class="foot">
-    전국 어디든 무료 방문 상담 후 정확한 견적을 안내드립니다.<br>
-    급하시면 바로 연락 주세요 <a class="tel-inline" href="tel:1661-4830">1661-4830</a>
-  </div>
-
-</main>
+<div class="dim" id="dim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h" aria-hidden="true">
+  <div class="grab" aria-hidden="true"></div>
+  <h4 id="sheet-h">어떤 집에 사시나요?</h4>
+  <p class="s-sub">집 형태에 맞춰 바로 안내해 드릴게요.</p>
+  <button type="button" class="opt" data-t="apt">
+    <span class="oi" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="10" height="17" rx="1"/><path d="M14 9h5a1 1 0 0 1 1 1v10.5H14"/><path d="M7.5 7.5h1M10.5 7.5h0M7.5 11h1M10.5 11h0M7.5 14.5h1M10.5 14.5h0M17 13h0M17 16.5h0"/></svg></span>
+    <span><b>아파트·빌라</b></span><i class="go" aria-hidden="true"></i>
+  </button>
+  <button type="button" class="opt" data-t="house">
+    <span class="oi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 11L12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg></span>
+    <span><b>주택·상가</b></span><i class="go" aria-hidden="true"></i>
+  </button>
+</div>
 
 <script src="app.js"></script>
 <script>
-
 track('step1_type_view');
-
-document.querySelectorAll('.pick-btn').forEach(b=>{
+const sheet = $('sheet'), dim = $('dim');
+function openSheet(){ sheet.classList.add('on'); dim.classList.add('on'); sheet.setAttribute('aria-hidden','false'); sheet.querySelector('.opt').focus({preventScroll:true}); }
+function closeSheet(){ sheet.classList.remove('on'); dim.classList.remove('on'); sheet.setAttribute('aria-hidden','true'); $('open').focus({preventScroll:true}); }
+$('open').addEventListener('click', ()=>{ track('step1_cta_open'); openSheet(); });
+dim.addEventListener('click', closeSheet);
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && sheet.classList.contains('on')) closeSheet(); });
+document.querySelectorAll('.opt').forEach(b=>{
   b.addEventListener('click', ()=>{
     const t = b.dataset.t;
     track('step1_type_select', {type:t});
-    /* 아파트는 단지 검색으로, 주택은 단지 자료가 없으므로 견적 요청으로 바로 넘깁니다 */
+    /* 아파트는 단지 검색으로, 주택은 단지 자료가 없으므로 지역 선택으로 바로 넘깁니다 */
     if(t === 'apt') goStep('search.html', {t:'apt'});
     else goStep('region.html', {t:'house'});
   });
 });
-
 </script>
 </body>
 </html>

@@ -321,12 +321,6 @@ function ageLabel(age){
        : age<=25 ? '노후 (16~25년)'
        : '장기 노후 (26년 이상)';
 }
-function ageVerdict(age){
-  return age<=5 ? '양호합니다.'
-       : age<=10 ? '점검이 필요합니다.'
-       : age<=20 ? '교체를 검토해보세요.'
-       : '교체가 필요합니다.';
-}
 
 function gen(d){
   const [name, zone, dong, year, hh, dongCnt, floor, corr, heat, type, builder] = d;
@@ -373,43 +367,51 @@ function josaEul(word){
   return '1360'.indexOf(String.fromCharCode(c))>=0 ? '을' : '를';  /* 1·3·6·0으로 끝나면 받침 */
 }
 
-/* ── 단지 카드 (노후도 게이지 + 접히는 기본정보) ── */
+/* ── 단지 카드 ──
+   261126 첫 화면 예시 카드와 같은 모양으로 바꿈: 반원 게이지(30년 만점) · 노후 등급 칸 · 창호 추정 사양을 한 카드에.
+   '교체가 필요합니다' 같은 판정 문구는 빼고 사실(지난 기간·등급·추정 사양)만 보여줍니다. */
+const AGE_GRADES = ['신축','준신축','노후','장기 노후'];
+const ARC_LEN = 314.2;   /* 반지름 100 반원 길이 */
+function ageGradeIndex(age){ return age<=5 ? 0 : age<=15 ? 1 : age<=25 ? 2 : 3; }
+
 function renderDanjiCard(el, g){
   const zoneLine = [g.zone, g.dong].filter(Boolean).join(' ');
   const metaLine = [g.year ? g.year+'년 준공' : null, g.floor ? '최고 '+g.floor+'층' : null]
                      .filter(Boolean).join(' · ');
-  /* 게이지: 20년을 만점으로 채웁니다 */
-  const pct = Math.min(g.age/20, 1) * 100;
-  const marks = [[0,'0년'],[25,'5년'],[50,'10년'],[100,'20년+']];
 
-  let h = '<div class="dj-top">';
-  h += '<div class="dj-head"><div class="left">';
-  h += '<p class="dj-zone">'+esc(zoneLine)+'</p>';
-  h += '<h2 class="dj-name">'+esc(g.name)+'</h2>';
-  if(metaLine) h += '<p class="dj-meta">'+esc(metaLine)+'</p>';
-  h += '</div>';
-  if(g.year){
-    h += '<div class="right"><span class="dj-age">'+g.age+'년</span>'
-       + '<p class="dj-agelab">'+ageLabel(g.age)+'</p></div>';
-  }
-  h += '</div>';
+  let h = '<div class="dj2">';
+  if(zoneLine) h += '<p class="dj2-zone">'+esc(zoneLine)+'</p>';
+  h += '<h2 class="dj2-name">'+esc(g.name)+'</h2>';
+  if(metaLine) h += '<p class="dj2-meta">'+esc(metaLine)+'</p>';
 
   if(g.year){
-    h += '<div>';
-    /* 너비 0으로 그려두고 그린 뒤에 목표치를 넣어야 차오르는 트랜지션이 걸립니다 */
-    h += '<div class="gauge-bar"><div class="gauge-fill" id="gauge-fill" style="width:0"></div></div>';
-    h += '<div class="gauge-scale">'
-       + marks.map(([p,t])=>'<span style="left:'+p+'%">'+t+'</span>').join('')
+    const gi = ageGradeIndex(g.age);
+    h += '<div class="dj2-gauge" role="img" aria-label="준공 후 '+g.age+'년, '+esc(ageLabel(g.age))+'">'
+       + '<svg viewBox="0 0 230 128" aria-hidden="true"><defs>'
+       + '<linearGradient id="dj2g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F7B4B4"/><stop offset="1" stop-color="#D22727"/></linearGradient></defs>'
+       + '<path class="dj2-track" d="M15 115 A100 100 0 0 1 215 115"/>'
+       + '<path class="dj2-val" id="dj2-val" d="M15 115 A100 100 0 0 1 215 115"/></svg>'
+       + '<div class="dj2-num" aria-hidden="true"><b>'+g.age+'년</b><span>준공 후 지난 기간</span></div></div>'
+       + '<div class="dj2-scale" aria-hidden="true"><span>0년</span><span>30년+</span></div>'
+       + '<div class="dj2-grades" aria-hidden="true">'
+       + AGE_GRADES.map((n,i)=>'<i'+(i===gi?' class="on"':'')+'>'+n+'</i>').join('')
        + '</div>';
-    h += '<p class="gauge-verdict">'+ageVerdict(g.age)+'</p>';
-    h += '</div>';
+  }
+
+  if(g.era){
+    h += '<div class="dj2-spec"><div class="dj2-spec-h">창호 추정 사양<span>준공 기준 추정</span></div>'
+       + irow('창호 종류', g.era.type)
+       + irow('유리 사양', g.era.glass)
+       + irow('프레임', g.era.frame)
+       + irow('단열 성능', g.era.uval)
+       + '</div>';
+  }else{
+    h += '<p class="dj2-none">공개 자료에 준공 연도가 없어 창호 사양을 추정하지 못했습니다. 통화로 확인한 뒤 안내드리겠습니다.</p>';
   }
   h += '</div>';
 
-  /* 접히는 단지 기본정보 */
+  /* 접히는 단지 기본정보 — 위에 이미 보이는 준공 연도·노후도는 뺍니다 */
   const rows = [
-    g.year ? ['준공 연도', g.year+'년'] : null,
-    g.year ? ['노후도', ageLabel(g.age)] : null,
     g.hh ? ['총 세대수', g.hh.toLocaleString()+'세대'] : null,
     g.dongCnt ? ['동 수', g.dongCnt+'개 동'] : null,
     g.floor ? ['최고 층수', g.floor+'층'] : null,
@@ -426,17 +428,18 @@ function renderDanjiCard(el, g){
        + rows.map(r=>irow(r[0], r[1])).join('')
        + '</div></div>'
        + '<button type="button" class="acc-btn" id="acc-btn" aria-expanded="false" aria-controls="acc-panel">'
-       + '<span class="acc-lab"><span class="acc-txt">추가 정보 보기</span>'
+       + '<span class="acc-lab"><span class="acc-txt">단지 정보 더 보기</span>'
        + '<svg viewBox="0 0 14 14"><path d="M2 5l5 5 5-5"/></svg></span></button>';
   }
 
   el.innerHTML = h;
 
-  /* 노후도 게이지 — 카드가 올라온 뒤 0에서 목표치까지 차오릅니다 */
-  const fill = el.querySelector('#gauge-fill');
-  if(fill){
+  /* 게이지 — 카드가 올라온 뒤 0에서 목표치까지 차오릅니다 (30년 이상은 꽉 참) */
+  const val = el.querySelector('#dj2-val');
+  if(val){
+    const pct = Math.min(g.age/30, 1);
     requestAnimationFrame(()=>{
-      setTimeout(()=>{ fill.style.width = pct.toFixed(1)+'%'; }, 240);
+      setTimeout(()=>{ val.style.strokeDashoffset = (ARC_LEN*(1-pct)).toFixed(1); }, 240);
     });
   }
 
@@ -448,43 +451,24 @@ function renderDanjiCard(el, g){
       const open = btn.getAttribute('aria-expanded')==='true';
       btn.setAttribute('aria-expanded', open ? 'false' : 'true');
       panel.style.maxHeight = open ? '0px' : panel.scrollHeight+'px';
-      txt.textContent = open ? '추가 정보 보기' : '추가 정보 접기';
+      txt.textContent = open ? '단지 정보 더 보기' : '단지 정보 접기';
       if(!open) track('step2_more_info');
     });
   }
 }
 
-/* ── 창호 추정 사양 ── */
-function renderWindow(el, g){
-  if(!g.era){
-    el.innerHTML = '<div class="win-top"><h3>창호 추정 사양</h3></div>'
-      + '<div class="win-body" style="padding-bottom:16px">'
-      + '<p style="margin:12px 0 0;font-size:14px;color:var(--muted);word-break:keep-all">'
-      + '공개 자료에 준공 연도가 없어 사양을 추정하지 못했습니다. 통화로 확인한 뒤 안내드리겠습니다.</p></div>';
-    return;
-  }
-  el.innerHTML = '<div class="win-top"><h3>창호 추정 사양</h3>'
-    + '<span class="tag">준공 기준 추정</span></div>'
-    + '<div class="win-body">'
-    + irow('창호 종류', g.era.type)
-    + irow('유리 사양', g.era.glass)
-    + irow('프레임', g.era.frame)
-    + irow('단열 성능', g.era.uval)
-    + '</div>';
-}
-
 /* ── 분석 결과 ── */
 function renderNotes(el, g){
   const check = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">'
-    + '<circle cx="8" cy="8" r="8" fill="#FDEAEA"/>'
-    + '<path d="M4.5 8l2.5 2.5 4.5-5" stroke="#D22727" stroke-width="1.5"'
+    + '<circle cx="8" cy="8" r="8" fill="#F1F2F4"/>'
+    + '<path d="M4.5 8l2.5 2.5 4.5-5" stroke="#4B5563" stroke-width="1.5"'
     + ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   el.innerHTML = '<div class="an-top">'
     + '<p><em>'+esc(g.name)+'</em>'+josaEul(g.name)+'<br>분석한 결과입니다</p>'
     + '<div class="an-ico"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">'
-    + '<rect x="2" y="11" width="4" height="9" rx="1" fill="#D22727" opacity=".4"/>'
-    + '<rect x="9" y="6" width="4" height="14" rx="1" fill="#D22727" opacity=".7"/>'
+    + '<rect x="2" y="11" width="4" height="9" rx="1" fill="#9CA3AF"/>'
+    + '<rect x="9" y="6" width="4" height="14" rx="1" fill="#6B7280"/>'
     + '<rect x="16" y="2" width="4" height="18" rx="1" fill="#D22727"/>'
     + '</svg></div></div>'
     + '<ul class="an-list">'
