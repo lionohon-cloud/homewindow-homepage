@@ -72,8 +72,14 @@ export function useConsultDetail() {
     replacementTiming,
   }: ConsultDetailResult) => {
     setIsOpen(false);
-    // 지역을 ERP 응답보다 먼저 골랐으면 여기서 docId 를 기다린다
-    const docId = leadDocId ?? (docWait.current ? await docWait.current : null);
+    // 261126 — 감사 페이지로 먼저 보낸다. ERP 가 느릴 때(라이브 측정: 접수 10.9초·지역 반영 15.2초)
+    //   지역을 고른 뒤 빈 화면으로 기다리던 것을 없앤다. 반영(Call2)은 뒤에서 마저 보낸다 —
+    //   한 페이지 앱이라 화면이 바뀌어도 요청은 이어지고, 탭을 닫아도 keepalive 로 끝까지 간다.
+    const docIdNow = leadDocId;
+    const wait = docWait.current;
+    navigate('/thanks');
+    // 지역을 ERP 응답보다 먼저 골랐으면 docId 를 기다렸다 보낸다
+    const docId = docIdNow ?? (wait ? await wait : null);
     if (docId) {
       await submitLeadDetail(
         docId,
@@ -84,7 +90,6 @@ export function useConsultDetail() {
         replacementTiming,
       );
     }
-    navigate('/thanks');
   };
 
   const onSkip = () => {

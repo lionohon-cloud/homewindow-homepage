@@ -188,6 +188,8 @@ export async function submitLead(params: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(erpPayload),
+      // 261126 — ERP 가 10초 넘게 걸리기도 한다. 그사이 탭을 닫거나 다른 데로 가도 접수가 끝까지 가게(시트 GAS 와 같은 처리).
+      keepalive: true,
     },
   )
     .then(async (r) => {
@@ -310,6 +312,8 @@ export async function submitLeadDetail(
     const res = await fetch('/api/erp-lead-update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      // 261126 — 감사 페이지로 먼저 넘긴 뒤 뒤에서 보낸다. 탭을 닫아도 끝까지 가게.
+      keepalive: true,
       body: JSON.stringify({
         docId,
         region,
